@@ -218,7 +218,7 @@ int getUTF8character(int index, char* utf8Value){
 int getUTF8code_Byte(char* utf8Value, unsigned char* utf8Code){
 
 	int x,y,numBytes;
-	numBytes = numBytesInUtf8Char((unsigned char)*utf8Code);
+	numBytes = numBytesInUtf8Char((unsigned char)*utf8Value);
 
 	for (x = 0; x < numEntries; x++){
 		for (y = 0; y < numBytes; y++){
@@ -242,7 +242,7 @@ int getUTF8code_Byte(char* utf8Value, unsigned char* utf8Code){
 int getUTF8code_Short(char* utf8Value, unsigned short* utf8Code){
 
 	int x, y, numBytes;
-	numBytes = numBytesInUtf8Char((unsigned char)*utf8Code);
+	numBytes = numBytesInUtf8Char((unsigned char)*utf8Value);
 
 	for (x = 0; x < numEntries; x++){
 		for (y = 0; y < numBytes; y++){

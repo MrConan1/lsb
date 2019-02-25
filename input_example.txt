@@ -1,0 +1,46 @@
+(start
+    (endian=big)
+    (radix=hex)
+    (max_size_bytes=FFFF)
+)
+(goto id=1 
+    (location 0000)
+)
+(fill-space id=3
+    (unit-size 1)
+    (fill-value FF)
+    (unit-count 0800)
+) 
+(pointer id=4
+    (byteoffset 0400)
+    (size 2)
+    (value 2543)
+)
+(pointer id=5
+    (byteoffset 0300)
+    (size 2)
+    (id 25)
+)
+(goto id=6 
+    (location 0800)
+)
+(execute-subroutine id=7
+    (subroutine 0038)
+    (num-parameters 5)
+    (align-fill-byteval FF)
+    (parameter-types 1 2 align-4 4 4)
+    (parameter-values 42 2422 42424444 22422222)
+)
+(execute-subroutine id=8
+    (subroutine 0000)
+    (num-parameters 0)
+)
+(run-commands id=9
+    (show-portrait AE)
+    (print-line "The quick brown fox")
+    (align-2 CC)
+    (align-4 EE)
+    (control-code FFFF)
+    (commands-end)
+)
+(end)

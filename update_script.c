@@ -10,8 +10,7 @@
 #include "util.h"
 
 /* Defines */
-//#define DBUF_SIZE      (128*1024)     /* 128kB */
-//#define PTR_ARRAY_SIZE (2*1024)       /* 0x800 bytes, or 1024 16-bit LWs */
+
 
 /* Globals */
 
