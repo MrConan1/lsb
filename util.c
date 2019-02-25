@@ -1,0 +1,259 @@
+/**********************************************************************/
+/* util.c - Utility Functions                                         */
+/**********************************************************************/
+#pragma warning(disable:4996)
+
+/************/
+/* Includes */
+/************/
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+
+/***********/
+/* Defines */
+/***********/
+#define MAX_STORED_CHARACTERS 4096
+
+
+/***********************/
+/* Function Prototypes */
+/***********************/
+void setSSSEncode();
+void swap16(void* pWd);
+int numBytesInUtf8Char(unsigned char val);
+int loadUTF8Table(char* fname);
+int getUTF8character(int index, char* utf8Value);
+int getUTF8code_Byte(char* utf8Value, unsigned char* utf8Code);
+int getUTF8code_Short(char* utf8Value, unsigned short* utf8Code);
+
+static void enable_two_byte_encoding();
+int query_two_byte_encoding();
+
+/* Global Array of UTF8 Data */
+static char utf8Array[MAX_STORED_CHARACTERS][5];
+static int enable_SSS_mode = 0;
+static int numEntries = 0;
+static int G_two_byte_enc = 0;
+
+/***********************************************************************/
+/* setSSSEncode                                                        */
+/* Dynamically modifies the inputting of the SSSC table to resemble an */
+/* SSS table (adds the '.' character back in.                          */
+/***********************************************************************/
+void setSSSEncode(){
+	enable_SSS_mode = 1;
+}
+
+/* Encoding mode - will use 1 byte encoding unless the table is too large */
+static void enable_two_byte_encoding(){
+	G_two_byte_enc = 1;
+}
+int query_two_byte_encoding(){
+	return G_two_byte_enc;
+}
+
+/****************************/
+/* swap16                   */
+/* Endian swap 16-bit data  */
+/****************************/
+void swap16(void* pWd){
+    char* ptr;
+    char temp;
+    ptr = pWd;
+    temp = ptr[1];
+    ptr[1] = ptr[0];
+    ptr[0] = temp;
+    return;
+}
+
+
+
+
+/*****************************************************/
+/* numBytesInUtf8Char                                */
+/* Returns the number of bytes in the UTF8 character */
+/*****************************************************/
+int numBytesInUtf8Char(unsigned char val){
+    if(val < 128){
+        return 1;
+    }
+    else if(val < 224){
+        return 2;
+    }
+    else if(val < 240){
+        return 3;
+    }
+    else
+        return 4;
+}
+
+
+
+
+/*******************************************************************/
+/* loadUTF8Table                                                   */
+/* Loads in a table file consisting of index values and UTF-8 Data */
+/* Format for each line should be "index,utf-8_value"              */
+/* Lines should end in line feed, tabs and spaces may be used for  */
+/* separation.                                                     */
+/* (No real safety checks if the input file is formatted wrong)    */
+/*******************************************************************/
+int loadUTF8Table(char* fname){
+
+	static char linebuf[300];
+    int index, numBytes, x;
+    FILE* infile = NULL;
+    char* buf = NULL;
+	char* ptr_line = NULL;
+	memset(linebuf, 0, 300);
+
+    /* Open the input file */
+    infile = fopen(fname,"r");
+    if(infile == NULL){
+        printf("Error opening %s for reading.\n",fname);
+        return -1;
+    }
+
+    /* Read until the end is detected */
+    while(!feof(infile)){
+
+        /* Get the index location */
+        /* Skip lines that dont start with numbers */
+		/* Assume they are comments, '#' is supposed to be a comment marker */
+		fgets(linebuf, 299, infile);
+		if (linebuf[0] == '#')
+			continue;
+		if (sscanf(linebuf, "%d", &index) != 1){
+			fgets(linebuf, 299, infile);
+			continue;
+		}
+		ptr_line = linebuf;
+
+		/* Increment past numerical digits */
+		while ((*ptr_line >= '0') && (*ptr_line <= '9'))
+			ptr_line++;
+
+		/* Hack for SSS */
+		if ((enable_SSS_mode) && (index >= 769)){
+			index++;
+		}
+
+        /* Index Bounds Check */
+        if(index >= MAX_STORED_CHARACTERS){
+            printf("Error, static array cannot support an index location of %d!\n",index);
+            printf("Static array fixed to locations 0-%d\n",MAX_STORED_CHARACTERS-1);
+            return -1;
+        }
+
+        /* Init the array for the index */
+        memset(&(utf8Array[index][0]),0,5);
+
+        /* Read until a comma is found */
+		while (*ptr_line != ','){
+			ptr_line++;
+        }
+		ptr_line++;
+
+        /* Read until not a space or tab */
+        while(1){
+			if ((*ptr_line == ' ') || (*ptr_line == '\t')){
+				ptr_line++;
+				continue;
+			}
+            break;
+        }
+
+        /* Have the first byte of the utf8 character, get # bytes */
+        numBytes = numBytesInUtf8Char((unsigned char)*ptr_line);
+        utf8Array[index][0] = *ptr_line;
+
+        /* Read the rest of the utf8 character */
+        for(x=1; x < numBytes; x++){
+			ptr_line++;
+            utf8Array[index][x] = *ptr_line;
+        }
+		numEntries++;
+		if (numEntries > 256)
+			enable_two_byte_encoding();
+    }
+
+    fclose(infile);
+
+	/* Hack for SSS -- Fill in '.' at offset 769 */
+	if (enable_SSS_mode){
+		memset(&(utf8Array[769][0]), 0, 5);
+		utf8Array[769][0] = '.';
+	}
+
+    return 0;
+}
+
+
+
+
+/*******************************************************************/
+/* getUTF8character                                                */
+/* Copies in the UTF-8 Data for a given index location.  Assumes   */
+/* that the location to be copied to has at least 5 bytes of space */
+/* allocated to it.                                                */
+/*******************************************************************/
+int getUTF8character(int index, char* utf8Value){
+
+    if(index >= MAX_STORED_CHARACTERS){
+        printf("Error, static array index location of %d does not exist!\n",index);
+        printf("Static array fixed to locations 0-%d\n",MAX_STORED_CHARACTERS-1);
+        return -1;
+    }
+    memcpy(utf8Value,&utf8Array[index][0],5);
+    return 0;
+}
+
+
+/*******************************************************************/
+/* getUTF8code_Byte                                                */
+/* Copies in the UTF-8 Code for a given UTF-8 character            */
+/*******************************************************************/
+int getUTF8code_Byte(char* utf8Value, unsigned char* utf8Code){
+
+	int x,y,numBytes;
+	numBytes = numBytesInUtf8Char((unsigned char)*utf8Code);
+
+	for (x = 0; x < numEntries; x++){
+		for (y = 0; y < numBytes; y++){
+			if (utf8Array[x][y] != utf8Value[y])
+				break;
+			if (y == (numBytes - 1)){
+				*utf8Code = (unsigned char)x;
+				return 0;
+			}
+		}
+	}
+
+	return -1;
+}
+
+
+/*******************************************************************/
+/* getUTF8code_Short                                               */
+/* Copies in the UTF-8 Code for a given UTF-8 character            */
+/*******************************************************************/
+int getUTF8code_Short(char* utf8Value, unsigned short* utf8Code){
+
+	int x, y, numBytes;
+	numBytes = numBytesInUtf8Char((unsigned char)*utf8Code);
+
+	for (x = 0; x < numEntries; x++){
+		for (y = 0; y < numBytes; y++){
+			if (utf8Array[x][y] != utf8Value[y])
+				break;
+			if (y == (numBytes - 1)){
+				*utf8Code = (unsigned short)x;
+				return 0;
+			}
+		}
+	}
+
+	return -1;
+}
