@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include "script_node_types.h"
 
 /***********/
 /* Defines */
@@ -28,14 +28,35 @@ int getUTF8character(int index, char* utf8Value);
 int getUTF8code_Byte(char* utf8Value, unsigned char* utf8Code);
 int getUTF8code_Short(char* utf8Value, unsigned short* utf8Code);
 
-static void enable_two_byte_encoding();
-int query_two_byte_encoding();
+void setBinOutputMode(int mode);
+int getBinOutputMode();
+void setBinMaxSize(unsigned int maxSize);
+unsigned int getBinMaxSize();
+void setMetaScriptInputMode(int mode);
+int getMetaScriptInputMode();
+void setTableOutputMode(int mode);
+int getTableOutputMode();
+
+/**************************/
+/* Meta Script Read Fctns */
+/**************************/
+int read_ID(unsigned char* pInput);
+int readLW(unsigned char* pInput, unsigned int* data);
+int readSW(unsigned char* pInput, unsigned short* datas);
+int readBYTE(unsigned char* pInput, unsigned char* datab);
+
 
 /* Global Array of UTF8 Data */
 static char utf8Array[MAX_STORED_CHARACTERS][5];
 static int enable_SSS_mode = 0;
 static int numEntries = 0;
-static int G_two_byte_enc = 0;
+
+/* I/O Globals*/
+static int outputMode = BIG_ENDIAN;
+static int inputMode = RADIX_HEX;
+static int tableMode = TWO_BYTE_ENC;
+static unsigned int maxBinFsize = 0;
+
 
 /***********************************************************************/
 /* setSSSEncode                                                        */
@@ -46,13 +67,7 @@ void setSSSEncode(){
 	enable_SSS_mode = 1;
 }
 
-/* Encoding mode - will use 1 byte encoding unless the table is too large */
-static void enable_two_byte_encoding(){
-	G_two_byte_enc = 1;
-}
-int query_two_byte_encoding(){
-	return G_two_byte_enc;
-}
+
 
 /****************************/
 /* swap16                   */
@@ -175,8 +190,6 @@ int loadUTF8Table(char* fname){
             utf8Array[index][x] = *ptr_line;
         }
 		numEntries++;
-		if (numEntries > 256)
-			enable_two_byte_encoding();
     }
 
     fclose(infile);
@@ -256,4 +269,151 @@ int getUTF8code_Short(char* utf8Value, unsigned short* utf8Code){
 	}
 
 	return -1;
+}
+
+
+
+
+void setBinOutputMode(int mode){
+	if (mode == BIG_ENDIAN)
+		outputMode = BIG_ENDIAN;
+	else if (mode == LITTLE_ENDIAN)
+		outputMode = LITTLE_ENDIAN;
+	else{
+		printf("Invalid Output Mode, defaulting to Big Endian.\n");
+		outputMode = BIG_ENDIAN;
+	}
+	return;
+}
+
+int getBinOutputMode(){
+	return outputMode;
+}
+
+
+void setBinMaxSize(unsigned int maxSize){
+	maxBinFsize = maxSize;
+	return;
+}
+
+unsigned int getBinMaxSize(){
+	return maxBinFsize;
+}
+
+void setMetaScriptInputMode(int mode){
+	if (mode == RADIX_DEC)
+		inputMode = RADIX_DEC;
+	else if (mode == RADIX_HEX)
+		inputMode = RADIX_HEX;
+	else{
+		printf("Invalid Input Mode, defaulting to HEX.\n");
+		outputMode = RADIX_HEX;
+	}
+	return;
+}
+
+int getMetaScriptInputMode(){
+	return inputMode;
+}
+
+
+void setTableOutputMode(int mode){
+	if (mode == ONE_BYTE_ENC)
+		tableMode = ONE_BYTE_ENC;
+	else if (mode == TWO_BYTE_ENC)
+		tableMode = TWO_BYTE_ENC;
+	else if (mode == UTF8_ENC)
+		tableMode = UTF8_ENC;
+	else{
+		printf("Invalid Table Output Mode, defaulting to TWO_BYTE_ENC.\n");
+		tableMode = TWO_BYTE_ENC;
+	}
+	return;
+}
+
+int getTableOutputMode(){
+	return tableMode;
+}
+
+
+
+/**************************/
+/* Meta Script Read Fctns */
+/**************************/
+
+int read_ID(unsigned char* pInput){
+
+	unsigned int id;
+
+	pInput = strtok(NULL, "()\t = \r\n");
+	if (strcmp(pInput, "id") != 0) {
+		printf("Error, id not found\n");
+		return -1;
+	}
+	pInput = strtok(NULL, "()\t = \r\n");
+	if (readLW(pInput, &id) < 0){
+		printf("Error invalid id\n");
+		return -1;
+	}
+
+	return (int)id;
+}
+
+int readLW(unsigned char* pInput, unsigned int* data){
+	if (inputMode == RADIX_HEX){
+		if (sscanf(pInput, "%X", data) != 1){
+			printf("Error reading long\n");
+			return -1;
+		}
+	}
+	else{
+		if (sscanf(pInput, "%u", data) != 1){
+			printf("Error reading long\n");
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
+int readSW(unsigned char* pInput, unsigned short* datas){
+
+	unsigned int local;
+
+	if (inputMode == RADIX_HEX){
+		if (sscanf(pInput, "%X", &local) != 1){
+			printf("Error reading short\n");
+			return -1;
+		}
+		*datas = local & 0xFFFF;
+	}
+	else{
+		if (sscanf(pInput, "%hu", datas) != 1){
+			printf("Error reading short\n");
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
+int readBYTE(unsigned char* pInput, unsigned char* datab){
+
+	unsigned int local;
+
+	if (inputMode == RADIX_HEX){
+		if (sscanf(pInput, "%X", &local) != 1){
+			printf("Error reading byte\n");
+			return -1;
+		}
+		*datab = local & 0xFF;
+	}
+	else{
+		if (sscanf(pInput, "%c", &datab) != 1){
+			printf("Error reading byte\n");
+			return -1;
+		}
+	}
+
+	return 0;
 }

@@ -2,8 +2,9 @@
 #define UPDATE_SCRIPT_H
 
 #include <stdio.h>
+#include "script_node_types.h"
 
-int updateScript(FILE* inFile, FILE* upFile, FILE* outFile);
+int updateScript(FILE* upFile);
 
 
 #endif
