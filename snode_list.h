@@ -21,6 +21,7 @@ int createScriptNode(scriptNode** node);
 int addNode(scriptNode* node, int method, int target_id);
 int removeNode(int id);
 int overwriteNode(int id, scriptNode* node);
+scriptNode* getListItemByID(unsigned int id);
 
 
 

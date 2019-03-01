@@ -23,6 +23,7 @@ int createScriptNode(scriptNode** node);
 int addNode(scriptNode* node, int method, int target_id);
 int removeNode(int id);
 int overwriteNode(int id, scriptNode* node);
+scriptNode* getListItemByID(unsigned int id);
 
 
 /* Globals */
@@ -217,4 +218,27 @@ int overwriteNode(int id, scriptNode* node){
 
 	printf("Error, node overwrite failed.\n");
 	return -1;
+}
+
+
+
+
+/*******************************************************************/
+/* getListItemByID                                                 */
+/* Returns a pointer to the scriptNode with the given ID.          */
+/* NULL is returned on failure.                                    */
+/*******************************************************************/
+scriptNode* getListItemByID(unsigned int id){
+
+	scriptNode *pCurrent = pHead;
+	while (pCurrent != NULL){
+		/* Check for the id */
+		if (pCurrent->id == id){
+			return pCurrent;
+		}
+		pCurrent = pCurrent->pNext;
+	}
+
+	printf("Error, node not found.\n");
+	return NULL;
 }

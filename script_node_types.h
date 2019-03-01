@@ -84,6 +84,9 @@ struct scriptNode
 	//Run-Commands Parameters
 	runParamType* runParams;
 
+	//Location when written back out to a binary file
+	unsigned int fileOffset;
+
 	//Linked List Pointers
     scriptNode* pNext;
     scriptNode* pPrev;
