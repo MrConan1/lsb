@@ -91,11 +91,14 @@ int main(int argc, char** argv){
 
 	/* Parse the Input File for Encoding */
 	rval = encodeScript(inFile, outFile);
+	fclose(inFile);
 	if (rval == 0){
-		printf("Input File Parsed Successfully\n");
+		printf("Input File Parsed Successfully.\n");
 	}
 	else{
-		printf("Input File Parsing FAILED\n");
+		printf("Input File Parsing FAILED. Aborting further operations.\n");
+		fclose(outFile);
+		return -1;
 	}
 
 	/**********************************************/
@@ -108,10 +111,10 @@ int main(int argc, char** argv){
 		/* Write out the data as a binary file */
 		rval = writeBinScript(outFile);
 		if (rval == 0){
-			printf("Input File Encoded Successfully\n");
+			printf("Input File Encoded Successfully.\n");
 		}
 		else{
-			printf("Input File Encoding FAILED\n");
+			printf("Input File Encoding FAILED.\n");
 		}
 
 	}
@@ -124,7 +127,7 @@ int main(int argc, char** argv){
 
 		/* Open the update file */
 		upFile = NULL;
-		upFile = fopen(upFileName, "r");
+		upFile = fopen(upFileName, "rb");
 		if (upFile == NULL){
 			printf("Error occurred while opening update file %s for reading\n", upFile);
 			return -1;
@@ -137,10 +140,10 @@ int main(int argc, char** argv){
 		/* Write out the data as a Script file */
 		rval = writeScript(outFile);
 		if (rval == 0){
-			printf("Input File Updated Successfully\n");
+			printf("Input Script File Updated Successfully.\n");
 		}
 		else{
-			printf("Input File Updating FAILED\n");
+			printf("Input Script File Updating FAILED.\n");
 		}
 	}
     else{
@@ -150,7 +153,6 @@ int main(int argc, char** argv){
 
 
     /* Close files */
-    fclose(inFile);
     fclose(outFile);
 
     return 0;

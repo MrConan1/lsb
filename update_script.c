@@ -66,7 +66,8 @@ int updateScript(FILE* upFile){
 		printf("Error allocating to put input file in memory.\n");
 		return -1;
 	}
-	if (fread(pBuffer, 1, fsize, upFile) != fsize){
+	rval = fread(pBuffer, 1, fsize, upFile);
+	if (rval != fsize){
 		printf("Error, reading update file into memory\n");
 	}
 
@@ -457,8 +458,10 @@ int copy_exesub(int id, scriptNode* node){
 	node->id = id;
 	node->subroutine_code = subrtn_code;
 	node->num_parameters = numparam;
-	node->alignfillVal = fillVal;
-	node->subParams = params;
+	if (numparam > 0){
+		node->alignfillVal = fillVal;
+		node->subParams = params;
+	}
 
 	return 0;
 }

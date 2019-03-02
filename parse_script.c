@@ -99,7 +99,7 @@ int encodeScript(FILE* infile, FILE* outfile){
         printf("Invalid Endian.\n");
         return -1;
     }
-        setBinOutputMode(output_endian_type);
+    setBinOutputMode(output_endian_type);
 
     /* start - radix (hex or decimal) */
     pInput = strtok(NULL, "()\t = \r\n");
@@ -120,7 +120,7 @@ int encodeScript(FILE* infile, FILE* outfile){
         printf("Unknown Radix.\n");
         return -1;
     }
-        setMetaScriptInputMode(output_endian_type);
+    setMetaScriptInputMode(radix_type);
 
     /* start - max_size_bytes */
     pInput = strtok(NULL, "()\t = \r\n");
@@ -129,7 +129,7 @@ int encodeScript(FILE* infile, FILE* outfile){
         return -1;
     }
     pInput = strtok(NULL, "()\t = \r\n");
-	if (readLW(pInput, &max_size_bytes) < 0){
+    if (readLW(pInput, &max_size_bytes) < 0){
         printf("Error invalid max_size_bytes\n");
         return -1;
     }
@@ -146,7 +146,7 @@ int encodeScript(FILE* infile, FILE* outfile){
 
         /* goto */
         if (strcmp(pInput, "goto") == 0){
-			id = read_ID(pInput);
+            id = read_ID(pInput);
             rval = decode_goto(id);
         }
 
@@ -218,14 +218,14 @@ int decode_goto(int id){
         return -1;
     }
 
-        /* Create a script node */
-        createScriptNode(&newNode);
-        newNode->nodeType = NODE_GOTO;
-        newNode->id = id;
-        newNode->byteOffset = offset;
+    /* Create a script node */
+    createScriptNode(&newNode);
+    newNode->nodeType = NODE_GOTO;
+    newNode->id = id;
+    newNode->byteOffset = offset;
 
-        /* Add the script node to the list */
-        addNode(newNode, METHOD_NORMAL,0);
+    /* Add the script node to the list */
+    addNode(newNode, METHOD_NORMAL,0);
 
     return 0;
 }
@@ -260,7 +260,7 @@ int decode_fill(int id){
         return -1;
     }
     pInput = strtok(NULL, "()\t = \r\n");
-	if (readLW(pInput, &fillValue) < 0){
+    if (readLW(pInput, &fillValue) < 0){
         printf("Error invalid unit size\n");
         return -1;
     }
@@ -272,21 +272,21 @@ int decode_fill(int id){
         return -1;
     }
     pInput = strtok(NULL, "()\t = \r\n");
-	if (readLW(pInput, &unitCount) < 0){
+    if (readLW(pInput, &unitCount) < 0){
         printf("Error invalid unit count\n");
         return -1;
     }
 
-        /* Create a script node */
-        createScriptNode(&newNode);
-        newNode->nodeType = NODE_FILL_SPACE;
-        newNode->id = id;
-        newNode->unit_size = unitSize;
-        newNode->fillVal = fillValue;
-        newNode->unit_count = unitCount;
+    /* Create a script node */
+    createScriptNode(&newNode);
+    newNode->nodeType = NODE_FILL_SPACE;
+    newNode->id = id;
+    newNode->unit_size = unitSize;
+    newNode->fillVal = fillValue;
+    newNode->unit_count = unitCount;
 
-        /* Add the script node to the list */
-        addNode(newNode, METHOD_NORMAL,0);
+    /* Add the script node to the list */
+    addNode(newNode, METHOD_NORMAL,0);
 
     return 0;
 }
@@ -311,7 +311,7 @@ int decode_pointer(int id){
         return -1;
     }
     pInput = strtok(NULL, "()\t = \r\n");
-	if (readLW(pInput, &byteOffset) < 0){
+    if (readLW(pInput, &byteOffset) < 0){
         printf("Error invalid pointer byte offset\n");
         return -1;
     }
@@ -323,7 +323,7 @@ int decode_pointer(int id){
         return -1;
     }
     pInput = strtok(NULL, "()\t = \r\n");
-	if (readLW(pInput, &dataSize) < 0){
+    if (readLW(pInput, &dataSize) < 0){
         printf("Error invalid pointer data size\n");
         return -1;
     }
@@ -332,15 +332,15 @@ int decode_pointer(int id){
     pInput = strtok(NULL, "()\t = \r\n");
     if (strcmp(pInput, "value") == 0) {
         pInput = strtok(NULL, "()\t = \r\n");
-		if (readLW(pInput, &value) < 0){
+        if (readLW(pInput, &value) < 0){
             printf("Error invalid value\n");
             return -1;
         }
         value_selected = 1;
     }
-    else if (strcmp(pInput, "id_link") == 0) {
+    else if (strcmp(pInput, "id-link") == 0) {
         pInput = strtok(NULL, "()\t = \r\n");
-		if (readLW(pInput, &id_link) < 0){
+        if (readLW(pInput, &id_link) < 0){
             printf("Error invalid id\n");
             return -1;
         }
@@ -352,18 +352,22 @@ int decode_pointer(int id){
     }
 
 
-        /* Create a script node */
-        createScriptNode(&newNode);
-        newNode->nodeType = NODE_POINTER;
-        newNode->id = id;
-        newNode->byteOffset = byteOffset;
-        newNode->ptrSize = dataSize;
-        newNode->ptrValueFlag = value_selected;
+    /* Create a script node */
+    createScriptNode(&newNode);
+    newNode->nodeType = NODE_POINTER;
+    newNode->id = id;
+    newNode->byteOffset = byteOffset;
+    newNode->ptrSize = dataSize;
+    newNode->ptrValueFlag = value_selected;
+    if (value_selected){
         newNode->ptrValue = value;
+    }
+    else{
         newNode->ptrID = id_link;
+    }
 
-        /* Add the script node to the list */
-        addNode(newNode, METHOD_NORMAL,0);
+    /* Add the script node to the list */
+    addNode(newNode, METHOD_NORMAL,0);
 
     return 0;
 }
@@ -388,7 +392,7 @@ int decode_exesub(int id){
         return -1;
     }
     pInput = strtok(NULL, "()\t = \r\n");
-	if (readSW(pInput, &subrtn_code) < 0){
+    if (readSW(pInput, &subrtn_code) < 0){
         printf("Error invalid subroutine code\n");
         return -1;
     }
@@ -400,8 +404,9 @@ int decode_exesub(int id){
         return -1;
     }
     pInput = strtok(NULL, "()\t = \r\n");
-	if (readLW(pInput, &numparam) < 0){
+    if (readLW(pInput, &numparam) < 0){
         printf("Error invalid number of parameters\n");
+
         return -1;
     }
 
@@ -414,7 +419,7 @@ int decode_exesub(int id){
             return -1;
         }
         pInput = strtok(NULL, "()\t = \r\n");
-		if (readBYTE(pInput, &fillVal) < 0){
+        if (readBYTE(pInput, &fillVal) < 0){
             printf("Error invalid alignment byte fill value\n");
             return -1;
         }
@@ -465,24 +470,29 @@ int decode_exesub(int id){
                 continue;
 
             pInput = strtok(NULL, "()\t = \r\n");
-			if (readLW(pInput, &params[x].value) < 0){
+            if (readLW(pInput, &params[x].value) < 0){
                 printf("Error invalid parameter value\n");
                 return -1;
             }
         }
     }
 
-        /* Create a script node */
-        createScriptNode(&newNode);
-        newNode->nodeType = NODE_EXE_SUB;
-        newNode->id = id;
-        newNode->subroutine_code = subrtn_code;
-        newNode->num_parameters = numparam;
+    /* Create a script node */
+    createScriptNode(&newNode);
+    newNode->nodeType = NODE_EXE_SUB;
+    newNode->id = id;
+    newNode->subroutine_code = subrtn_code;
+    newNode->num_parameters = numparam;
+    if (numparam > 0){
         newNode->alignfillVal = fillVal;
         newNode->subParams = params;
+    }
+    else{
+        newNode->subParams = NULL;
+    }
 
-        /* Add the script node to the list */
-        addNode(newNode, METHOD_NORMAL,0);
+    /* Add the script node to the list */
+    addNode(newNode, METHOD_NORMAL,0);
 
     return 0;
 }
@@ -495,29 +505,29 @@ int decode_runcmds(int id){
 
     scriptNode* newNode;
     runParamType* rpNode;
-        runParamType* rpHead = NULL;
-        runParamType* pPrev = NULL;
-        int len = 0;
+    runParamType* rpHead = NULL;
+    runParamType* pPrev = NULL;
+    int len = 0;
 
     /* read series of commands until the end of them is reached */
     pInput = strtok(NULL, "()\t = \r\n");
     while (strcmp(pInput, "commands-end") != 0) {
 
-                /* Create a runcmds parameter */
-                rpNode = (runParamType*)malloc(sizeof(runParamType));
-                if(rpNode == NULL){
-                    printf("Error allocing space for run parameter struct.\n");
-                    return -1;
-                }
-                rpNode->str = NULL;
-                rpNode->pNext = NULL;
+        /* Create a runcmds parameter */
+        rpNode = (runParamType*)malloc(sizeof(runParamType));
+        if(rpNode == NULL){
+            printf("Error allocing space for run parameter struct.\n");
+            return -1;
+        }
+        rpNode->str = NULL;
+        rpNode->pNext = NULL;
 
-                /* Book keeping */
-                if(rpHead == NULL)
-                    rpHead = rpNode;
-                if(pPrev != NULL){
-                    pPrev->pNext = rpNode;
-                }
+        /* Book keeping */
+        if(rpHead == NULL)
+            rpHead = rpNode;
+        if(pPrev != NULL){
+            pPrev->pNext = rpNode;
+        }
 
         /* print-line */
         if (strcmp(pInput, "print-line") == 0){
@@ -530,68 +540,68 @@ int decode_runcmds(int id){
                 return -1;
             }
             pText = pInput;
-                        len = strlen(pText);
+            len = strlen(pText);
 
-                        rpNode->type = PRINT_LINE;
-                        rpNode->str = (char*)malloc(len+1);
-                        memset(rpNode->str,0,len+1);
-                        memcpy(rpNode->str,pText,len);
+            rpNode->type = PRINT_LINE;
+            rpNode->str = (char*)malloc(len+1);
+            memset(rpNode->str,0,len+1);
+            memcpy(rpNode->str,pText,len);
         }
         
         /* show-portrait */
         else if (strcmp(pInput, "show-portrait") == 0){
             unsigned char portraitCode;
             pInput = strtok(NULL, "()\t = \r\n");
-			if (readBYTE(pInput, &portraitCode) < 0){
+            if (readBYTE(pInput, &portraitCode) < 0){
                 printf("Error invalid portrait code.\n");
                 return -1;
             }
 
-                        /* Create a runcmds parameter */
-                        rpNode->type = SHOW_PORTRAIT;
-                        rpNode->value = portraitCode;
+            /* Create a runcmds parameter */
+            rpNode->type = SHOW_PORTRAIT;
+            rpNode->value = portraitCode;
         }
 
         /* control-code */
         else if (strcmp(pInput, "control-code") == 0){
             unsigned short ctrlCode;
             pInput = strtok(NULL, "()\t = \r\n");
-			if (readSW(pInput, &ctrlCode) < 0){
+            if (readSW(pInput, &ctrlCode) < 0){
                 printf("Error invalid control code.\n");
                 return -1;
             }
 
-                        /* Create a runcmds parameter */
-                        rpNode->type = CTRL_CODE;
-                        rpNode->value = ctrlCode;
+            /* Create a runcmds parameter */
+            rpNode->type = CTRL_CODE;
+            rpNode->value = ctrlCode;
         }
 
         /* align-2 */
         else if (strcmp(pInput, "align-2") == 0){
             unsigned char fillVal;
             pInput = strtok(NULL, "()\t = \r\n");
-			if (readBYTE(pInput, &fillVal) < 0){
+            if (readBYTE(pInput, &fillVal) < 0){
                 printf("Error invalid fill value.\n");
                 return -1;
             }
 
-                        /* Create a runcmds parameter */
-                        rpNode->type = ALIGN_2_PARAM;
-                        rpNode->value = fillVal;
+            /* Create a runcmds parameter */
+            rpNode->type = ALIGN_2_PARAM;
+            rpNode->value = fillVal;
         }
         
         /* align-4 */
         else if (strcmp(pInput, "align-4") == 0){
             unsigned char fillVal;
             pInput = strtok(NULL, "()\t = \r\n");
-			if (readBYTE(pInput, &fillVal) < 0){
+            if (readBYTE(pInput, &fillVal) < 0){
                 printf("Error invalid fill value.\n");
                 return -1;
             }
 
-                        /* Create a runcmds parameter */
-                        rpNode->type = ALIGN_4_PARAM;
-                        rpNode->value = fillVal;
+            /* Create a runcmds parameter */
+            rpNode->type = ALIGN_4_PARAM;
+            rpNode->value = fillVal;
         }
 
         /* Unknown */
@@ -600,20 +610,20 @@ int decode_runcmds(int id){
             return -1;
         }
 
-                pPrev = rpNode;
+        pPrev = rpNode;
 
         /* Read next token */
         pInput = strtok(NULL, "()\t = \r\n");
     }
 
-        /* Create a script node */
-        createScriptNode(&newNode);
-        newNode->nodeType = NODE_RUN_CMDS;
-        newNode->id = id;
-        newNode->runParams = rpHead;
+    /* Create a script node */
+    createScriptNode(&newNode);
+    newNode->nodeType = NODE_RUN_CMDS;
+    newNode->id = id;
+    newNode->runParams = rpHead;
 
-        /* Add the script node to the list */
-        addNode(newNode, METHOD_NORMAL,0);
+    /* Add the script node to the list */
+    addNode(newNode, METHOD_NORMAL,0);
 
 
     return 0;

@@ -380,6 +380,7 @@ int writeBinScript(FILE* outFile){
                     {
                         int numBytes2, numBytes3;
                         unsigned char* pText = rpNode->str;
+						numBytes2 = numBytes3 = 0;
                         while (*pText != '\0'){
 
                             /* Read in a utf8 character */
@@ -486,8 +487,8 @@ int writeBinScript(FILE* outFile){
                                 else{
                                     if (G_table_mode == ONE_BYTE_ENC){
                                         if (getUTF8code_Byte(tmp, &code) < 0){
-                                            printf("Error lookup up code corresponding with UTF-8 character\n");
-                                            return -1;
+                                            printf("Error looking up 1-byte code corresponding with UTF-8 character\n");
+                                            //return -1;
                                         }
 
                                         /* Write the code to the output file */
@@ -496,8 +497,8 @@ int writeBinScript(FILE* outFile){
 
                                     else if (G_table_mode == TWO_BYTE_ENC){
                                         if (getUTF8code_Short(tmp, &scode) < 0){
-                                            printf("Error lookup up code corresponding with UTF-8 character\n");
-                                            return -1;
+                                            printf("Error looking up 2-byte code corresponding with UTF-8 character\n");
+                                            //return -1;
                                         }
 
                                         /* Write the code to the output file */
@@ -653,14 +654,14 @@ int writeScript(FILE* outFile){
 	/* Output Header */
 	fprintf(outFile, "(start\r\n");
 	if( getBinOutputMode() == BIG_ENDIAN)
-		fprintf(outFile, "(endian=big\r\n");
+		fprintf(outFile, "    (endian=big)\r\n");
 	else
-		fprintf(outFile, "(endian=little\r\n");
+		fprintf(outFile, "    (endian=little)\r\n");
 	if (getMetaScriptInputMode() == RADIX_HEX)
-		fprintf(outFile, "(radix=hex\r\n");
+		fprintf(outFile, "    (radix=hex)\r\n");
 	else
-		fprintf(outFile, "(radix=dec\r\n");
-	fprintf(outFile, "(max_size_bytes=%s\r\n", formatVal(getBinMaxSize()));
+		fprintf(outFile, "    (radix=dec)\r\n");
+	fprintf(outFile, "    (max_size_bytes=%s)\r\n", formatVal(getBinMaxSize()));
 	fprintf(outFile, ")\r\n");
 
     /* Get a Pointer to the Head of the linked list */

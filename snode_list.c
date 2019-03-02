@@ -151,8 +151,8 @@ int addNode(scriptNode* node, int method, int target_id){
 			return 0;
 		}
 
-        pCurrent = pCurrent->pNext;
 		pPrev = pCurrent;
+        pCurrent = pCurrent->pNext;
     }
 
 	printf("Error, insertion failed.\n");

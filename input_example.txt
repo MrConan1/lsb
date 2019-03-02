@@ -19,7 +19,7 @@
 (pointer id=5
     (byteoffset 0300)
     (size 2)
-    (id 25)
+    (id-link 7)
 )
 (goto id=6 
     (location 0800)

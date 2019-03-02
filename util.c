@@ -351,8 +351,8 @@ int read_ID(unsigned char* pInput){
 		return -1;
 	}
 	pInput = strtok(NULL, "()\t = \r\n");
-	if (readLW(pInput, &id) < 0){
-		printf("Error invalid id\n");
+	if (sscanf(pInput, "%u", &id) != 1){
+		printf("Error reading ID\n");
 		return -1;
 	}
 
