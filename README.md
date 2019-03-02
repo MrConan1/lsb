@@ -9,7 +9,7 @@ This program will perform one of two actions:
 
 Usage:
     lsb.exe encode InputFname OutputFname [sss]
-    lsb.exe update InputFname UpdateFname OutputFname
+    lsb.exe update InputFname OutputFname UpdateFname
 the table file should be named newfont_table.txt
 sss designates that the table being used is that for sssc and will be automatically altered for compatibilty
 
