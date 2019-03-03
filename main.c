@@ -5,8 +5,8 @@
 /***********************************************************************/
 /* lunarScriptBuilder (lsb.exe) Usage                                  */
 /* =================================                                   */
-/* lsb.exe encode InputFname [sss]                                     */
-/* lsb.exe update InputFname UpdateFname OutputFname [sss]             */
+/* lsb.exe encode InputFname OutputFname [sss]                         */
+/* lsb.exe update InputFname OutputFname UpdateFname                   */
 /*                                                                     */
 /* Note: Expects table file to be within same directory as exe.        */
 /***********************************************************************/
@@ -22,6 +22,9 @@
 #include "snode_list.h"
 #include "write_script.h"
 
+
+#define VER_MAJ    1
+#define VER_MIN    00
 
 /******************************************************************************/
 /* printUsage() - Display command line usage of this program.                 */
@@ -48,6 +51,8 @@ int main(int argc, char** argv){
 	static char upFileName[300];
     static char outFileName[300];
     int rval;
+
+	printf("Lunar Script Builder v%d.%02d\n", VER_MAJ, VER_MIN);
 
     /**************************/
     /* Check input parameters */
@@ -89,6 +94,8 @@ int main(int argc, char** argv){
 		return -1;
 	}
 
+	printf("Parsing input file.\n");
+
 	/* Parse the Input File for Encoding */
 	rval = encodeScript(inFile, outFile);
 	fclose(inFile);
@@ -106,7 +113,7 @@ int main(int argc, char** argv){
 	/**********************************************/
     if( (strcmp(argv[1],"encode") == 0) ){
 
-		printf("\n\nENCODE Mode Entered.\n\n");
+		printf("ENCODE Mode Entered.\n");
 
 		/* Write out the data as a binary file */
 		rval = writeBinScript(outFile);
@@ -123,7 +130,7 @@ int main(int argc, char** argv){
 		memset(upFileName, 0, 300);
 		strcpy(upFileName, argv[4]);
 
-		printf("\n\nUPDATE Mode Entered.\n\n");
+		printf("UPDATE Mode Entered.\n");
 
 		/* Open the update file */
 		upFile = NULL;

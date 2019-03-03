@@ -324,7 +324,7 @@ int copy_pointer(int id, scriptNode* node){
 		}
 		value_selected = 1;
 	}
-	else if (strcmp(pInput, "id_link") == 0) {
+	else if (strcmp(pInput, "id-link") == 0) {
 		pInput = strtok(NULL, "()\t = \r\n");
 		if (readLW(pInput, &id_link) < 0){
 			printf("Error invalid id\n");
@@ -344,8 +344,10 @@ int copy_pointer(int id, scriptNode* node){
 	node->byteOffset = byteOffset;
 	node->ptrSize = dataSize;
 	node->ptrValueFlag = value_selected;
-	node->ptrValue = value;
-	node->ptrID = id_link;
+	if (value_selected)
+		node->ptrValue = value;
+	else
+		node->ptrID = id_link;
 
 	return 0;
 }

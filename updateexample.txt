@@ -25,4 +25,39 @@
     (num-parameters 0)
     )
 )
+( insert-after-ID id=9
+(run-commands id=33
+    (show-portrait AE)
+    (print-line "Testing Testing")
+    (align-2 2A)
+    (align-4 F5)
+    (control-code FFCC)
+    (commands-end)
+)
+)
+
+( insert-after-ID id=6
+    (pointer id=70
+    (byteoffset 0550)
+    (size 2)
+    (value 2555)
+    )
+)
+
+( insert-after-ID id=6
+    (pointer id=71
+    (byteoffset 0300)
+    (size 2)
+    (id-link 7)
+    )
+)
+
+( insert-after-ID id=6
+(fill-space id=72
+    (unit-size 1)
+    (fill-value AA)
+    (unit-count 0800)
+) 
+)
+
 ( end )

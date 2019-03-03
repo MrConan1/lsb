@@ -712,7 +712,7 @@ int writeScript(FILE* outFile){
 				if (pNode->ptrValueFlag)
 					fprintf(outFile, "    (value %s)\r\n", formatVal(pNode->ptrValue));
 				else
-					fprintf(outFile, "    (ie %s)\r\n", formatVal(pNode->ptrID));
+					fprintf(outFile, "    (id-link %s)\r\n", formatVal(pNode->ptrID));
 				fprintf(outFile, ")\r\n");
 			}
             break;
@@ -754,8 +754,11 @@ int writeScript(FILE* outFile){
 					fprintf(outFile, ")\r\n");
 					
 					fprintf(outFile, "    (parameter-values ");
-					for (x = 0; x < (int)pNode->num_parameters; x++)
+					for (x = 0; x < (int)pNode->num_parameters; x++){
+						if ((pNode->subParams[x].type == ALIGN_2_PARAM) || (pNode->subParams[x].type == ALIGN_4_PARAM))
+							continue;
 						fprintf(outFile, "%s ", formatVal(pNode->subParams[x].value));
+					}
 					fprintf(outFile, ")\r\n");
 				}
 				fprintf(outFile, ")\r\n");
@@ -783,7 +786,7 @@ int writeScript(FILE* outFile){
 							fprintf(outFile, "    (align-4 %s)\r\n", formatVal(rpNode->value));
 							break;
 						case SHOW_PORTRAIT:
-							fprintf(outFile, "    (show-portrait %s)\r\n", formatVal(0xFF00 | rpNode->value));
+							fprintf(outFile, "    (show-portrait %s)\r\n", formatVal(rpNode->value & 0xFF));
 							break;
 						case PRINT_LINE:
 							fprintf(outFile, "    (print-line \"%s\")\r\n", rpNode->str);
@@ -798,6 +801,7 @@ int writeScript(FILE* outFile){
 
 					rpNode = rpNode->pNext;
 				}
+				fprintf(outFile, "    (commands-end)\r\n");
 				fprintf(outFile, ")\r\n");
 			}
             break;
