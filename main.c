@@ -49,6 +49,7 @@ void printUsage(){
 int main(int argc, char** argv){
 
     FILE *inFile, *upFile, *outFile;
+	char wrMode[10];
     static char inFileName[300];
 	static char upFileName[300];
     static char outFileName[300];
@@ -62,6 +63,17 @@ int main(int argc, char** argv){
 
 	/* Check for valid # of args */
 	if ((argc < 4) || (argc > 5)){
+		printUsage();
+		return -1;
+	}
+	if ((strcmp(argv[1], "encode") == 0)){
+		strcpy(wrMode, "wb");
+	}
+	else if ((strcmp(argv[1], "update") == 0)){
+		strcpy(wrMode, "w");
+	}
+	else{
+		/* Invalid Mode */
 		printUsage();
 		return -1;
 	}
@@ -98,7 +110,7 @@ int main(int argc, char** argv){
 		printf("Error occurred while opening input script %s for reading\n", inFile);
 		return -1;
 	}
-	outFile = fopen(outFileName, "w");
+	outFile = fopen(outFileName, wrMode);
 	if (outFile == NULL){
 		printf("Error occurred while opening output file %s for writing\n", outFile);
 		fclose(inFile);

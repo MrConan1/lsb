@@ -516,7 +516,7 @@ int writeBinScript(FILE* outFile){
                                     if (G_table_mode == ONE_BYTE_ENC){
                                         if (getUTF8code_Byte(tmp, &code) < 0){
                                             printf("Error looking up 1-byte code corresponding with UTF-8 character\n");
-                                            //return -1;
+                                            return -1;
                                         }
 
                                         /* Write the code to the output file */
@@ -526,7 +526,7 @@ int writeBinScript(FILE* outFile){
                                     else if (G_table_mode == TWO_BYTE_ENC){
                                         if (getUTF8code_Short(tmp, &scode) < 0){
                                             printf("Error looking up 2-byte code corresponding with UTF-8 character\n");
-                                            //return -1;
+                                            return -1;
                                         }
 
                                         /* Write the code to the output file */
