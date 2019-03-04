@@ -10,9 +10,9 @@ This program will perform one of two actions:
 Usage:  
     lsb.exe encode InputFname OutputFname [sss]  
     lsb.exe update InputFname OutputFname UpdateFname  
-The table file should be named newfont_table.txt  
+The table file should be named font_table.txt  
 sss designates that the table being used is that for sssc and will be automatically altered for compatibilty  
 
 
-THIS PROGRAM IS STILL BEING DEBUGGED. (Need to fix binary output & Need to fix that memory leak...)  
+THIS PROGRAM IS STILL BEING DEBUGGED. (Need to fix binary output)  
 THE PROGRAM THAT GENERATES THE INPUT SCRIPT FROM EXISTING .DAT FILES IS NOT YET 100% WRITTEN.  
