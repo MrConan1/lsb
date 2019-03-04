@@ -4,11 +4,12 @@
 
 /***********************************************************************/
 /* lunarScriptBuilder (lsb.exe) Usage                                  */
-/* =================================                                   */
+/* ==================================                                  */
 /* lsb.exe encode InputFname OutputFname [sss]                         */
 /* lsb.exe update InputFname OutputFname UpdateFname                   */
 /*                                                                     */
 /* Note: Expects table file to be within same directory as exe.        */
+/*       Table file should be named font_table.exe                     */
 /***********************************************************************/
 #pragma warning(disable:4996)
 
@@ -35,6 +36,7 @@ void printUsage(){
     printf("lsb.exe encode InputFname OutputFname [sss]\n");
 	printf("lsb.exe update InputFname OutputFname UpdateFname\n");
 	printf("Use Encode to take a script in metadata format and convert to binary.\n");
+	printf("Table file used for encoding must be named \"font_table.txt\" and be located in the exe directory.\n");
 	printf("Use Update to create modified version of a script in metadata format.\n");
 	printf("\n\n");
     return;
@@ -63,6 +65,12 @@ int main(int argc, char** argv){
 		printUsage();
 		return -1;
 	}
+	if ( ((strcmp(argv[1], "update") == 0)) && 
+		 (argc != 5) ){
+		printUsage();
+		return -1;
+	}
+	
 
 	//Handle Input Parameters
 	memset(inFileName, 0, 300);
@@ -75,12 +83,15 @@ int main(int argc, char** argv){
 	/********************************************/
 	/* Load in the Table File for Decoding Text */
 	/********************************************/
-	if (loadUTF8Table("newfont_table.txt") < 0){
+	if (loadUTF8Table("font_table.txt") < 0){
 		printf("Error loading UTF8 Table for Text Decoding.\n");
 		return -1;
 	}
 
+
+	/*******************************/
 	/* Open the input/output files */
+	/*******************************/
 	inFile = outFile = NULL;
 	inFile = fopen(inFileName, "rb");
 	if (inFile == NULL){
@@ -94,9 +105,15 @@ int main(int argc, char** argv){
 		return -1;
 	}
 
-	printf("Parsing input file.\n");
 
-	/* Parse the Input File for Encoding */
+	/**************************************************************************/
+	/* Parse the Input Script File (Req'd for Encoding to Binary or Updating) */
+	/**************************************************************************/
+	printf("Parsing input file.\n");
+	
+	/* Init Linked List for storing node data */
+	initNodeList();
+
 	rval = encodeScript(inFile, outFile);
 	fclose(inFile);
 	if (rval == 0){
@@ -105,6 +122,7 @@ int main(int argc, char** argv){
 	else{
 		printf("Input File Parsing FAILED. Aborting further operations.\n");
 		fclose(outFile);
+		destroyNodeList();
 		return -1;
 	}
 
@@ -137,6 +155,8 @@ int main(int argc, char** argv){
 		upFile = fopen(upFileName, "rb");
 		if (upFile == NULL){
 			printf("Error occurred while opening update file %s for reading\n", upFile);
+			fclose(outFile);
+			destroyNodeList();
 			return -1;
 		}
 
@@ -155,12 +175,16 @@ int main(int argc, char** argv){
 	}
     else{
         printUsage();
-        return -1;
+		fclose(outFile);
+		destroyNodeList();
+		return -1;
     }
-
 
     /* Close files */
     fclose(outFile);
+
+	/* Release Resources */
+	destroyNodeList();
 
     return 0;
 }

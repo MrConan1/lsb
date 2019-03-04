@@ -25,25 +25,33 @@ static unsigned char* obuf = NULL;
 static unsigned int max_size_bytes;
 static unsigned int output_endian_type;
 static unsigned int G_table_mode;
-static unsigned int max_boutput_size_bytes;
+static unsigned int max_boutput_size_bytes = 0;
 
 
 /* Function Prototypes */
 int writeBinScript(FILE* outFile);
 int writeScript(FILE* outFile);
 
+/* Write Fctns */
 static int writeLW(unsigned int data);
 static int writeSW(unsigned short data);
 static int writeBYTE(unsigned char data);
 static char* formatVal(unsigned int value);
 
 
+
+
+/*****************************************************************************/
+/* Function: writeLW                                                         */
+/* Purpose: Writes a long to a simulated file in memory.  Updates file ptr.  */
+/* Returns 0 on success, -1 on error.                                        */
+/*****************************************************************************/
 static int writeLW(unsigned int data){
 
     unsigned int* pData = (unsigned int*)pOutput;
 
     /* Verify write can take place */
-    if( (offset + 4) > max_size_bytes){
+    if( (offset + 4) > (max_size_bytes-1)){
         printf("Error, LW Write would exceed MAX filesize.\n");
         return -1;
     }
@@ -65,18 +73,27 @@ static int writeLW(unsigned int data){
     pOutput += 4;
     offset += 4;
 
-    if((offset+1) > max_boutput_size_bytes)
-        max_boutput_size_bytes = offset+1;
+	/* Update size of data to write to the binary output file */
+    if(offset > max_boutput_size_bytes)
+        max_boutput_size_bytes = offset;
 
     return 0;
 }
 
+
+
+
+/*****************************************************************************/
+/* Function: writeSW                                                         */
+/* Purpose: Writes a short to a simulated file in memory.  Updates file ptr. */
+/* Returns 0 on success, -1 on error.                                        */
+/*****************************************************************************/
 static int writeSW(unsigned short data){
 
     unsigned short* pData = (unsigned short*)pOutput;
 
     /* Verify write can take place */
-    if( (offset + 2) > max_size_bytes){
+    if( (offset + 2) > (max_size_bytes-1)){
         printf("Error, SW Write would exceed MAX filesize.\n");
         return -1;
     }
@@ -96,16 +113,25 @@ static int writeSW(unsigned short data){
     pOutput += 2;
     offset += 2;
 
-    if((offset+1) > max_boutput_size_bytes)
-        max_boutput_size_bytes = offset+1;
+	/* Update size of data to write to the binary output file */
+	if (offset > max_boutput_size_bytes)
+		max_boutput_size_bytes = offset;
 
     return 0;
 }
 
+
+
+
+/*****************************************************************************/
+/* Function: writeBYTE                                                       */
+/* Purpose: Writes a byte to a simulated file in memory.  Updates file ptr.  */
+/* Returns 0 on success, -1 on error.                                        */
+/*****************************************************************************/
 static int writeBYTE(unsigned char data){
 
     /* Verify write can take place */
-    if( (offset + 1) > max_size_bytes){
+    if( (offset + 1) > (max_size_bytes-1)){
         printf("Error, Byte Write would exceed MAX filesize.\n");
         return -1;
     }
@@ -116,8 +142,9 @@ static int writeBYTE(unsigned char data){
     pOutput++;
     offset++;
 
-    if((offset+1) > max_boutput_size_bytes)
-        max_boutput_size_bytes = offset+1;
+	/* Update size of data to write to the binary output file */
+	if (offset > max_boutput_size_bytes)
+		max_boutput_size_bytes = offset;
 
     return 0;
 }
@@ -216,6 +243,7 @@ int writeBinScript(FILE* outFile){
                         for (x = 0; x < (int)pNode->unit_count; x++){
                             writeSW(fill_short);
                         }
+						break;
                     }
                     case 4:
                     {

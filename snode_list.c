@@ -62,14 +62,31 @@ scriptNode* getHeadPtr(){
 /*******************************************************************/
 int destroyNodeList()
 {
-    scriptNode *pCurrent = NULL;
+	runParamType* ptrRun, *ptrRunNext;
+	scriptNode *pCurrent = NULL;
 	scriptNode *pItem = pHead;
+
 
 	while (pItem != NULL){
 		pCurrent = pItem;
+
+		/* Free internal data */
+		if (pCurrent->subParams != NULL)
+			free(pCurrent->subParams);
+		if (pCurrent->runParams != NULL){
+			ptrRun = pCurrent->runParams;
+			while (ptrRun != NULL){
+				ptrRunNext = ptrRun->pNext;
+				free(ptrRun);
+				ptrRun = ptrRunNext;
+			}
+		}
+
 		pItem = pItem->pNext;
         free(pCurrent);
     }
+
+	pHead = NULL;
 
     return 0;
 }

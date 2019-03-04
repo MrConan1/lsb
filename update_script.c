@@ -200,6 +200,8 @@ int copy_goto(int id, scriptNode* node){
 
 	unsigned int offset;
 
+	memset(node, 0, sizeof(scriptNode));
+
 	/* read location */
 	pInput = strtok(NULL, "()\t = \r\n");
 	if (strcmp(pInput, "location") != 0) {
@@ -231,6 +233,8 @@ int copy_fill(int id, scriptNode* node){
 	unsigned int unitSize = 0;
 	unsigned int unitCount = 0;
 	unsigned int fillValue = 0;
+
+	memset(node, 0, sizeof(scriptNode));
 
 	/* read unit-size */
 	pInput = strtok(NULL, "()\t = \r\n");
@@ -289,6 +293,8 @@ int copy_pointer(int id, scriptNode* node){
 	unsigned int value;
 	unsigned int id_link;
 	unsigned int value_selected = 0;
+
+	memset(node, 0, sizeof(scriptNode));
 
 	/* read byteoffset */
 	pInput = strtok(NULL, "()\t = \r\n");
@@ -363,6 +369,8 @@ int copy_exesub(int id, scriptNode* node){
 	unsigned int numparam;
 	unsigned char fillVal;
 	paramType* params = NULL;
+
+	memset(node, 0, sizeof(scriptNode));
 
 	/* Read subroutine value */
 	pInput = strtok(NULL, "()\t = \r\n");
@@ -464,6 +472,7 @@ int copy_exesub(int id, scriptNode* node){
 		node->alignfillVal = fillVal;
 		node->subParams = params;
 	}
+	node->runParams = NULL;
 
 	return 0;
 }
@@ -478,6 +487,8 @@ int copy_runcmds(int id, scriptNode* node){
 	runParamType* rpHead = NULL;
 	runParamType* pPrev = NULL;
 	int len = 0;
+
+	memset(node, 0, sizeof(scriptNode));
 
 	/* read series of commands until the end of them is reached */
 	pInput = strtok(NULL, "()\t = \r\n");
@@ -590,6 +601,7 @@ int copy_runcmds(int id, scriptNode* node){
 	node->nodeType = NODE_RUN_CMDS;
 	node->id = id;
 	node->runParams = rpHead;
+	node->subParams = NULL;
 
 	return 0;
 }

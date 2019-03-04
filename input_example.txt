@@ -1,7 +1,7 @@
 (start
     (endian=big)
     (radix=hex)
-    (max_size_bytes=FFFF)
+    (max_size_bytes=10000)
 )
 (goto id=1 
     (location 0000)

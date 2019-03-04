@@ -32,8 +32,8 @@ int decode_runcmds(int id);
 
 /*****************************************************************************/
 /* Function: encodeScript                                                    */
-/* Purpose: Parses a metadata text version of the script, and from that      */
-/*          creates a binary script file.                                    */
+/* Purpose: Parses a metadata text version of the script, and puts it into   */
+/*          a linked list data structure in memory.                          */
 /* Inputs:  Pointers to input/output files.                                  */
 /* Outputs: 0 on Pass, -1 on Fail.                                           */
 /*****************************************************************************/
@@ -42,9 +42,6 @@ int encodeScript(FILE* infile, FILE* outfile){
     int rval, output_endian_type;
     unsigned int fsize, max_size_bytes;
     unsigned char* pBuffer = NULL;
-
-    /* Init Linked List for storing node data */
-    initNodeList();
 
     /* Determine Input File Size */
     if (fseek(infile, 0, SEEK_END) != 0){
@@ -133,7 +130,7 @@ int encodeScript(FILE* infile, FILE* outfile){
         printf("Error invalid max_size_bytes\n");
         return -1;
     }
-        setBinMaxSize(max_size_bytes);
+    setBinMaxSize(max_size_bytes);
 
 
     /************************************************************/
@@ -490,6 +487,7 @@ int decode_exesub(int id){
     else{
         newNode->subParams = NULL;
     }
+	newNode->runParams = NULL;
 
     /* Add the script node to the list */
     addNode(newNode, METHOD_NORMAL,0);
@@ -503,8 +501,8 @@ int decode_exesub(int id){
 /******************************/
 int decode_runcmds(int id){
 
-    scriptNode* newNode;
-    runParamType* rpNode;
+    scriptNode* newNode = NULL;
+    runParamType* rpNode = NULL;
     runParamType* rpHead = NULL;
     runParamType* pPrev = NULL;
     int len = 0;
@@ -621,6 +619,7 @@ int decode_runcmds(int id){
     newNode->nodeType = NODE_RUN_CMDS;
     newNode->id = id;
     newNode->runParams = rpHead;
+	newNode->subParams = NULL;
 
     /* Add the script node to the list */
     addNode(newNode, METHOD_NORMAL,0);
