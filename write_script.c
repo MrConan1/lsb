@@ -73,7 +73,7 @@ static int writeLW(unsigned int data){
     pOutput += 4;
     offset += 4;
 
-	/* Update size of data to write to the binary output file */
+    /* Update size of data to write to the binary output file */
     if(offset > max_boutput_size_bytes)
         max_boutput_size_bytes = offset;
 
@@ -113,9 +113,9 @@ static int writeSW(unsigned short data){
     pOutput += 2;
     offset += 2;
 
-	/* Update size of data to write to the binary output file */
-	if (offset > max_boutput_size_bytes)
-		max_boutput_size_bytes = offset;
+    /* Update size of data to write to the binary output file */
+    if (offset > max_boutput_size_bytes)
+        max_boutput_size_bytes = offset;
 
     return 0;
 }
@@ -142,9 +142,9 @@ static int writeBYTE(unsigned char data){
     pOutput++;
     offset++;
 
-	/* Update size of data to write to the binary output file */
-	if (offset > max_boutput_size_bytes)
-		max_boutput_size_bytes = offset;
+    /* Update size of data to write to the binary output file */
+    if (offset > max_boutput_size_bytes)
+        max_boutput_size_bytes = offset;
 
     return 0;
 }
@@ -243,7 +243,7 @@ int writeBinScript(FILE* outFile){
                         for (x = 0; x < (int)pNode->unit_count; x++){
                             writeSW(fill_short);
                         }
-						break;
+                        break;
                     }
                     case 4:
                     {
@@ -408,7 +408,7 @@ int writeBinScript(FILE* outFile){
                     {
                         int numBytes2, numBytes3;
                         unsigned char* pText = rpNode->str;
-						numBytes2 = numBytes3 = 0;
+                        numBytes2 = numBytes3 = 0;
                         while (*pText != '\0'){
 
                             /* Read in a utf8 character */
@@ -649,19 +649,19 @@ int writeBinScript(FILE* outFile){
 /* formatVal - formats the given number as Hex or Dec */
 /******************************************************/
 static char* formatVal(unsigned int value){
-	
-	static char scratch[64];
-	int mode = getMetaScriptInputMode();
+    
+    static char scratch[64];
+    int mode = getMetaScriptInputMode();
 
-	memset(scratch, 0, 64);
-	if (mode == RADIX_HEX){
-		sprintf(scratch, "%X",value);
-	}
-	else{
-		sprintf(scratch, "%d", value);
-	}
+    memset(scratch, 0, 64);
+    if (mode == RADIX_HEX){
+        sprintf(scratch, "%X",value);
+    }
+    else{
+        sprintf(scratch, "%d", value);
+    }
 
-	return scratch;
+    return scratch;
 }
 
 
@@ -676,21 +676,21 @@ static char* formatVal(unsigned int value){
 /*****************************************************************************/
 int writeScript(FILE* outFile){
     
-	int x;
+    int x;
     scriptNode* pNode = NULL;
 
-	/* Output Header */
-	fprintf(outFile, "(start\r\n");
-	if( getBinOutputMode() == BIG_ENDIAN)
-		fprintf(outFile, "    (endian=big)\r\n");
-	else
-		fprintf(outFile, "    (endian=little)\r\n");
-	if (getMetaScriptInputMode() == RADIX_HEX)
-		fprintf(outFile, "    (radix=hex)\r\n");
-	else
-		fprintf(outFile, "    (radix=dec)\r\n");
-	fprintf(outFile, "    (max_size_bytes=%s)\r\n", formatVal(getBinMaxSize()));
-	fprintf(outFile, ")\r\n");
+    /* Output Header */
+    fprintf(outFile, "(start\r\n");
+    if( getBinOutputMode() == BIG_ENDIAN)
+        fprintf(outFile, "    (endian=big)\r\n");
+    else
+        fprintf(outFile, "    (endian=little)\r\n");
+    if (getMetaScriptInputMode() == RADIX_HEX)
+        fprintf(outFile, "    (radix=hex)\r\n");
+    else
+        fprintf(outFile, "    (radix=dec)\r\n");
+    fprintf(outFile, "    (max_size_bytes=%s)\r\n", formatVal(getBinMaxSize()));
+    fprintf(outFile, ")\r\n");
 
     /* Get a Pointer to the Head of the linked list */
     pNode = getHeadPtr();
@@ -703,150 +703,150 @@ int writeScript(FILE* outFile){
 
         switch (pNode->nodeType){
 
-			/********/
-			/* goto */
-			/********/
-			case NODE_GOTO:
-			{
-				fprintf(outFile, "(goto id=%u\r\n", pNode->id);
-				fprintf(outFile, "    (location %s)\r\n", formatVal(pNode->byteOffset));
-				fprintf(outFile, ")\r\n");
-			}
+            /********/
+            /* goto */
+            /********/
+            case NODE_GOTO:
+            {
+                fprintf(outFile, "(goto id=%u\r\n", pNode->id);
+                fprintf(outFile, "    (location %s)\r\n", formatVal(pNode->byteOffset));
+                fprintf(outFile, ")\r\n");
+            }
             break;
 
 
-			/********/
-			/* fill */
-			/********/
-			case NODE_FILL_SPACE:
-			{
-				fprintf(outFile, "(fill-space id=%u\r\n", pNode->id);
-				fprintf(outFile, "    (unit-size %s)\r\n", formatVal(pNode->unit_size));
-				fprintf(outFile, "    (fill-value %s)\r\n", formatVal(pNode->fillVal));
-				fprintf(outFile, "    (unit-count %s)\r\n", formatVal(pNode->unit_count));
-				fprintf(outFile, ")\r\n");
-			}
+            /********/
+            /* fill */
+            /********/
+            case NODE_FILL_SPACE:
+            {
+                fprintf(outFile, "(fill-space id=%u\r\n", pNode->id);
+                fprintf(outFile, "    (unit-size %s)\r\n", formatVal(pNode->unit_size));
+                fprintf(outFile, "    (fill-value %s)\r\n", formatVal(pNode->fillVal));
+                fprintf(outFile, "    (unit-count %s)\r\n", formatVal(pNode->unit_count));
+                fprintf(outFile, ")\r\n");
+            }
             break;
 
 
-			/***********/
-			/* pointer */
-			/***********/
-			case NODE_POINTER:
-			{
-				fprintf(outFile, "(pointer id=%u\r\n", pNode->id);
-				fprintf(outFile, "    (byteoffset %s)\r\n", formatVal(pNode->byteOffset));
-				fprintf(outFile, "    (size %s)\r\n", formatVal(pNode->ptrSize));
-				if (pNode->ptrValueFlag)
-					fprintf(outFile, "    (value %s)\r\n", formatVal(pNode->ptrValue));
-				else
-					fprintf(outFile, "    (id-link %s)\r\n", formatVal(pNode->ptrID));
-				fprintf(outFile, ")\r\n");
-			}
+            /***********/
+            /* pointer */
+            /***********/
+            case NODE_POINTER:
+            {
+                fprintf(outFile, "(pointer id=%u\r\n", pNode->id);
+                fprintf(outFile, "    (byteoffset %s)\r\n", formatVal(pNode->byteOffset));
+                fprintf(outFile, "    (size %s)\r\n", formatVal(pNode->ptrSize));
+                if (pNode->ptrValueFlag)
+                    fprintf(outFile, "    (value %s)\r\n", formatVal(pNode->ptrValue));
+                else
+                    fprintf(outFile, "    (id-link %s)\r\n", formatVal(pNode->ptrID));
+                fprintf(outFile, ")\r\n");
+            }
             break;
 
 
-			/*****************************************************/
-			/* execute-subroutine                                */
-			/*****************************************************/
-			case NODE_EXE_SUB:
-			{
-				fprintf(outFile, "(execute-subroutine id=%u\r\n", pNode->id);
-				fprintf(outFile, "    (subroutine %s)\r\n", formatVal(pNode->subroutine_code));
-				fprintf(outFile, "    (num-parameters %s)\r\n", formatVal(pNode->num_parameters));
-				if (pNode->num_parameters > 0){
-					fprintf(outFile, "    (align-fill-byteval %s)\r\n", formatVal(pNode->alignfillVal));
-					fprintf(outFile, "    (parameter-types ");
-					for (x = 0; x < (int)pNode->num_parameters; x++){
-						switch (pNode->subParams[x].type){
-							case BYTE_PARAM:
-								fprintf(outFile, "1 ");
-								break;
-							case SHORT_PARAM:
-								fprintf(outFile, "2 ");
-								break;
-							case LONG_PARAM:
-								fprintf(outFile, "4 ");
-								break;
-							case ALIGN_2_PARAM:
-								fprintf(outFile, "align-2 ");
-								break;
-							case ALIGN_4_PARAM:
-								fprintf(outFile, "align-4 ");
-								break;
-							default:
-								printf("Error, bad subroutine parameter detected.\n");
-								return -1;
-						}
-					}
-					fprintf(outFile, ")\r\n");
-					
-					fprintf(outFile, "    (parameter-values ");
-					for (x = 0; x < (int)pNode->num_parameters; x++){
-						if ((pNode->subParams[x].type == ALIGN_2_PARAM) || (pNode->subParams[x].type == ALIGN_4_PARAM))
-							continue;
-						fprintf(outFile, "%s ", formatVal(pNode->subParams[x].value));
-					}
-					fprintf(outFile, ")\r\n");
-				}
-				fprintf(outFile, ")\r\n");
-			}
+            /*****************************************************/
+            /* execute-subroutine                                */
+            /*****************************************************/
+            case NODE_EXE_SUB:
+            {
+                fprintf(outFile, "(execute-subroutine id=%u\r\n", pNode->id);
+                fprintf(outFile, "    (subroutine %s)\r\n", formatVal(pNode->subroutine_code));
+                fprintf(outFile, "    (num-parameters %s)\r\n", formatVal(pNode->num_parameters));
+                if (pNode->num_parameters > 0){
+                    fprintf(outFile, "    (align-fill-byteval %s)\r\n", formatVal(pNode->alignfillVal));
+                    fprintf(outFile, "    (parameter-types ");
+                    for (x = 0; x < (int)pNode->num_parameters; x++){
+                        switch (pNode->subParams[x].type){
+                            case BYTE_PARAM:
+                                fprintf(outFile, "1 ");
+                                break;
+                            case SHORT_PARAM:
+                                fprintf(outFile, "2 ");
+                                break;
+                            case LONG_PARAM:
+                                fprintf(outFile, "4 ");
+                                break;
+                            case ALIGN_2_PARAM:
+                                fprintf(outFile, "align-2 ");
+                                break;
+                            case ALIGN_4_PARAM:
+                                fprintf(outFile, "align-4 ");
+                                break;
+                            default:
+                                printf("Error, bad subroutine parameter detected.\n");
+                                return -1;
+                        }
+                    }
+                    fprintf(outFile, ")\r\n");
+                    
+                    fprintf(outFile, "    (parameter-values ");
+                    for (x = 0; x < (int)pNode->num_parameters; x++){
+                        if ((pNode->subParams[x].type == ALIGN_2_PARAM) || (pNode->subParams[x].type == ALIGN_4_PARAM))
+                            continue;
+                        fprintf(outFile, "%s ", formatVal(pNode->subParams[x].value));
+                    }
+                    fprintf(outFile, ")\r\n");
+                }
+                fprintf(outFile, ")\r\n");
+            }
             break;
 
 
-			/****************/
-			/* run-commands */
-			/****************/
-			case NODE_RUN_CMDS:
-			{
-				runParamType* rpNode = pNode->runParams;
+            /****************/
+            /* run-commands */
+            /****************/
+            case NODE_RUN_CMDS:
+            {
+                runParamType* rpNode = pNode->runParams;
 
-				fprintf(outFile, "(run-commands id=%u\r\n", pNode->id);
+                fprintf(outFile, "(run-commands id=%u\r\n", pNode->id);
 
-				while (rpNode != NULL) {
+                while (rpNode != NULL) {
 
-					switch (rpNode->type){
+                    switch (rpNode->type){
 
-						case ALIGN_2_PARAM:
-							fprintf(outFile, "    (align-2 %s)\r\n", formatVal(rpNode->value));
-							break;
-						case ALIGN_4_PARAM:
-							fprintf(outFile, "    (align-4 %s)\r\n", formatVal(rpNode->value));
-							break;
-						case SHOW_PORTRAIT:
-							fprintf(outFile, "    (show-portrait %s)\r\n", formatVal(rpNode->value & 0xFF));
-							break;
-						case PRINT_LINE:
-							fprintf(outFile, "    (print-line \"%s\")\r\n", rpNode->str);
-							break;
-						case CTRL_CODE:
-							fprintf(outFile, "    (control-code %s)\r\n", formatVal(rpNode->value));
-							break;
-						default:
-							printf("Error, bad run cmd parameter detected.\n");
-							return -1;
-					}
+                        case ALIGN_2_PARAM:
+                            fprintf(outFile, "    (align-2 %s)\r\n", formatVal(rpNode->value));
+                            break;
+                        case ALIGN_4_PARAM:
+                            fprintf(outFile, "    (align-4 %s)\r\n", formatVal(rpNode->value));
+                            break;
+                        case SHOW_PORTRAIT:
+                            fprintf(outFile, "    (show-portrait %s)\r\n", formatVal(rpNode->value & 0xFF));
+                            break;
+                        case PRINT_LINE:
+                            fprintf(outFile, "    (print-line \"%s\")\r\n", rpNode->str);
+                            break;
+                        case CTRL_CODE:
+                            fprintf(outFile, "    (control-code %s)\r\n", formatVal(rpNode->value));
+                            break;
+                        default:
+                            printf("Error, bad run cmd parameter detected.\n");
+                            return -1;
+                    }
 
-					rpNode = rpNode->pNext;
-				}
-				fprintf(outFile, "    (commands-end)\r\n");
-				fprintf(outFile, ")\r\n");
-			}
+                    rpNode = rpNode->pNext;
+                }
+                fprintf(outFile, "    (commands-end)\r\n");
+                fprintf(outFile, ")\r\n");
+            }
             break;
 
 
-			default:
-			{
-				printf("ERROR, unrecognized node.  HALTING output.\n");
-				return -1;
-			}
+            default:
+            {
+                printf("ERROR, unrecognized node.  HALTING output.\n");
+                return -1;
+            }
             break;
         }
         pNode = pNode->pNext;
     }
 
-	/* End Footer */
-	fprintf(outFile, "(end)\r\n");
+    /* End Footer */
+    fprintf(outFile, "(end)\r\n");
 
     return 0;
 }

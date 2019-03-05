@@ -64,7 +64,7 @@ static unsigned int maxBinFsize = 0;
 /* SSS table (adds the '.' character back in.                          */
 /***********************************************************************/
 void setSSSEncode(){
-	enable_SSS_mode = 1;
+    enable_SSS_mode = 1;
 }
 
 
@@ -117,12 +117,12 @@ int numBytesInUtf8Char(unsigned char val){
 /*******************************************************************/
 int loadUTF8Table(char* fname){
 
-	static char linebuf[300];
+    static char linebuf[300];
     int index, numBytes, x;
     FILE* infile = NULL;
     char* buf = NULL;
-	char* ptr_line = NULL;
-	memset(linebuf, 0, 300);
+    char* ptr_line = NULL;
+    memset(linebuf, 0, 300);
 
     /* Open the input file */
     infile = fopen(fname,"r");
@@ -136,24 +136,24 @@ int loadUTF8Table(char* fname){
 
         /* Get the index location */
         /* Skip lines that dont start with numbers */
-		/* Assume they are comments, '#' is supposed to be a comment marker */
-		fgets(linebuf, 299, infile);
-		if (linebuf[0] == '#')
-			continue;
-		if (sscanf(linebuf, "%d", &index) != 1){
-			fgets(linebuf, 299, infile);
-			continue;
-		}
-		ptr_line = linebuf;
+        /* Assume they are comments, '#' is supposed to be a comment marker */
+        fgets(linebuf, 299, infile);
+        if (linebuf[0] == '#')
+            continue;
+        if (sscanf(linebuf, "%d", &index) != 1){
+            fgets(linebuf, 299, infile);
+            continue;
+        }
+        ptr_line = linebuf;
 
-		/* Increment past numerical digits */
-		while ((*ptr_line >= '0') && (*ptr_line <= '9'))
-			ptr_line++;
+        /* Increment past numerical digits */
+        while ((*ptr_line >= '0') && (*ptr_line <= '9'))
+            ptr_line++;
 
-		/* Hack for SSS */
-		if ((enable_SSS_mode) && (index >= 769)){
-			index++;
-		}
+        /* Hack for SSS */
+        if ((enable_SSS_mode) && (index >= 769)){
+            index++;
+        }
 
         /* Index Bounds Check */
         if(index >= MAX_STORED_CHARACTERS){
@@ -166,17 +166,17 @@ int loadUTF8Table(char* fname){
         memset(&(utf8Array[index][0]),0,5);
 
         /* Read until a comma is found */
-		while (*ptr_line != ','){
-			ptr_line++;
+        while (*ptr_line != ','){
+            ptr_line++;
         }
-		ptr_line++;
+        ptr_line++;
 
         /* Read until not a space or tab */
         while(1){
-			if ((*ptr_line == ' ') || (*ptr_line == '\t')){
-				ptr_line++;
-				continue;
-			}
+            if ((*ptr_line == ' ') || (*ptr_line == '\t')){
+                ptr_line++;
+                continue;
+            }
             break;
         }
 
@@ -186,19 +186,19 @@ int loadUTF8Table(char* fname){
 
         /* Read the rest of the utf8 character */
         for(x=1; x < numBytes; x++){
-			ptr_line++;
+            ptr_line++;
             utf8Array[index][x] = *ptr_line;
         }
-		numEntries++;
+        numEntries++;
     }
 
     fclose(infile);
 
-	/* Hack for SSS -- Fill in '.' at offset 769 */
-	if (enable_SSS_mode){
-		memset(&(utf8Array[769][0]), 0, 5);
-		utf8Array[769][0] = '.';
-	}
+    /* Hack for SSS -- Fill in '.' at offset 769 */
+    if (enable_SSS_mode){
+        memset(&(utf8Array[769][0]), 0, 5);
+        utf8Array[769][0] = '.';
+    }
 
     return 0;
 }
@@ -230,21 +230,21 @@ int getUTF8character(int index, char* utf8Value){
 /*******************************************************************/
 int getUTF8code_Byte(char* utf8Value, unsigned char* utf8Code){
 
-	int x,y,numBytes;
-	numBytes = numBytesInUtf8Char((unsigned char)*utf8Value);
+    int x,y,numBytes;
+    numBytes = numBytesInUtf8Char((unsigned char)*utf8Value);
 
-	for (x = 0; x < numEntries; x++){
-		for (y = 0; y < numBytes; y++){
-			if (utf8Array[x][y] != utf8Value[y])
-				break;
-			if (y == (numBytes - 1)){
-				*utf8Code = (unsigned char)x;
-				return 0;
-			}
-		}
-	}
+    for (x = 0; x < numEntries; x++){
+        for (y = 0; y < numBytes; y++){
+            if (utf8Array[x][y] != utf8Value[y])
+                break;
+            if (y == (numBytes - 1)){
+                *utf8Code = (unsigned char)x;
+                return 0;
+            }
+        }
+    }
 
-	return -1;
+    return -1;
 }
 
 
@@ -254,85 +254,85 @@ int getUTF8code_Byte(char* utf8Value, unsigned char* utf8Code){
 /*******************************************************************/
 int getUTF8code_Short(char* utf8Value, unsigned short* utf8Code){
 
-	int x, y, numBytes;
-	numBytes = numBytesInUtf8Char((unsigned char)*utf8Value);
+    int x, y, numBytes;
+    numBytes = numBytesInUtf8Char((unsigned char)*utf8Value);
 
-	for (x = 0; x < numEntries; x++){
-		for (y = 0; y < numBytes; y++){
-			if (utf8Array[x][y] != utf8Value[y])
-				break;
-			if (y == (numBytes - 1)){
-				*utf8Code = (unsigned short)x;
-				return 0;
-			}
-		}
-	}
+    for (x = 0; x < numEntries; x++){
+        for (y = 0; y < numBytes; y++){
+            if (utf8Array[x][y] != utf8Value[y])
+                break;
+            if (y == (numBytes - 1)){
+                *utf8Code = (unsigned short)x;
+                return 0;
+            }
+        }
+    }
 
-	return -1;
+    return -1;
 }
 
 
 
 
 void setBinOutputMode(int mode){
-	if (mode == BIG_ENDIAN)
-		outputMode = BIG_ENDIAN;
-	else if (mode == LITTLE_ENDIAN)
-		outputMode = LITTLE_ENDIAN;
-	else{
-		printf("Invalid Output Mode, defaulting to Big Endian.\n");
-		outputMode = BIG_ENDIAN;
-	}
-	return;
+    if (mode == BIG_ENDIAN)
+        outputMode = BIG_ENDIAN;
+    else if (mode == LITTLE_ENDIAN)
+        outputMode = LITTLE_ENDIAN;
+    else{
+        printf("Invalid Output Mode, defaulting to Big Endian.\n");
+        outputMode = BIG_ENDIAN;
+    }
+    return;
 }
 
 int getBinOutputMode(){
-	return outputMode;
+    return outputMode;
 }
 
 
 void setBinMaxSize(unsigned int maxSize){
-	maxBinFsize = maxSize;
-	return;
+    maxBinFsize = maxSize;
+    return;
 }
 
 unsigned int getBinMaxSize(){
-	return maxBinFsize;
+    return maxBinFsize;
 }
 
 void setMetaScriptInputMode(int mode){
-	if (mode == RADIX_DEC)
-		inputMode = RADIX_DEC;
-	else if (mode == RADIX_HEX)
-		inputMode = RADIX_HEX;
-	else{
-		printf("Invalid Input Mode, defaulting to HEX.\n");
-		outputMode = RADIX_HEX;
-	}
-	return;
+    if (mode == RADIX_DEC)
+        inputMode = RADIX_DEC;
+    else if (mode == RADIX_HEX)
+        inputMode = RADIX_HEX;
+    else{
+        printf("Invalid Input Mode, defaulting to HEX.\n");
+        outputMode = RADIX_HEX;
+    }
+    return;
 }
 
 int getMetaScriptInputMode(){
-	return inputMode;
+    return inputMode;
 }
 
 
 void setTableOutputMode(int mode){
-	if (mode == ONE_BYTE_ENC)
-		tableMode = ONE_BYTE_ENC;
-	else if (mode == TWO_BYTE_ENC)
-		tableMode = TWO_BYTE_ENC;
-	else if (mode == UTF8_ENC)
-		tableMode = UTF8_ENC;
-	else{
-		printf("Invalid Table Output Mode, defaulting to TWO_BYTE_ENC.\n");
-		tableMode = TWO_BYTE_ENC;
-	}
-	return;
+    if (mode == ONE_BYTE_ENC)
+        tableMode = ONE_BYTE_ENC;
+    else if (mode == TWO_BYTE_ENC)
+        tableMode = TWO_BYTE_ENC;
+    else if (mode == UTF8_ENC)
+        tableMode = UTF8_ENC;
+    else{
+        printf("Invalid Table Output Mode, defaulting to TWO_BYTE_ENC.\n");
+        tableMode = TWO_BYTE_ENC;
+    }
+    return;
 }
 
 int getTableOutputMode(){
-	return tableMode;
+    return tableMode;
 }
 
 
@@ -343,77 +343,77 @@ int getTableOutputMode(){
 
 int read_ID(unsigned char* pInput){
 
-	unsigned int id;
+    unsigned int id;
 
-	pInput = strtok(NULL, "()\t = \r\n");
-	if (strcmp(pInput, "id") != 0) {
-		printf("Error, id not found\n");
-		return -1;
-	}
-	pInput = strtok(NULL, "()\t = \r\n");
-	if (sscanf(pInput, "%u", &id) != 1){
-		printf("Error reading ID\n");
-		return -1;
-	}
+    pInput = strtok(NULL, "()\t = \r\n");
+    if (strcmp(pInput, "id") != 0) {
+        printf("Error, id not found\n");
+        return -1;
+    }
+    pInput = strtok(NULL, "()\t = \r\n");
+    if (sscanf(pInput, "%u", &id) != 1){
+        printf("Error reading ID\n");
+        return -1;
+    }
 
-	return (int)id;
+    return (int)id;
 }
 
 int readLW(unsigned char* pInput, unsigned int* data){
-	if (inputMode == RADIX_HEX){
-		if (sscanf(pInput, "%X", data) != 1){
-			printf("Error reading long\n");
-			return -1;
-		}
-	}
-	else{
-		if (sscanf(pInput, "%u", data) != 1){
-			printf("Error reading long\n");
-			return -1;
-		}
-	}
+    if (inputMode == RADIX_HEX){
+        if (sscanf(pInput, "%X", data) != 1){
+            printf("Error reading long\n");
+            return -1;
+        }
+    }
+    else{
+        if (sscanf(pInput, "%u", data) != 1){
+            printf("Error reading long\n");
+            return -1;
+        }
+    }
 
-	return 0;
+    return 0;
 }
 
 int readSW(unsigned char* pInput, unsigned short* datas){
 
-	unsigned int local;
+    unsigned int local;
 
-	if (inputMode == RADIX_HEX){
-		if (sscanf(pInput, "%X", &local) != 1){
-			printf("Error reading short\n");
-			return -1;
-		}
-		*datas = local & 0xFFFF;
-	}
-	else{
-		if (sscanf(pInput, "%hu", datas) != 1){
-			printf("Error reading short\n");
-			return -1;
-		}
-	}
+    if (inputMode == RADIX_HEX){
+        if (sscanf(pInput, "%X", &local) != 1){
+            printf("Error reading short\n");
+            return -1;
+        }
+        *datas = local & 0xFFFF;
+    }
+    else{
+        if (sscanf(pInput, "%hu", datas) != 1){
+            printf("Error reading short\n");
+            return -1;
+        }
+    }
 
-	return 0;
+    return 0;
 }
 
 int readBYTE(unsigned char* pInput, unsigned char* datab){
 
-	unsigned int local;
+    unsigned int local;
 
-	if (inputMode == RADIX_HEX){
-		if (sscanf(pInput, "%X", &local) != 1){
-			printf("Error reading byte\n");
-			return -1;
-		}
-		*datab = local & 0xFF;
-	}
-	else{
-		if (sscanf(pInput, "%c", &datab) != 1){
-			printf("Error reading byte\n");
-			return -1;
-		}
-	}
+    if (inputMode == RADIX_HEX){
+        if (sscanf(pInput, "%X", &local) != 1){
+            printf("Error reading byte\n");
+            return -1;
+        }
+        *datab = local & 0xFF;
+    }
+    else{
+        if (sscanf(pInput, "%c", &datab) != 1){
+            printf("Error reading byte\n");
+            return -1;
+        }
+    }
 
-	return 0;
+    return 0;
 }

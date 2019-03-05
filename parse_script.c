@@ -487,7 +487,7 @@ int decode_exesub(int id){
     else{
         newNode->subParams = NULL;
     }
-	newNode->runParams = NULL;
+    newNode->runParams = NULL;
 
     /* Add the script node to the list */
     addNode(newNode, METHOD_NORMAL,0);
@@ -619,7 +619,7 @@ int decode_runcmds(int id){
     newNode->nodeType = NODE_RUN_CMDS;
     newNode->id = id;
     newNode->runParams = rpHead;
-	newNode->subParams = NULL;
+    newNode->subParams = NULL;
 
     /* Add the script node to the list */
     addNode(newNode, METHOD_NORMAL,0);

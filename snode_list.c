@@ -37,7 +37,7 @@ static scriptNode *pHead = NULL;    /* List Ptr  */
 int initNodeList()
 {
     if(pHead != NULL)
-		destroyNodeList();
+        destroyNodeList();
     pHead = NULL;
 
     return 0;
@@ -50,7 +50,7 @@ int initNodeList()
 /* getHeadPtr - Returns the list's head pointer.                   */
 /*******************************************************************/
 scriptNode* getHeadPtr(){
-	return pHead;
+    return pHead;
 }
 
 
@@ -62,31 +62,31 @@ scriptNode* getHeadPtr(){
 /*******************************************************************/
 int destroyNodeList()
 {
-	runParamType* ptrRun, *ptrRunNext;
-	scriptNode *pCurrent = NULL;
-	scriptNode *pItem = pHead;
+    runParamType* ptrRun, *ptrRunNext;
+    scriptNode *pCurrent = NULL;
+    scriptNode *pItem = pHead;
 
 
-	while (pItem != NULL){
-		pCurrent = pItem;
+    while (pItem != NULL){
+        pCurrent = pItem;
 
-		/* Free internal data */
-		if (pCurrent->subParams != NULL)
-			free(pCurrent->subParams);
-		if (pCurrent->runParams != NULL){
-			ptrRun = pCurrent->runParams;
-			while (ptrRun != NULL){
-				ptrRunNext = ptrRun->pNext;
-				free(ptrRun);
-				ptrRun = ptrRunNext;
-			}
-		}
+        /* Free internal data */
+        if (pCurrent->subParams != NULL)
+            free(pCurrent->subParams);
+        if (pCurrent->runParams != NULL){
+            ptrRun = pCurrent->runParams;
+            while (ptrRun != NULL){
+                ptrRunNext = ptrRun->pNext;
+                free(ptrRun);
+                ptrRun = ptrRunNext;
+            }
+        }
 
-		pItem = pItem->pNext;
+        pItem = pItem->pNext;
         free(pCurrent);
     }
 
-	pHead = NULL;
+    pHead = NULL;
 
     return 0;
 }
@@ -107,9 +107,9 @@ int createScriptNode(scriptNode** node){
         return -1;
     }
     memset(pNode,0,sizeof(scriptNode));
-	pNode->pNext = pNode->pPrev = NULL;
-	pNode->subParams = NULL;
-	pNode->runParams = NULL;
+    pNode->pNext = pNode->pPrev = NULL;
+    pNode->subParams = NULL;
+    pNode->runParams = NULL;
     return 0;
 }
 
@@ -121,15 +121,15 @@ int createScriptNode(scriptNode** node){
 /*******************************************************************/
 int addNode(scriptNode* node, int method, int target_id){
 
-	scriptNode * newItem, *pCurrent, *pNext, *pPrev;
+    scriptNode * newItem, *pCurrent, *pNext, *pPrev;
 
     /* Create a new item */
-	newItem = (scriptNode*)malloc(sizeof(scriptNode));
+    newItem = (scriptNode*)malloc(sizeof(scriptNode));
     if(newItem == NULL){
         printf("Error allocing memory for new item in addNode.\n");
         return -1;
     }
-	memcpy(newItem, node, sizeof(scriptNode));
+    memcpy(newItem, node, sizeof(scriptNode));
     newItem->pNext = NULL;
 
     /* Head is Empty */
@@ -139,40 +139,40 @@ int addNode(scriptNode* node, int method, int target_id){
     }
 
     /* Head != NULL, Insert at Head ? */
-	if ((method == METHOD_INSERT_BEFORE) && (pHead->id == target_id)){
-		newItem->pNext = pHead;
-		pHead = newItem;
-		return 0;
-	}
+    if ((method == METHOD_INSERT_BEFORE) && (pHead->id == target_id)){
+        newItem->pNext = pHead;
+        pHead = newItem;
+        return 0;
+    }
 
     /* First item is not empty and insertion will not take place at head */
-	pPrev = NULL;
-	pCurrent = pHead;
+    pPrev = NULL;
+    pCurrent = pHead;
     while(pCurrent != NULL){
         pNext = pCurrent->pNext;
 
         /* Check to insert */
-		if ((method == METHOD_INSERT_BEFORE) && (pCurrent->id == target_id)){
-			newItem->pNext = pCurrent;
-			if (pPrev != NULL)
-   			    pPrev->pNext = newItem;
-			return 0;
-		}
-		else if ((method == METHOD_INSERT_AFTER) && (pCurrent->id == target_id)){
-			newItem->pNext = pCurrent->pNext;
-			pCurrent->pNext = newItem;
-			return 0;
-		}
-		else if ((method == METHOD_NORMAL) && (pNext == NULL)){
-			pCurrent->pNext = newItem;
-			return 0;
-		}
+        if ((method == METHOD_INSERT_BEFORE) && (pCurrent->id == target_id)){
+            newItem->pNext = pCurrent;
+            if (pPrev != NULL)
+                pPrev->pNext = newItem;
+            return 0;
+        }
+        else if ((method == METHOD_INSERT_AFTER) && (pCurrent->id == target_id)){
+            newItem->pNext = pCurrent->pNext;
+            pCurrent->pNext = newItem;
+            return 0;
+        }
+        else if ((method == METHOD_NORMAL) && (pNext == NULL)){
+            pCurrent->pNext = newItem;
+            return 0;
+        }
 
-		pPrev = pCurrent;
+        pPrev = pCurrent;
         pCurrent = pCurrent->pNext;
     }
 
-	printf("Error, insertion failed.\n");
+    printf("Error, insertion failed.\n");
     return -1;
 }
 
@@ -184,30 +184,45 @@ int addNode(scriptNode* node, int method, int target_id){
 /*******************************************************************/
 int removeNode(int id){
 
-	scriptNode *pCurrent, *pNext, *pPrev;
+    scriptNode *pCurrent, *pNext, *pPrev;
 
-	pPrev = NULL;
-	pCurrent = pHead;
-	while (pCurrent != NULL){
-		pNext = pCurrent->pNext;
+    pPrev = NULL;
+    pCurrent = pHead;
+    while (pCurrent != NULL){
+        pNext = pCurrent->pNext;
 
-		/* Check to remove */
-		if (pCurrent->id == id){
-			if (pPrev != NULL)
-				pPrev->pNext = pNext;
-			if (pHead == pCurrent){ //Update Head
-				pHead = pCurrent->pNext;
-			}
-			free(pCurrent);
-			return 0;
-		}
+        /* Check to remove */
+        if (pCurrent->id == id){
+            runParamType* ptrRun, *ptrRunNext;
 
-		pPrev = pCurrent;
-		pCurrent = pCurrent->pNext;
-	}
+            if (pPrev != NULL)
+                pPrev->pNext = pNext;
+            if (pHead == pCurrent){ //Update Head
+                pHead = pCurrent->pNext;
+            }
 
-	printf("Error, node removal failed.\n");
-	return -1;
+            /* Free internal data */
+            if (pCurrent->subParams != NULL)
+                free(pCurrent->subParams);
+            if (pCurrent->runParams != NULL){
+                ptrRun = pCurrent->runParams;
+                while (ptrRun != NULL){
+                    ptrRunNext = ptrRun->pNext;
+                    free(ptrRun);
+                    ptrRun = ptrRunNext;
+                }
+            }
+
+            free(pCurrent);
+            return 0;
+        }
+
+        pPrev = pCurrent;
+        pCurrent = pCurrent->pNext;
+    }
+
+    printf("Error, node removal failed.\n");
+    return -1;
 }
 
 
@@ -218,23 +233,23 @@ int removeNode(int id){
 /*******************************************************************/
 int overwriteNode(int id, scriptNode* node){
 
-	scriptNode *pCurrent;
+    scriptNode *pCurrent;
 
-	pCurrent = pHead;
-	while (pCurrent != NULL){
+    pCurrent = pHead;
+    while (pCurrent != NULL){
 
-		/* Check to overwrite data */
-		if (pCurrent->id == id){
-			node->pNext = pCurrent->pNext;
-			memcpy(pCurrent, node, sizeof(scriptNode));
-			return 0;
-		}
+        /* Check to overwrite data */
+        if (pCurrent->id == id){
+            node->pNext = pCurrent->pNext;
+            memcpy(pCurrent, node, sizeof(scriptNode));
+            return 0;
+        }
 
-		pCurrent = pCurrent->pNext;
-	}
+        pCurrent = pCurrent->pNext;
+    }
 
-	printf("Error, node overwrite failed.\n");
-	return -1;
+    printf("Error, node overwrite failed.\n");
+    return -1;
 }
 
 
@@ -247,15 +262,15 @@ int overwriteNode(int id, scriptNode* node){
 /*******************************************************************/
 scriptNode* getListItemByID(unsigned int id){
 
-	scriptNode *pCurrent = pHead;
-	while (pCurrent != NULL){
-		/* Check for the id */
-		if (pCurrent->id == id){
-			return pCurrent;
-		}
-		pCurrent = pCurrent->pNext;
-	}
+    scriptNode *pCurrent = pHead;
+    while (pCurrent != NULL){
+        /* Check for the id */
+        if (pCurrent->id == id){
+            return pCurrent;
+        }
+        pCurrent = pCurrent->pNext;
+    }
 
-	printf("Error, node not found.\n");
-	return NULL;
+    printf("Error, node not found.\n");
+    return NULL;
 }
