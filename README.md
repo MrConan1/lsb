@@ -14,5 +14,4 @@ The table file should be named font_table.txt
 sss designates that the table being used is that for sssc and will be automatically altered for compatibilty  
 
 
-THIS PROGRAM IS STILL BEING DEBUGGED. 
-THE PROGRAM THAT GENERATES THE INPUT SCRIPT FROM EXISTING .DAT FILES IS NOT YET 100% WRITTEN.  
+NOTE: THE PROGRAM THAT GENERATES THE INPUT SCRIPT FROM EXISTING .DAT FILES IS NOT YET 100% WRITTEN.  
