@@ -70,7 +70,7 @@ int main(int argc, char** argv){
         strcpy(wrMode, "wb");
     }
     else if ((strcmp(argv[1], "update") == 0)){
-        strcpy(wrMode, "w");
+        strcpy(wrMode, "wb");
     }
     else{
         /* Invalid Mode */
