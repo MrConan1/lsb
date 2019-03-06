@@ -1,0 +1,2 @@
+encode in2.txt out.dat sss
+update input_example.txt updateexample.txt
