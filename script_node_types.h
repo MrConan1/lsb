@@ -44,12 +44,12 @@ typedef struct paramType paramType;
 typedef struct runParamType runParamType;
 
 /* Parameter Types */
-typedef struct paramType{
+struct paramType{
 	unsigned int type;
 	unsigned int value;
 };
 
-typedef struct runParamType{
+struct runParamType{
 	unsigned int type;
 	unsigned int value;
 	char* str;
