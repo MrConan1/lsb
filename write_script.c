@@ -485,7 +485,7 @@ int writeBinScript(FILE* outFile){
                         case SHOW_PORTRAIT:
                         {
                             unsigned short portraitCode;
-                            portraitCode = 0xFF00 | ((unsigned short)rpNode->value);
+                            portraitCode = 0xFA00 | ((unsigned short)rpNode->value);
                             writeSW(portraitCode);
                         }
                         break;
