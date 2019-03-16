@@ -8,10 +8,15 @@ This program will perform one of two actions:
 2.) Take a uniquely formatted input and update metadata files, parse them, and create an updated input file that could later be used to build a binary output file.
 
 Usage:  
-    lsb.exe encode InputFname OutputFname [sss]  
-    lsb.exe update InputFname OutputFname UpdateFname  
+   lsb.exe decode InputFname OutputFname ienc [sss]                    
+   lsb.exe encode InputFname OutputFname [sss]                         
+   lsb.exe update InputFname OutputFname UpdateFname                   
 The table file should be named font_table.txt  
 sss designates that the table being used is that for sssc and will be automatically altered for compatibilty  
 
 
-NOTE: THE PROGRAM THAT GENERATES THE INPUT SCRIPT FROM EXISTING .DAT FILES IS NOT YET 100% WRITTEN.  
+TBD:  Write binary output routine for Option (code 0x0007)  
+      Debug (A LOT)  
+      Add .csv format for better script dump output  
+     
+     
