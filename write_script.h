@@ -5,5 +5,6 @@
 
 int writeBinScript(FILE* outFile);
 int writeScript(FILE* outFile);
+int dumpScript(FILE* outFile);
 
 #endif

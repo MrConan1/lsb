@@ -31,6 +31,7 @@ static unsigned int max_boutput_size_bytes = 0;
 /* Function Prototypes */
 int writeBinScript(FILE* outFile);
 int writeScript(FILE* outFile);
+int dumpScript(FILE* outFile);
 
 /* Write Fctns */
 static int writeLW(unsigned int data);
@@ -1091,4 +1092,171 @@ int writeScript(FILE* outFile){
     fprintf(outFile, "(end)\r\n");
 
     return 0;
+}
+
+
+
+
+/*****************************************************************************/
+/* Function: dumpScriptText                                                  */
+/* Purpose: Reads from a linked list data structure in memory to create a    */
+/*          CSV tab delimited version of the script.                         */
+/* Inputs:  Pointer to output file.                                          */
+/* Outputs: 0 on Pass, -1 on Fail.                                           */
+/*****************************************************************************/
+int dumpScript(FILE* outFile){
+
+	int x;
+	scriptNode* pNode = NULL;
+
+	/* Output Header */
+	fprintf(outFile, "Node ID\tType\tJP Text\r\n");
+
+	/* Get a Pointer to the Head of the linked list */
+	pNode = getHeadPtr();
+
+	/******************************************************************/
+	/* Loop until the binary output corresponding to all list entries */
+	/* has been output to memory.  Then write to disk.                */
+	/******************************************************************/
+	while (pNode != NULL){
+
+		switch (pNode->nodeType){
+
+			/********/
+			/* goto */
+			/********/
+			case NODE_GOTO:
+			{
+				;
+			}
+			break;
+
+
+			/********/
+			/* fill */
+			/********/
+			case NODE_FILL_SPACE:
+			{
+				;
+			}
+			break;
+
+
+			/***********/
+			/* pointer */
+			/***********/
+			case NODE_POINTER:
+			{
+				;
+			}
+			break;
+
+
+			/*****************************************************/
+			/* execute-subroutine                                */
+			/*****************************************************/
+			case NODE_EXE_SUB:
+			{
+				;
+			}
+			break;
+
+
+			/****************/
+			/* run-commands */
+			/****************/
+			case NODE_RUN_CMDS:
+			{
+				runParamType* rpNode = pNode->runParams;
+
+				fprintf(outFile, "%u", pNode->id);
+
+				fprintf(outFile, "\tDialog", pNode->id);
+
+				while (rpNode != NULL) {
+
+					switch (rpNode->type){
+
+					case ALIGN_2_PARAM:
+						break;
+					case ALIGN_4_PARAM:
+						break;
+					case SHOW_PORTRAIT:
+						break;
+					case PRINT_LINE:
+						fprintf(outFile, "\t\"%s\"", rpNode->str);
+						break;
+					case CTRL_CODE:
+						fprintf(outFile, "\t (control-code %s) ", formatVal(rpNode->value));
+						break;
+					default:
+						printf("Error, bad run cmd parameter detected.\n");
+						return -1;
+					}
+
+					rpNode = rpNode->pNext;
+				}
+				fprintf(outFile, "\r\n");
+			}
+			break;
+
+
+			/***********/
+			/* Options */
+			/***********/
+			case NODE_OPTIONS:
+			{
+				runParamType* rpNode = NULL;
+
+				fprintf(outFile, "%u", pNode->id);
+
+
+				/* Fixed at 2 options */
+				for (x = 0; x < 2; x++){
+					if (x == 0){
+						rpNode = pNode->runParams;
+						fprintf(outFile, "\tOpt1");
+					}
+					else{
+						rpNode = pNode->runParams2;
+						fprintf(outFile, "\tOpt2");
+					}
+					while (rpNode != NULL) {
+
+						switch (rpNode->type){
+
+						case ALIGN_2_PARAM:
+							break;
+						case ALIGN_4_PARAM:
+							break;
+						case PRINT_LINE:
+							fprintf(outFile, "\t\"%s\"", rpNode->str);
+							break;
+						case CTRL_CODE:
+							fprintf(outFile, "\t (control-code %s) ", formatVal(rpNode->value));
+						default:
+							printf("Error, bad run cmd parameter detected.\n");
+							return -1;
+						}
+
+						rpNode = rpNode->pNext;
+					}
+					fprintf(outFile, "\r\n");
+				}
+			}
+			break;
+
+
+		default:
+		{
+			printf("ERROR, unrecognized node.  HALTING output.\n");
+			return -1;
+		}
+			break;
+		}
+		pNode = pNode->pNext;
+	}
+
+	return 0;
 }

@@ -56,10 +56,11 @@ void printUsage(){
 /******************************************************************************/
 int main(int argc, char** argv){
 
-    FILE *inFile, *upFile, *outFile;
+	FILE *inFile, *upFile, *outFile, *csvOutFile;
     static char inFileName[300];
     static char upFileName[300];
     static char outFileName[300];
+	static char csvOutFileName[300];
     int rval, ienc;
 
     printf("Lunar Script Builder v%d.%02d\n", VER_MAJ, VER_MIN);
@@ -79,7 +80,8 @@ int main(int argc, char** argv){
 	memset(outFileName, 0, 300);
 	strcpy(inFileName, argv[2]);
 	strcpy(outFileName, argv[3]);
-
+	strcpy(csvOutFileName, argv[3]);
+	strcat(csvOutFileName, "_dump.csv");
 
 	/***********************************/
 	/* Check & Decode Input Parameters */
@@ -228,6 +230,22 @@ int main(int argc, char** argv){
 		}
 		else{
 			printf("Input Script File Updating FAILED.\n");
+		}
+
+		/* CSV File Output */
+		csvOutFile = fopen(csvOutFileName, "wb");
+		if (outFile == NULL){
+			printf("Error occurred while opening CSV output file %s for writing\n", csvOutFile);
+		}
+		else{
+			rval = dumpScript(csvOutFile);
+			if (rval == 0){
+				printf("Script File CSV Dump Created.\n");
+			}
+			else{
+				printf("Script File CSV Dump FAILED.\n");
+			}
+			fclose(csvOutFile);
 		}
 	}
     else{
