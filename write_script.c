@@ -835,6 +835,59 @@ int writeScript(FILE* outFile){
             break;
 
 
+			/***********/
+			/* Options */
+			/***********/
+			case NODE_OPTIONS:
+			{
+				runParamType* rpNode = NULL;
+
+				fprintf(outFile, "(options id=%u\r\n", pNode->id);
+
+				/* Print the 2 required parameters */
+				fprintf(outFile, "    (jmpparam %s)\r\n", formatVal(pNode->subParams[0].value));
+				fprintf(outFile, "    (param2 %s)\r\n", formatVal(pNode->subParams[1].value));
+
+				/* Fixed at 2 options */
+				for (x = 0; x < 2; x++){
+					if (x == 0){
+						rpNode = pNode->runParams;
+						fprintf(outFile, "    (opt1)\r\n");
+					}
+					else{
+						rpNode = pNode->runParams2;
+						fprintf(outFile, "    (opt2)\r\n");
+					}
+					while (rpNode != NULL) {
+
+						switch (rpNode->type){
+
+						case ALIGN_2_PARAM:
+							fprintf(outFile, "    (align-2 %s)\r\n", formatVal(rpNode->value));
+							break;
+						case ALIGN_4_PARAM:
+							fprintf(outFile, "    (align-4 %s)\r\n", formatVal(rpNode->value));
+							break;
+						case PRINT_LINE:
+							fprintf(outFile, "    (print-line \"%s\")\r\n", rpNode->str);
+							break;
+						case CTRL_CODE:
+							fprintf(outFile, "    (control-code %s)\r\n", formatVal(rpNode->value));
+							break;
+						default:
+							printf("Error, bad run cmd parameter detected.\n");
+							return -1;
+						}
+
+						rpNode = rpNode->pNext;
+					}
+					fprintf(outFile, "    (opt-end)\r\n");
+				}
+				fprintf(outFile, ")\r\n");
+			}
+			break;
+
+
             default:
             {
                 printf("ERROR, unrecognized node.  HALTING output.\n");

@@ -24,6 +24,7 @@ int addNode(scriptNode* node, int method, int target_id);
 int removeNode(int id);
 int overwriteNode(int id, scriptNode* node);
 scriptNode* getListItemByID(unsigned int id);
+scriptNode* getListItemByOffset(unsigned int offset);
 
 
 /* Globals */
@@ -81,6 +82,14 @@ int destroyNodeList()
                 ptrRun = ptrRunNext;
             }
         }
+		if (pCurrent->runParams2 != NULL){
+			ptrRun = pCurrent->runParams2;
+			while (ptrRun != NULL){
+				ptrRunNext = ptrRun->pNext;
+				free(ptrRun);
+				ptrRun = ptrRunNext;
+			}
+		}
 
         pItem = pItem->pNext;
         free(pCurrent);
@@ -110,6 +119,7 @@ int createScriptNode(scriptNode** node){
     pNode->pNext = pNode->pPrev = NULL;
     pNode->subParams = NULL;
     pNode->runParams = NULL;
+	pNode->runParams2 = NULL;
     return 0;
 }
 
@@ -212,6 +222,14 @@ int removeNode(int id){
                     ptrRun = ptrRunNext;
                 }
             }
+			if (pCurrent->runParams2 != NULL){
+				ptrRun = pCurrent->runParams2;
+				while (ptrRun != NULL){
+					ptrRunNext = ptrRun->pNext;
+					free(ptrRun);
+					ptrRun = ptrRunNext;
+				}
+			}
 
             free(pCurrent);
             return 0;
@@ -273,4 +291,26 @@ scriptNode* getListItemByID(unsigned int id){
 
     printf("Error, node not found.\n");
     return NULL;
+}
+
+
+
+/*******************************************************************/
+/* getListItemByOffset                                             */
+/* Returns a pointer to the scriptNode with the given offset.      */
+/* NULL is returned on failure.                                    */
+/*******************************************************************/
+scriptNode* getListItemByOffset(unsigned int offset){
+
+	scriptNode *pCurrent = pHead;
+	while (pCurrent != NULL){
+		/* Check for the id */
+		if (pCurrent->fileOffset == offset){
+			return pCurrent;
+		}
+		pCurrent = pCurrent->pNext;
+	}
+
+	printf("Error, node not found with offset 0x%X.\n",offset);
+	return NULL;
 }

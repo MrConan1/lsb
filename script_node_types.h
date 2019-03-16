@@ -27,6 +27,7 @@
 #define NODE_POINTER    3
 #define NODE_EXE_SUB    4
 #define NODE_RUN_CMDS   5
+#define NODE_OPTIONS    6
 
 /* Execute Subroutine / Run Cmds Parameter Types */
 #define BYTE_PARAM    0
@@ -83,6 +84,7 @@ struct scriptNode
 
 	//Run-Commands Parameters
 	runParamType* runParams;
+	runParamType* runParams2;
 
 	//Location when written back out to a binary file
 	unsigned int fileOffset;

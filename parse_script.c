@@ -26,6 +26,7 @@ int decode_fill(int id);
 int decode_pointer(int id);
 int decode_exesub(int id);
 int decode_runcmds(int id);
+int decode_options(int id);
 
 
 
@@ -171,6 +172,12 @@ int encodeScript(FILE* infile, FILE* outfile){
             rval = decode_runcmds(id);
         }
 
+		/* options */
+		else if (strcmp(pInput, "options") == 0){
+			id = read_ID(pInput);
+			rval = decode_options(id);
+		}
+
         /* end */
         else if (strcmp(pInput, "end") == 0){
             printf("Detected END\n");
@@ -223,6 +230,7 @@ int decode_goto(int id){
 
     /* Add the script node to the list */
     addNode(newNode, METHOD_NORMAL,0);
+	free(newNode);
 
     return 0;
 }
@@ -284,6 +292,7 @@ int decode_fill(int id){
 
     /* Add the script node to the list */
     addNode(newNode, METHOD_NORMAL,0);
+	free(newNode);
 
     return 0;
 }
@@ -365,6 +374,7 @@ int decode_pointer(int id){
 
     /* Add the script node to the list */
     addNode(newNode, METHOD_NORMAL,0);
+	free(newNode);
 
     return 0;
 }
@@ -491,6 +501,7 @@ int decode_exesub(int id){
 
     /* Add the script node to the list */
     addNode(newNode, METHOD_NORMAL,0);
+	free(newNode);
 
     return 0;
 }
@@ -618,12 +629,203 @@ int decode_runcmds(int id){
     createScriptNode(&newNode);
     newNode->nodeType = NODE_RUN_CMDS;
     newNode->id = id;
+	newNode->subroutine_code = 0x0002;
     newNode->runParams = rpHead;
     newNode->subParams = NULL;
 
     /* Add the script node to the list */
     addNode(newNode, METHOD_NORMAL,0);
-
+	free(newNode);
 
     return 0;
+}
+
+
+
+
+/*************************/
+/* options               */
+/*************************/
+int decode_options(int id){
+
+	int x;
+	scriptNode* node = NULL;
+	unsigned short jmpParam, param2;
+	paramType* params = NULL;
+	runParamType* rpNode;
+	runParamType* rpHead = NULL;
+	runParamType* rpHead1 = NULL;
+	runParamType* pPrev = NULL;
+	int len = 0;
+
+	/* Create a script node */
+	createScriptNode(&node);
+
+	/***********************************************/
+	/* Read in the two fixed subroutine parameters */
+	/***********************************************/
+
+	/* JMP Offset */
+	pInput = strtok(NULL, "()\t = \r\n");
+	if (strcmp(pInput, "jmpparam") != 0) {
+		printf("Error, jmpparam expected\n");
+		return -1;
+	}
+	pInput = strtok(NULL, "()\t = \r\n");
+	if (readSW(pInput, &jmpParam) < 0){
+		printf("Error invalid subroutine code\n");
+		return -1;
+	}
+
+	/* 2nd Parameter */
+	pInput = strtok(NULL, "()\t = \r\n");
+	if (strcmp(pInput, "param2") != 0) {
+		printf("Error, param2 expected\n");
+		return -1;
+	}
+	pInput = strtok(NULL, "()\t = \r\n");
+	if (readSW(pInput, &param2) < 0){
+		printf("Error invalid subroutine code\n");
+		return -1;
+	}
+
+	/* Allocate Subroutine Parameters and copy */
+	params = (paramType*)malloc(2 * sizeof(paramType));
+	if (params == NULL){
+		printf("Error allocing memory for parameters\n");
+		return -1;
+	}
+	params[0].type = SHORT_PARAM;
+	params[0].value = jmpParam;
+	params[1].type = SHORT_PARAM;
+	params[1].value = param2;
+
+	/* read in the options until the end of them is reached */
+	for (x = 0; x < 2; x++){
+
+		if (x == 0){
+			pInput = strtok(NULL, "()\t = \r\n");
+			if (strcmp(pInput, "opt1") != 0) {
+				printf("Error, opt1 expected\n");
+				return -1;
+			}
+		}
+		else{
+			rpHead1 = rpHead;
+			rpHead = NULL;
+			pInput = strtok(NULL, "()\t = \r\n");
+			if (strcmp(pInput, "opt2") != 0) {
+				printf("Error, opt2 expected\n");
+				return -1;
+			}
+		}
+
+		pInput = strtok(NULL, "()\t = \r\n");
+		while (strcmp(pInput, "opt-end") != 0) {
+
+			/* Create a runcmds parameter */
+			rpNode = (runParamType*)malloc(sizeof(runParamType));
+			if (rpNode == NULL){
+				printf("Error allocing space for run parameter struct.\n");
+				return -1;
+			}
+			rpNode->str = NULL;
+			rpNode->pNext = NULL;
+
+			/* Book keeping */
+			if (rpHead == NULL)
+				rpHead = rpNode;
+			if (pPrev != NULL){
+				pPrev->pNext = rpNode;
+			}
+
+			/* print-line */
+			if (strcmp(pInput, "print-line") == 0){
+				unsigned char* pText;
+
+				/* Get Text String (UTF-8) */
+				pInput = strtok(NULL, "\"");
+				if (pInput == NULL){
+					printf("Error, bad text input.\n");
+					return -1;
+				}
+				pText = pInput;
+				len = strlen(pText);
+
+				rpNode->type = PRINT_LINE;
+				rpNode->str = (char*)malloc(len + 1);
+				memset(rpNode->str, 0, len + 1);
+				memcpy(rpNode->str, pText, len);
+			}
+
+			/* control-code */
+			else if (strcmp(pInput, "control-code") == 0){
+				unsigned short ctrlCode;
+				pInput = strtok(NULL, "()\t = \r\n");
+				if (readSW(pInput, &ctrlCode) < 0){
+					printf("Error invalid control code.\n");
+					return -1;
+				}
+
+				/* Create a runcmds parameter */
+				rpNode->type = CTRL_CODE;
+				rpNode->value = ctrlCode;
+			}
+
+			/* align-2 */
+			else if (strcmp(pInput, "align-2") == 0){
+				unsigned char fillVal;
+				pInput = strtok(NULL, "()\t = \r\n");
+				if (readBYTE(pInput, &fillVal) < 0){
+					printf("Error invalid fill value.\n");
+					return -1;
+				}
+
+				/* Create a runcmds parameter */
+				rpNode->type = ALIGN_2_PARAM;
+				rpNode->value = fillVal;
+			}
+
+			/* align-4 */
+			else if (strcmp(pInput, "align-4") == 0){
+				unsigned char fillVal;
+				pInput = strtok(NULL, "()\t = \r\n");
+				if (readBYTE(pInput, &fillVal) < 0){
+					printf("Error invalid fill value.\n");
+					return -1;
+				}
+
+				/* Create a runcmds parameter */
+				rpNode->type = ALIGN_4_PARAM;
+				rpNode->value = fillVal;
+			}
+
+			/* Unknown */
+			else{
+				printf("Error unknown command %s detected in run-commands\n", pInput);
+				return -1;
+			}
+
+			pPrev = rpNode;
+
+			/* Read next token */
+			pInput = strtok(NULL, "()\t = \r\n");
+		}
+	}
+
+	/* Create a script node */
+	node->nodeType = NODE_OPTIONS;
+	node->id = id;
+	node->subroutine_code = 0x0007;
+	node->alignfillVal = 0xFF;
+	node->num_parameters = 2;
+	node->runParams = rpHead1;
+	node->runParams2 = rpHead;
+	node->subParams = params;
+
+	/* Add the script node to the list */
+	addNode(node, METHOD_NORMAL, 0);
+	free(node);
+
+	return 0;
 }

@@ -1,6 +1,12 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+/* Defines */
+#define TEXT_DECODE_TWO_BYTES_PER_CHAR 0
+#define TEXT_DECODE_ONE_BYTE_PER_CHAR  1
+#define TEXT_DECODE_UTF8               2
+
+
 /* Function Prototypes */
 void setSSSEncode();
 void swap16(void* pWd);
@@ -26,5 +32,8 @@ int readLW(unsigned char* pInput, unsigned int* data);
 int readSW(unsigned char* pInput, unsigned short* datas);
 int readBYTE(unsigned char* pInput, unsigned char* datab);
 
+/* Decode Related Functions */
+int getTextDecodeMethod();
+void setTextDecodeMethod(int method);
 
 #endif

@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "script_node_types.h"
+#include "util.h"
 
 /***********/
 /* Defines */
@@ -45,6 +46,9 @@ int readLW(unsigned char* pInput, unsigned int* data);
 int readSW(unsigned char* pInput, unsigned short* datas);
 int readBYTE(unsigned char* pInput, unsigned char* datab);
 
+/* Decode Related Functions */
+int getTextDecodeMethod();
+void setTextDecodeMethod(int method);
 
 /* Global Array of UTF8 Data */
 static char utf8Array[MAX_STORED_CHARACTERS][5];
@@ -52,10 +56,11 @@ static int enable_SSS_mode = 0;
 static int numEntries = 0;
 
 /* I/O Globals*/
-static int outputMode = BIG_ENDIAN;
-static int inputMode = RADIX_HEX;
-static int tableMode = TWO_BYTE_ENC;
-static unsigned int maxBinFsize = 0;
+static int textDecodeMode = TEXT_DECODE_TWO_BYTES_PER_CHAR;  //Binary Input File Encoding for Text
+static int outputMode = BIG_ENDIAN;  //Script Text File Value Encoding
+static int inputMode = RADIX_HEX;    //Script Text File Value Representation
+static int tableMode = TWO_BYTE_ENC; //Table File Encoding Method
+static unsigned int maxBinFsize = 0; //MAX allowed size of a binary script file
 
 
 /***********************************************************************/
@@ -416,4 +421,27 @@ int readBYTE(unsigned char* pInput, unsigned char* datab){
     }
 
     return 0;
+}
+
+
+
+
+/***********************************************/
+/* Returns the current method of text decoding */
+/* Either 1-byte encoding, or 2-byte           */
+/***********************************************/
+int getTextDecodeMethod(){
+	return textDecodeMode;
+}
+
+
+
+
+/********************************************/
+/* Sets the current method of text decoding */
+/* Either 1-byte encoding, or 2-byte        */
+/********************************************/
+void setTextDecodeMethod(int method){
+	textDecodeMode = method;
+	return;
 }

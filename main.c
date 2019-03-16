@@ -5,6 +5,7 @@
 /***********************************************************************/
 /* lunarScriptBuilder (lsb.exe) Usage                                  */
 /* ==================================                                  */
+/* lsb.exe decode InputFname OutputFname ienc [sss]                    */
 /* lsb.exe encode InputFname OutputFname [sss]                         */
 /* lsb.exe update InputFname OutputFname UpdateFname                   */
 /*                                                                     */
@@ -18,6 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "util.h"
+#include "parse_binary.h"
 #include "parse_script.h"
 #include "update_script.h"
 #include "snode_list.h"
@@ -33,12 +35,18 @@
 void printUsage(){
     printf("Error in input arguments.\n");
     printf("Usage:\n=========\n");
-    printf("lsb.exe encode InputFname OutputFname [sss]\n");
+	printf("lsb.exe decode InputFname OutputFname ienc [sss]\n");
+	printf("lsb.exe encode InputFname OutputFname [sss]\n");
     printf("lsb.exe update InputFname OutputFname UpdateFname\n");
-    printf("Use Encode to take a script in metadata format and convert to binary.\n");
-    printf("Table file used for encoding must be named \"font_table.txt\" and be located in the exe directory.\n");
+	printf("Use Decode to take a binary TEXTxxx.DAT file and convert to metadata format.\n");
+	printf("Use Encode to take a script in metadata format and convert to binary.\n");
     printf("Use Update to create modified version of a script in metadata format.\n");
-    printf("\n\n");
+	printf("    ienc = 0 for 2-Byte encoded text\n");
+	printf("    ienc = 1 for 1-Byte encoded text hack\n");
+	printf("    ienc = 2 for utf8 (iOS) encoded text\n");
+	printf("    sss will interpret SSSC JP table as the SSS JP table.\n");
+	printf("    Table file must be for SSSC, named \"font_table.txt\", and be located in the exe directory.\n");
+	printf("\n\n");
     return;
 }
 
@@ -49,11 +57,10 @@ void printUsage(){
 int main(int argc, char** argv){
 
     FILE *inFile, *upFile, *outFile;
-    char wrMode[10];
     static char inFileName[300];
     static char upFileName[300];
     static char outFileName[300];
-    int rval;
+    int rval, ienc;
 
     printf("Lunar Script Builder v%d.%02d\n", VER_MAJ, VER_MIN);
 
@@ -62,36 +69,56 @@ int main(int argc, char** argv){
     /**************************/
 
     /* Check for valid # of args */
-    if ((argc < 4) || (argc > 5)){
+    if (argc < 4){
         printUsage();
         return -1;
     }
-    if ((strcmp(argv[1], "encode") == 0)){
-        strcpy(wrMode, "wb");
+
+	//Handle Generic Input Parameters
+	memset(inFileName, 0, 300);
+	memset(outFileName, 0, 300);
+	strcpy(inFileName, argv[2]);
+	strcpy(outFileName, argv[3]);
+
+
+	/***********************************/
+	/* Check & Decode Input Parameters */
+	/***********************************/
+	if ((strcmp(argv[1], "decode") == 0)){
+		/* Check decode parameters */
+		ienc = atoi(argv[4]);
+		if((argc == 6) && (strcmp(argv[5], "sss") == 0))
+			setSSSEncode();
+		if (argc > 6){
+			printUsage();
+			return -1;
+		}
+	}
+    else if ((strcmp(argv[1], "encode") == 0)){
+		/* Check encode parameters */
+		if ((argc == 5) && (strcmp(argv[4], "sss") == 0))
+			setSSSEncode();
+		if (argc > 5){
+			printUsage();
+			return -1;
+		}
     }
     else if ((strcmp(argv[1], "update") == 0)){
-        strcpy(wrMode, "wb");
+		/* Check update parameters */
+		if (argc != 5){
+			printUsage();
+			return -1;
+		}
+		memset(upFileName, 0, 300);
+		strcpy(upFileName, argv[4]);
     }
     else{
         /* Invalid Mode */
         printUsage();
         return -1;
     }
-    if ( ((strcmp(argv[1], "update") == 0)) && 
-         (argc != 5) ){
-        printUsage();
-        return -1;
-    }
+
     
-
-    //Handle Input Parameters
-    memset(inFileName, 0, 300);
-    memset(outFileName, 0, 300);
-    strcpy(inFileName, argv[2]);
-    strcpy(outFileName, argv[3]);
-    if ((argc == 5) && (strcmp(argv[4], "sss") == 0))
-        setSSSEncode();
-
     /********************************************/
     /* Load in the Table File for Decoding Text */
     /********************************************/
@@ -110,7 +137,7 @@ int main(int argc, char** argv){
         printf("Error occurred while opening input script %s for reading\n", inFile);
         return -1;
     }
-    outFile = fopen(outFileName, wrMode);
+    outFile = fopen(outFileName, "wb");
     if (outFile == NULL){
         printf("Error occurred while opening output file %s for writing\n", outFile);
         fclose(inFile);
@@ -126,17 +153,25 @@ int main(int argc, char** argv){
     /* Init Linked List for storing node data */
     initNodeList();
 
-    rval = encodeScript(inFile, outFile);
-    fclose(inFile);
-    if (rval == 0){
-        printf("Input File Parsed Successfully.\n");
-    }
-    else{
-        printf("Input File Parsing FAILED. Aborting further operations.\n");
-        fclose(outFile);
-        destroyNodeList();
-        return -1;
-    }
+	if ((strcmp(argv[1], "encode") == 0) ||
+		(strcmp(argv[1], "update") == 0))
+	{
+		rval = encodeScript(inFile, outFile);
+	}
+	else if (strcmp(argv[1], "decode") == 0){
+		rval = decodeBinaryScript(inFile, outFile);
+	}
+	fclose(inFile);
+	if (rval == 0){
+		printf("Input File Parsed Successfully.\n");
+	}
+	else{
+		printf("Input File Parsing FAILED. Aborting further operations.\n");
+		fclose(outFile);
+		destroyNodeList();
+		return -1;
+	}
+	
 
     /**********************************************/
     /* Parameter Decoding - Encode or Update Mode */
@@ -156,9 +191,6 @@ int main(int argc, char** argv){
 
     }
     else if ((strcmp(argv[1], "update") == 0)){
-
-        memset(upFileName, 0, 300);
-        strcpy(upFileName, argv[4]);
 
         printf("UPDATE Mode Entered.\n");
 
@@ -185,6 +217,19 @@ int main(int argc, char** argv){
             printf("Input Script File Updating FAILED.\n");
         }
     }
+	else if ((strcmp(argv[1], "decode") == 0)){
+		
+		printf("DECODE Mode Entered.\n");
+
+		/* Write out the data as a Script file */
+		rval = writeScript(outFile);
+		if (rval == 0){
+			printf("Input Script File Updated Successfully.\n");
+		}
+		else{
+			printf("Input Script File Updating FAILED.\n");
+		}
+	}
     else{
         printUsage();
         fclose(outFile);
