@@ -15,8 +15,6 @@ The table file should be named font_table.txt
 sss designates that the table being used is that for sssc and will be automatically altered for compatibilty  
 
 
-TBD:  Write binary output routine for Option (code 0x0007)  
-      Debug (A LOT)  
-      Add .csv format for better script dump output  
-     
+TBD:  Debug (A LOT)  
+  
      
