@@ -566,6 +566,195 @@ int writeBinScript(FILE* outFile){
             break;
 
 
+			/***********/
+			/* options */
+			/***********/
+            case NODE_OPTIONS:
+			{
+				runParamType* rpNode = NULL;
+				int numBytes = 0;
+
+				/* Check that operation can be completed */
+				numBytes += 6; /* At least need to output subroutine code & 2 param */
+				
+				for (x = 0; x < 2; x++){
+					if (x == 0)
+						rpNode = pNode->runParams;
+					else
+						rpNode = pNode->runParams2;
+					while (rpNode != NULL) {
+
+						switch (rpNode->type){
+
+						case ALIGN_2_PARAM:
+							numBytes++; /* overestimate for simplicity */
+							break;
+						case ALIGN_4_PARAM:
+							numBytes += 3; /* overestimate for simplicity */
+							break;
+						case PRINT_LINE:
+						{
+							int numBytes2, numBytes3;
+							unsigned char* pText = rpNode->str;
+							numBytes2 = numBytes3 = 0;
+							while (*pText != '\0'){
+
+								/* Read in a utf8 character */
+								numBytes3 = numBytesInUtf8Char((unsigned char)*pText);
+
+								/* Look up associated code */
+								if ((numBytes3 == 1) && (*pText == ' ')){
+									numBytes2 += 2; /* Space */
+								}
+								else{
+									if (G_table_mode == ONE_BYTE_ENC){
+										numBytes2++;
+									}
+									else if (G_table_mode == TWO_BYTE_ENC){
+										numBytes2 += 2;
+									}
+									else{   //Straight UTF-8 Encoding
+										numBytes2 += numBytes3;
+									}
+								}
+								pText += numBytes3;
+							}
+							numBytes += numBytes2;
+						}
+							break;
+						case CTRL_CODE:
+							numBytes += 2;
+							break;
+						default:
+							printf("Error, bad run cmd parameter detected.\n");
+							return -1;
+						}
+
+						rpNode = rpNode->pNext;
+					}
+				}
+				if ((numBytes + offset) > max_size_bytes){
+					printf("Error, subroutine 0007 would extend beyond max file size.\n");
+					return -1;
+				}
+
+				pNode->fileOffset = offset;  //Book keeping
+
+				/* This is all part of subroutine code 0x0007 */
+				writeSW(0x0007);
+				writeSW(pNode->subParams[0].value);
+				writeSW(pNode->subParams[1].value);
+
+				/*****************************/
+				/* Loop Through Both Options */
+				/*****************************/
+				for (x = 0; x < 2; x++){
+					if (x == 0)
+						rpNode = pNode->runParams;
+					else
+						rpNode = pNode->runParams2;
+
+					while (rpNode != NULL) {
+
+						switch (rpNode->type){
+
+							/***********/
+							/* align-2 */
+							/***********/
+							case ALIGN_2_PARAM:
+								if ((offset & 0x1) != 0x0){
+									writeBYTE((unsigned char)rpNode->value);
+								}
+							break;
+
+
+							/***********/
+							/* align-4 */
+							/***********/
+							case ALIGN_4_PARAM:
+								while ((offset & 0x3) != 0x0){
+									writeBYTE((unsigned char)rpNode->value);
+								}
+							break;
+
+
+							/**************/
+							/* print-line */
+							/**************/
+							case PRINT_LINE:
+							{
+								unsigned char* pText = rpNode->str;
+								while (*pText != '\0'){
+									int numBytes;
+									unsigned char code;
+									unsigned short scode;
+									char tmp[5];
+
+									/* Read in a utf8 character */
+									numBytes = numBytesInUtf8Char((unsigned char)*pText);
+									memset(tmp, 0, 5);
+									memcpy(tmp, pText, numBytes);
+
+									/* Look up associated code */
+									if ((numBytes == 1) && (*pText == ' ')){
+										writeSW(0xF90A); /* Space */
+									}
+									else{
+										if (G_table_mode == ONE_BYTE_ENC){
+											if (getUTF8code_Byte(tmp, &code) < 0){
+												printf("Error looking up 1-byte code corresponding with UTF-8 character\n");
+												return -1;
+											}
+
+											/* Write the code to the output file */
+											writeBYTE(code);
+										}
+
+										else if (G_table_mode == TWO_BYTE_ENC){
+											if (getUTF8code_Short(tmp, &scode) < 0){
+												printf("Error looking up 2-byte code corresponding with UTF-8 character\n");
+												return -1;
+											}
+
+											/* Write the code to the output file */
+											writeSW(scode);
+										}
+
+										else{   //Straight UTF-8 Encoding
+											int z;
+
+											/* Write the data to the output file */
+											for (z = 0; z < numBytes; z++){
+												writeBYTE(tmp[z]);
+											}
+										}
+									}
+									pText += numBytes;
+								}
+							}
+							break;
+
+							/****************/
+							/* control-code */
+							/****************/
+							case CTRL_CODE:
+								writeSW((unsigned short)rpNode->value);
+								break;
+
+
+							default:
+								printf("Error, bad run cmd parameter detected.\n");
+								return -1;
+						}
+
+						rpNode = rpNode->pNext;
+					}
+				}
+			}	
+			break;
+
+
+
             default:
             {
                 printf("ERROR, unrecognized node.  HALTING output.\n");
