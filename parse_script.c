@@ -719,7 +719,7 @@ int decode_options(int id){
 				return -1;
 			}
 		}
-
+		pPrev = NULL;
 		pInput = strtok(NULL, "()\t = \r\n");
 		while (strcmp(pInput, "opt-end") != 0) {
 

@@ -132,14 +132,6 @@ int updateScript(FILE* upFile){
             return -1;
         }
 
-		/* Free Resources */
-		if (node.runParams != NULL)
-			free(node.runParams);
-		if (node.runParams2 != NULL)
-			free(node.runParams2);
-		if (node.subParams != NULL)
-			free(node.subParams);
-
         /* Check rval */
         if (rval < 0)
             return rval;
