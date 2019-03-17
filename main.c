@@ -234,8 +234,9 @@ int main(int argc, char** argv){
 
 		/* CSV File Output */
 		csvOutFile = fopen(csvOutFileName, "wb");
-		if (outFile == NULL){
+		if (csvOutFile == NULL){
 			printf("Error occurred while opening CSV output file %s for writing\n", csvOutFile);
+			return -1;
 		}
 		else{
 			rval = dumpScript(csvOutFile);

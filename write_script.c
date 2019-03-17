@@ -38,6 +38,7 @@ static int writeLW(unsigned int data);
 static int writeSW(unsigned short data);
 static int writeBYTE(unsigned char data);
 static char* formatVal(unsigned int value);
+char* ctrlCodeLkup(unsigned short ctrlCode);
 
 
 
@@ -1168,6 +1169,7 @@ int dumpScript(FILE* outFile){
 			/****************/
 			case NODE_RUN_CMDS:
 			{
+				int count = 0;
 				runParamType* rpNode = pNode->runParams;
 
 				fprintf(outFile, "%u", pNode->id);
@@ -1183,12 +1185,33 @@ int dumpScript(FILE* outFile){
 					case ALIGN_4_PARAM:
 						break;
 					case SHOW_PORTRAIT:
+						if (count == 0){
+							count++;
+						}
+						else{
+							fprintf(outFile, "\t");
+						}
+						fprintf(outFile, "\t (portrait %s)\r\n", formatVal(rpNode->value));
 						break;
 					case PRINT_LINE:
-						fprintf(outFile, "\t\"%s\"", rpNode->str);
+						if (count == 0){
+							count++;
+						}
+						else{
+							fprintf(outFile, "\t");
+						}
+
+						fprintf(outFile, "\t%s\r\n", rpNode->str);
 						break;
 					case CTRL_CODE:
-						fprintf(outFile, "\t (control-code %s) ", formatVal(rpNode->value));
+						if (count == 0){
+							count++;
+						}
+						else{
+							fprintf(outFile, "\t");
+						}
+
+						fprintf(outFile, "\t (control-code %s%s)\r\n", formatVal(rpNode->value), ctrlCodeLkup((unsigned short)rpNode->value));
 						break;
 					default:
 						printf("Error, bad run cmd parameter detected.\n");
@@ -1197,7 +1220,6 @@ int dumpScript(FILE* outFile){
 
 					rpNode = rpNode->pNext;
 				}
-				fprintf(outFile, "\r\n");
 			}
 			break;
 
@@ -1207,6 +1229,7 @@ int dumpScript(FILE* outFile){
 			/***********/
 			case NODE_OPTIONS:
 			{
+				int count = 0;
 				runParamType* rpNode = NULL;
 
 				fprintf(outFile, "%u", pNode->id);
@@ -1222,6 +1245,7 @@ int dumpScript(FILE* outFile){
 						rpNode = pNode->runParams2;
 						fprintf(outFile, "\tOpt2");
 					}
+					count = 0;
 					while (rpNode != NULL) {
 
 						switch (rpNode->type){
@@ -1231,10 +1255,25 @@ int dumpScript(FILE* outFile){
 						case ALIGN_4_PARAM:
 							break;
 						case PRINT_LINE:
-							fprintf(outFile, "\t\"%s\"", rpNode->str);
+							if (count == 0){
+								count++;
+							}
+							else{
+								fprintf(outFile, "\t");
+							}
+
+							fprintf(outFile, "\t%s\r\n", rpNode->str);
 							break;
 						case CTRL_CODE:
-							fprintf(outFile, "\t (control-code %s) ", formatVal(rpNode->value));
+							if (count == 0){
+								count++;
+							}
+							else{
+								fprintf(outFile, "\t");
+							}
+
+							fprintf(outFile, "\t (control-code %s%s)\r\n", formatVal(rpNode->value), ctrlCodeLkup((unsigned short)rpNode->value));
+							break;
 						default:
 							printf("Error, bad run cmd parameter detected.\n");
 							return -1;
@@ -1242,7 +1281,6 @@ int dumpScript(FILE* outFile){
 
 						rpNode = rpNode->pNext;
 					}
-					fprintf(outFile, "\r\n");
 				}
 			}
 			break;
@@ -1259,4 +1297,47 @@ int dumpScript(FILE* outFile){
 	}
 
 	return 0;
+}
+
+
+/*
+FF00 <WaitForButton>
+FF01 \n<AutoAdvance>\n
+FF02 <Newline>\n
+FF03 \n<NewTextBox>\n
+FF04 \n<EndText>\n
+*/
+char* ctrlCodeLkup(unsigned short ctrlCode){
+
+	static char ttxt[300];
+
+	switch (ctrlCode){
+		case 0xFF00:
+			strcpy(ttxt," <WaitForButton>");
+			break;
+		case 0xFF01:
+			strcpy(ttxt, " <ResetTextBox>");
+			break;
+		case 0xFF02:
+			strcpy(ttxt, " <Newline>");
+			break;
+		case 0xFF03:
+			strcpy(ttxt, " <CloseTextBox>");
+			break;
+		case 0xFFFF:
+			strcpy(ttxt, " <EndText>");
+			break;
+		default:
+			strcpy(ttxt, "\0");
+			break;
+	}
+
+	/* Space Check */
+	if ((ctrlCode & 0xFF00) == 0xF900){
+		int spacelen;
+		spacelen = ctrlCode & 0x00FF;
+		sprintf(ttxt, " <Space-%d>", spacelen);
+	}
+
+	return ttxt;
 }

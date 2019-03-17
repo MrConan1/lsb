@@ -1775,7 +1775,7 @@ runParamType* getRunParam(int textMode, char* pdata){
 	int x;
 	unsigned char* tmpText = NULL;
 	unsigned int numTextShorts = 0;
-
+	rpHead = rpNode = rpCurrent = NULL;
 
 	/************************************************************************/
 	/* Iterate through the data looking to separate text from control codes */
