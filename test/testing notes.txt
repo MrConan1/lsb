@@ -1,2 +1,3 @@
-encode in2.txt out.dat sss
-update input_example.txt updateexample.txt
+decode TEXT002.DAT text3.script.txt 0 sss
+update input_example.txt in22.txt updateexample.txt
+encode in22.txt out.dat sss
