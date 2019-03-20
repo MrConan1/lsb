@@ -89,6 +89,7 @@ int main(int argc, char** argv){
 	if ((strcmp(argv[1], "decode") == 0)){
 		/* Check decode parameters */
 		ienc = atoi(argv[4]);
+		setTextDecodeMethod(ienc);
 		if((argc == 6) && (strcmp(argv[5], "sss") == 0))
 			setSSSEncode();
 		if (argc > 6){
