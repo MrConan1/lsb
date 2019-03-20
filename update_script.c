@@ -694,7 +694,7 @@ int copy_options(int id, scriptNode* node){
 				return -1;
 			}
 		}
-
+		pPrev = NULL;
 		pInput = strtok(NULL, "()\t = \r\n");
 		while (strcmp(pInput, "opt-end") != 0) {
 
