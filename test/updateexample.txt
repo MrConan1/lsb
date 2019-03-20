@@ -60,4 +60,23 @@
 ) 
 )
 
+
+( insert-after-ID id=27
+(options id=274
+    (jmpparam AAAA)
+    (param2 5555)
+    (opt1)
+    (print-line "Update Test 1")
+    (control-code FFFF)
+    (opt-end)
+    (opt2)
+    (print-line "Update Test 2")
+    (control-code F400)
+    (align-2 BB)
+    (align-4 CC)
+    (control-code FFFF)
+    (opt-end)
+)
+)
+
 ( end )
