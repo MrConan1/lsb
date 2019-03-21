@@ -1200,7 +1200,6 @@ int dumpScript(FILE* outFile){
 						else{
 							fprintf(outFile, "\t");
 						}
-
 						fprintf(outFile, "\t%s\r\n", rpNode->str);
 						break;
 					case CTRL_CODE:

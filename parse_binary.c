@@ -14,6 +14,8 @@
 #define DBUF_SIZE      (128*1024)     /* 128kB */
 #define PTR_ARRAY_SIZE (2*1024)       /* 0x800 bytes, or 1024 16-bit LWs */
 
+#define UGLY_ENG_IOS_HACKS
+
 /* Globals */
 static char* pdata = NULL;
 static char* pdata2 = NULL;
@@ -270,6 +272,12 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 			case 0x0054:
 			case 0x0058: /* confirmed */
 			case 0x005B: /* confirmed */
+#ifdef UGLY_ENG_IOS_HACKS
+			case 0x005E: /* hack for iOS Eng */
+			case 0xFF00: /* hack for iOS Eng */
+			case 0xFF03: /* hack for iOS Eng */
+			case 0xFFFF: /* hack for iOS Eng */
+#endif
 			{
 				/* Create a new script node */
 				if( createScriptNode(&sNode) < 0){
@@ -322,6 +330,10 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 			case 0x005A: /* Music Select? */
 			case 0x0056:
 			case 0x0057: /* two byte arguments */
+#ifdef UGLY_ENG_IOS_HACKS
+			case 0x005F: /* hack for iOS Eng */
+			case 0x0060: /* hack for iOS Eng */
+#endif
 			{
 				/* 1 Argument to read */
 				fread(&pdata[0],2,1,inFile);
