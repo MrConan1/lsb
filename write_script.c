@@ -1226,6 +1226,15 @@ int dumpScript(FILE* outFile){
 						else 
 							fprintf(outFile, "\t (portrait-right %s)\r\n", formatVal(rpNode->value));
 						break;
+					case TIME_DELAY:
+						if (count == 0){
+							count++;
+						}
+						else{
+							fprintf(outFile, "\t");
+						}
+						fprintf(outFile, "\t (delay-time %s)\r\n", formatVal(rpNode->value));
+						break;
 					case PRINT_LINE:
 						if (count == 0){
 							count++;
