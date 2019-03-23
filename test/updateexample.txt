@@ -27,7 +27,9 @@
 )
 ( insert-after-ID id=9
 (run-commands id=33
-    (show-portrait AE)
+    (show-portrait-left AE)
+    (show-portrait-right A3)
+    (time-delay 35)
     (print-line "Testing Testing")
     (align-2 2A)
     (align-4 F5)

@@ -36,10 +36,12 @@
     (num-parameters 0)
 )
 (run-commands id=9
-    (show-portrait AE)
+    (show-portrait-left AE)
+    (show-portrait-right AB) 
     (print-line "The quick brown fox")
     (align-2 CC)
     (align-4 EE)
+    (time-delay 12)
     (control-code FFFF)
     (commands-end)
 )
