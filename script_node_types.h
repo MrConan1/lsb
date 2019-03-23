@@ -35,9 +35,11 @@
 #define LONG_PARAM    2
 #define ALIGN_2_PARAM 3
 #define ALIGN_4_PARAM 4
-#define SHOW_PORTRAIT 5
+#define SHOW_PORTRAIT_LEFT 5
 #define PRINT_LINE    6
 #define CTRL_CODE     7
+#define SHOW_PORTRAIT_RIGHT 8
+#define TIME_DELAY    9
 
 /* Struct Forward Declarations */
 typedef struct scriptNode scriptNode;

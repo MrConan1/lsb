@@ -403,7 +403,9 @@ int writeBinScript(FILE* outFile){
                     case ALIGN_4_PARAM:
                         numBytes+=3; /* overestimate for simplicity */
                         break;
-                    case SHOW_PORTRAIT:
+                    case SHOW_PORTRAIT_LEFT:
+					case SHOW_PORTRAIT_RIGHT:
+					case TIME_DELAY:
                         numBytes+=2;
                         break;
                     case PRINT_LINE:
@@ -481,10 +483,10 @@ int writeBinScript(FILE* outFile){
                             break;
 
 
-                        /*****************/
-                        /* show-portrait */
-                        /*****************/
-                        case SHOW_PORTRAIT:
+                        /**********************/
+                        /* show-portrait-left */
+                        /**********************/
+                        case SHOW_PORTRAIT_LEFT:
                         {
                             unsigned short portraitCode;
                             portraitCode = 0xFA00 | ((unsigned short)rpNode->value);
@@ -492,6 +494,27 @@ int writeBinScript(FILE* outFile){
                         }
                         break;
                     
+						/***********************/
+						/* show-portrait-right */
+						/***********************/
+						case SHOW_PORTRAIT_RIGHT:
+						{
+							unsigned short portraitCode;
+							portraitCode = 0xFB00 | ((unsigned short)rpNode->value);
+							writeSW(portraitCode);
+						}
+						break;
+
+						/**************/
+						/* time-delay */
+						/**************/
+						case TIME_DELAY:
+						{
+							unsigned short timedelay;
+							timedelay = 0xF800 | ((unsigned short)rpNode->value);
+							writeSW(timedelay);
+						}
+							break;
 
                         /**************/
                         /* print-line */
@@ -1004,9 +1027,15 @@ int writeScript(FILE* outFile){
                         case ALIGN_4_PARAM:
                             fprintf(outFile, "    (align-4 %s)\r\n", formatVal(rpNode->value));
                             break;
-                        case SHOW_PORTRAIT:
-                            fprintf(outFile, "    (show-portrait %s)\r\n", formatVal(rpNode->value & 0xFF));
+                        case SHOW_PORTRAIT_LEFT:
+                            fprintf(outFile, "    (show-portrait-left %s)\r\n", formatVal(rpNode->value & 0xFF));
                             break;
+						case SHOW_PORTRAIT_RIGHT:
+							fprintf(outFile, "    (show-portrait-right %s)\r\n", formatVal(rpNode->value & 0xFF));
+							break;
+						case TIME_DELAY:
+							fprintf(outFile, "    (time-delay %s)\r\n", formatVal(rpNode->value & 0xFF));
+							break;
                         case PRINT_LINE:
                             fprintf(outFile, "    (print-line \"%s\")\r\n", rpNode->str);
                             break;
@@ -1184,14 +1213,18 @@ int dumpScript(FILE* outFile){
 						break;
 					case ALIGN_4_PARAM:
 						break;
-					case SHOW_PORTRAIT:
+					case SHOW_PORTRAIT_LEFT:
+					case SHOW_PORTRAIT_RIGHT:
 						if (count == 0){
 							count++;
 						}
 						else{
 							fprintf(outFile, "\t");
 						}
-						fprintf(outFile, "\t (portrait %s)\r\n", formatVal(rpNode->value));
+						if (rpNode->type == SHOW_PORTRAIT_LEFT)
+							fprintf(outFile, "\t (portrait-left %s)\r\n", formatVal(rpNode->value));
+						else 
+							fprintf(outFile, "\t (portrait-right %s)\r\n", formatVal(rpNode->value));
 						break;
 					case PRINT_LINE:
 						if (count == 0){

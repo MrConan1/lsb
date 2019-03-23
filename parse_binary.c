@@ -155,6 +155,7 @@ int decodeBinaryScript(FILE* inFile, FILE* outFile){
 		sNode->ptrSize = 2;
 		sNode->ptrValueFlag = 0;
 		sNode->ptrID = pNode->id;
+		sNode->byteOffset = x*2;
 		sNode->fileOffset = byteOffset;
 
 		/* Add the node */
@@ -1868,7 +1869,15 @@ runParamType* getRunParam(int textMode, char* pdata){
 					rpNode->str = NULL;
 
 					if ((*ptrS & 0xFF00) == 0xFA00){
-						rpNode->type = SHOW_PORTRAIT;
+						rpNode->type = SHOW_PORTRAIT_LEFT;
+						rpNode->value = (*ptrS & 0x00FF);
+					}
+					else if ((*ptrS & 0xFF00) == 0xFB00){
+						rpNode->type = SHOW_PORTRAIT_RIGHT;
+						rpNode->value = (*ptrS & 0x00FF);
+					}
+					else if ((*ptrS & 0xFF00) == 0xF800){
+						rpNode->type = TIME_DELAY;
 						rpNode->value = (*ptrS & 0x00FF);
 					}
 					else{
@@ -1992,7 +2001,15 @@ runParamType* getRunParam(int textMode, char* pdata){
 						rpNode->str = NULL;
 
 						if ((short_data & 0xFF00) == 0xFA00){
-							rpNode->type = SHOW_PORTRAIT;
+							rpNode->type = SHOW_PORTRAIT_LEFT;
+							rpNode->value = (short_data & 0x00FF);
+						}
+						else if ((short_data & 0xFF00) == 0xFB00){
+							rpNode->type = SHOW_PORTRAIT_RIGHT;
+							rpNode->value = (short_data & 0x00FF);
+						}
+						else if ((short_data & 0xFF00) == 0xF800){
+							rpNode->type = TIME_DELAY;
 							rpNode->value = (short_data & 0x00FF);
 						}
 						else{
@@ -2117,7 +2134,15 @@ runParamType* getRunParam(int textMode, char* pdata){
 					rpNode->str = NULL;
 
 					if ((short_data & 0xFF00) == 0xFA00){
-						rpNode->type = SHOW_PORTRAIT;
+						rpNode->type = SHOW_PORTRAIT_LEFT;
+						rpNode->value = (short_data & 0x00FF);
+					}
+					else if ((short_data & 0xFF00) == 0xFB00){
+						rpNode->type = SHOW_PORTRAIT_RIGHT;
+						rpNode->value = (short_data & 0x00FF);
+					}
+					else if ((short_data & 0xFF00) == 0xF800){
+						rpNode->type = TIME_DELAY;
 						rpNode->value = (short_data & 0x00FF);
 					}
 					else{

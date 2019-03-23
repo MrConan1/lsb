@@ -539,19 +539,47 @@ int copy_runcmds(int id, scriptNode* node){
             memcpy(rpNode->str, pText, len);
         }
 
-        /* show-portrait */
-        else if (strcmp(pInput, "show-portrait") == 0){
-            unsigned char portraitCode;
-            pInput = strtok(NULL, "()\t = \r\n");
-            if (readBYTE(pInput, &portraitCode) < 0){
-                printf("Error invalid portrait code.\n");
-                return -1;
-            }
+		/* show-portrait-left */
+		else if (strcmp(pInput, "show-portrait-left") == 0){
+			unsigned char portraitCode;
+			pInput = strtok(NULL, "()\t = \r\n");
+			if (readBYTE(pInput, &portraitCode) < 0){
+				printf("Error invalid portrait code.\n");
+				return -1;
+			}
 
-            /* Create a runcmds parameter */
-            rpNode->type = SHOW_PORTRAIT;
-            rpNode->value = portraitCode;
-        }
+			/* Create a runcmds parameter */
+			rpNode->type = SHOW_PORTRAIT_LEFT;
+			rpNode->value = portraitCode;
+		}
+
+		/* show-portrait-right */
+		else if (strcmp(pInput, "show-portrait-right") == 0){
+			unsigned char portraitCode;
+			pInput = strtok(NULL, "()\t = \r\n");
+			if (readBYTE(pInput, &portraitCode) < 0){
+				printf("Error invalid portrait code.\n");
+				return -1;
+			}
+
+			/* Create a runcmds parameter */
+			rpNode->type = SHOW_PORTRAIT_RIGHT;
+			rpNode->value = portraitCode;
+		}
+
+		/* time-delay */
+		else if (strcmp(pInput, "time-delay") == 0){
+			unsigned char timedelay;
+			pInput = strtok(NULL, "()\t = \r\n");
+			if (readBYTE(pInput, &timedelay) < 0){
+				printf("Error invalid time delay.\n");
+				return -1;
+			}
+
+			/* Create a runcmds parameter */
+			rpNode->type = TIME_DELAY;
+			rpNode->value = timedelay;
+		}
 
         /* control-code */
         else if (strcmp(pInput, "control-code") == 0){
