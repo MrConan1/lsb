@@ -90,6 +90,12 @@ struct scriptNode
 
 	//Location when written back out to a binary file
 	unsigned int fileOffset;
+	
+	//Book-keeping for script dumps only
+	unsigned int origFileOffset;  // Original file offset of data
+	unsigned int numChildNodes;   // 0, 1, or 2
+	unsigned int pointerID;       // Pointer ID that brought the script to this node. (FFFFFFFF if unreachable)
+	unsigned int nextPointerID;   // Node ID of next non-linear script element (if it exists, FFFFFFFF otherwise)
 
 	//Linked List Pointers
     scriptNode* pNext;
