@@ -120,6 +120,8 @@ int createScriptNode(scriptNode** node){
     pNode->subParams = NULL;
     pNode->runParams = NULL;
 	pNode->runParams2 = NULL;
+	pNode->pointerID = INVALID_PTR_ID;
+	pNode->nextPointerID = INVALID_PTR_ID;
     return 0;
 }
 

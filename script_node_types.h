@@ -41,6 +41,9 @@
 #define SHOW_PORTRAIT_RIGHT 8
 #define TIME_DELAY    9
 
+/* Script Dump Defines */
+#define INVALID_PTR_ID 0xFFFFFFFF
+
 /* Struct Forward Declarations */
 typedef struct scriptNode scriptNode;
 typedef struct paramType paramType;
@@ -88,12 +91,11 @@ struct scriptNode
 	runParamType* runParams;
 	runParamType* runParams2;
 
-	//Location when written back out to a binary file
+	//When reading in binary file, stores original file offset of data
+	//When writing out to binary file, location where written to
 	unsigned int fileOffset;
-	
+
 	//Book-keeping for script dumps only
-	unsigned int origFileOffset;  // Original file offset of data
-	unsigned int numChildNodes;   // 0, 1, or 2
 	unsigned int pointerID;       // Pointer ID that brought the script to this node. (FFFFFFFF if unreachable)
 	unsigned int nextPointerID;   // Node ID of next non-linear script element (if it exists, FFFFFFFF otherwise)
 

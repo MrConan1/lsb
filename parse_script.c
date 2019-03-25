@@ -131,6 +131,10 @@ int encodeScript(FILE* infile, FILE* outfile){
         printf("Error invalid max_size_bytes\n");
         return -1;
     }
+
+	/* Default to sega saturn limitation if not set */
+	if (max_size_bytes == 0)
+		max_size_bytes = 0x10000;
     setBinMaxSize(max_size_bytes);
 
 

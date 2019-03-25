@@ -23,6 +23,7 @@
 /***********************/
 void setSSSEncode();
 void swap16(void* pWd);
+void swap32(void* pWd);
 int numBytesInUtf8Char(unsigned char val);
 int loadUTF8Table(char* fname);
 int getUTF8character(int index, char* utf8Value);
@@ -88,6 +89,24 @@ void swap16(void* pWd){
     return;
 }
 
+
+
+/****************************/
+/* swap32                   */
+/* Endian swap 32-bit data  */
+/****************************/
+void swap32(void* pWd){
+	char* ptr;
+	char temp[4];
+	ptr = pWd;
+	temp[3] = ptr[0];
+	temp[2] = ptr[1];
+	temp[1] = ptr[2];
+	temp[0] = ptr[3];
+	memcpy(ptr, temp, 4);
+
+	return;
+}
 
 
 

@@ -363,6 +363,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 				for(z = 0; z < (int)sNode->num_parameters; z++){
 					params[z].type = SHORT_PARAM;
 					params[z].value = pShort[z];
+					swap16(&params[z].value);
 				}
 
 				sNode->subParams = params;
@@ -418,6 +419,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 				for(z = 0; z < (int)sNode->num_parameters; z++){
 					params[z].type = SHORT_PARAM;
 					params[z].value = pShort[z];
+					swap16(&params[z].value);
 				}
 
 				sNode->subParams = params;
@@ -466,6 +468,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 				for (z = 0; z < (int)sNode->num_parameters; z++){
 					params[z].type = SHORT_PARAM;
 					params[z].value = pShort[z];
+					swap16(&params[z].value);
 				}
 
 				sNode->subParams = params;
@@ -515,6 +518,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 				for (z = 0; z < (int)sNode->num_parameters; z++){
 					params[z].type = SHORT_PARAM;
 					params[z].value = pShort[z];
+					swap16(&params[z].value);
 				}
 
 				sNode->subParams = params;
@@ -562,7 +566,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 				sNode->id = G_ID++;
 				sNode->nodeType = NODE_EXE_SUB;
 				sNode->subroutine_code = cmd;
-				sNode->num_parameters = 3;
+				sNode->num_parameters = 2;
 				sNode->alignfillVal = 0x00;
 
 				/* Allocate memory for EXE parameters */
@@ -576,17 +580,15 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 				params[0].value = 0x00;
 
 				/* Fill in EXE Parameters */
-				if(bytesToRead == 6){
-					for (z = 1; z < (int)sNode->num_parameters; z++){
-					   params[z].type = SHORT_PARAM;
-					   params[z].value = pShort[z];
-					}
+				params[1].type = LONG_PARAM;
+
+				if (bytesToRead == 6){
+					params[1].value = *((unsigned int *)(&pShort[1]));
+					swap32(&params[1].value);
 				}
-				else{   // 4 bytes
-					for (z = 1; z < (int)sNode->num_parameters; z++){
-					   params[z].type = SHORT_PARAM;
-					   params[z].value = pShort[z-1];
-					}
+				else{  // 4 bytes
+					params[1].value = *((unsigned int *)(&pShort[0]));
+					swap32(&params[1].value);
 				}
 
 				sNode->subParams = params;
@@ -645,15 +647,18 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 				/* Fill in EXE Parameters */
 				params[0].type = SHORT_PARAM;
 				params[0].value = pShort[0];
+				swap16(&params[0].value);
 				params[1].type = ALIGN_4_PARAM;
 				params[1].value = 0x00;
 				params[2].type = LONG_PARAM;
 
 				if(bytesToRead == 6){
 					params[2].value = *((unsigned int *)(&pShort[1]));
+					swap32(&params[2].value);
 				}
 				else{  // == 8
 					params[2].value = *((unsigned int *)(&pShort[2]));
+					swap32(&params[2].value);
 				}
 
 				sNode->subParams = params;
@@ -729,6 +734,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 				for (z = 0; z < (int)sNode->num_parameters; z++){
 					params[z].type = SHORT_PARAM;
 					params[z].value = pShort[z];
+					swap16(&params[z].value);
 				}
 
 				sNode->subParams = params;
@@ -789,6 +795,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 				for (z = 0; z < (int)sNode->num_parameters; z++){
 					params[z].type = SHORT_PARAM;
 					params[z].value = pShort[z];
+					swap16(&params[z].value);
 				}
 
 				sNode->subParams = params;
@@ -895,6 +902,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 				for (z = 0; z < (int)sNode->num_parameters; z++){
 					params[z].type = SHORT_PARAM;
 					params[z].value = pShort[z];
+					swap16(&params[z].value);
 				}
 
 				sNode->subParams = params;
@@ -929,11 +937,12 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 				fread(&pdata[index], 2, 1, inFile);  /* Read 1st arg */
 				do
 				{
-					index++;
+					index+=2;
 					fread(&pdata[index], 2, 1, inFile); /* Read args 2 to N */
 					val = (short*)(&pdata[index]);
 				} while (*val != (short)0x0000);
-				index++;
+				index+=2;
+				index /= 2;
 
 
 				/* Create a new script node */
@@ -960,6 +969,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 				for (z = 0; z < (int)sNode->num_parameters; z++){
 					params[z].type = SHORT_PARAM;
 					params[z].value = pShort[z];
+					swap16(&params[z].value);
 				}
 
 				sNode->subParams = params;
@@ -990,11 +1000,12 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 				fread(&pdata[index], 2, 1, inFile);
 				val = (short*)(&pdata[index]);
 				while (*val != (short)0x0000){
-					index++;
+					index+=2;
 					fread(&pdata[index], 2, 1, inFile);
 					val = (short*)(&pdata[index]);
 				}
-				index++;
+				index+=2;
+				index /= 2;
 
 				/* Create a new script node */
 				if( createScriptNode(&sNode) < 0){
@@ -1020,6 +1031,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 				for (z = 0; z < (int)sNode->num_parameters; z++){
 					params[z].type = SHORT_PARAM;
 					params[z].value = pShort[z];
+					swap16(&params[z].value);
 				}
 
 				sNode->subParams = params;
@@ -1100,6 +1112,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 				for (z = 0; z < (int)sNode->num_parameters; z++){
 					params[z].type = SHORT_PARAM;
 					params[z].value = pShort[z];
+					swap16(&params[z].value);
 				}
 
 				sNode->subParams = params;
@@ -1493,6 +1506,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 				for (z = 0; z < (int)sNode->num_parameters; z++){
 					params[z].type = SHORT_PARAM;
 					params[z].value = pShort[z];
+					swap16(&params[z].value);
 				}
 
 				sNode->subParams = params;
@@ -1566,6 +1580,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 				for (z = 0; z < (int)sNode->num_parameters; z++){
 					params[z].type = SHORT_PARAM;
 					params[z].value = pShort[z];
+					swap16(&params[z].value);
 				}
 
 				sNode->subParams = params;
@@ -1635,6 +1650,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 				for (z = 0; z < (int)sNode->num_parameters; z++){
 					params[z].type = SHORT_PARAM;
 					params[z].value = pShort[z];
+					swap16(&params[z].value);
 				}
 
 				sNode->subParams = params;
@@ -1711,6 +1727,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 				for (z = 0; z < (int)sNode->num_parameters; z++){
 					params[z].type = SHORT_PARAM;
 					params[z].value = pShort[z];
+					swap16(&params[z].value);
 				}
 
 				sNode->subParams = params;
