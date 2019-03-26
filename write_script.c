@@ -1140,7 +1140,7 @@ int dumpScript(FILE* outFile){
 	scriptNode* pNode = NULL;
 
 	/* Output Header */
-	fprintf(outFile, "Node ID\tType\tJP Text\r\n");
+	fprintf(outFile, "Parent Ptr\tNode ID\tType\tJP Text\tCtrl Codes\r\n");
 
 	/* Get a Pointer to the Head of the linked list */
 	pNode = getHeadPtr();
@@ -1188,7 +1188,124 @@ int dumpScript(FILE* outFile){
 			/*****************************************************/
 			case NODE_EXE_SUB:
 			{
-				;
+				switch (pNode->subroutine_code){
+
+					/* RETURNS */
+					case 0x0005:
+					case 0x0026:
+					{
+						if (pNode->pointerID != INVALID_PTR_ID)
+							fprintf(outFile, "%u", pNode->pointerID);
+
+						fprintf(outFile, "\t%u", pNode->id);
+
+						if (pNode->subroutine_code == 0x0005)
+							fprintf(outFile, "\tRETURN\r\n");
+						else{
+							int x;
+							fprintf(outFile, "\tEXIT ");
+
+							for (x = 0; x < (int)(pNode->num_parameters); x++){
+								if (x >= 1)
+									fprintf(outFile, ",");
+								fprintf(outFile, "%d", pNode->subParams[x].value);
+							}
+							fprintf(outFile, "\r\n");
+						}
+						break;
+					}
+
+					/* UNCONDITIONAL JUMP */
+					case 0x0003:
+					case 0x0004:
+					{
+						if (pNode->pointerID != INVALID_PTR_ID)
+							fprintf(outFile, "%u", pNode->pointerID);
+
+						fprintf(outFile, "\t%u", pNode->id);
+
+						if (pNode->subroutine_code == 0x0003)
+							fprintf(outFile, "\tJUMP ");
+						else
+							fprintf(outFile, "\tJUMP_%X ",pNode->subroutine_code);
+						fprintf(outFile, "%d\r\n",pNode->subParams[0].value);
+						break;
+					}
+
+					/* BIT ROUTINES */
+					case 0x0008:
+					case 0x0009:
+					case 0x000A:
+					{
+						if (pNode->pointerID != INVALID_PTR_ID)
+							fprintf(outFile, "%u", pNode->pointerID);
+
+						fprintf(outFile, "\t%u", pNode->id);
+
+						if (pNode->subroutine_code == 0x0009)
+							fprintf(outFile, "\tSET ");
+						else if (pNode->subroutine_code == 0x000A)
+							fprintf(outFile, "\tRESET ");
+						else
+							fprintf(outFile, "\tRND ");
+
+						for (x = 0; x < (int)(pNode->num_parameters-1); x++){
+							if (x >= 1)
+								fprintf(outFile, ",");
+							fprintf(outFile, "%d", pNode->subParams[x].value);
+						}
+						fprintf(outFile, "\r\n");
+						break;
+					}
+
+					/* CONDITIONAL JUMP */
+					case 0x000B: /* AND */
+					case 0x000C: /* NOT */
+					case 0x000D: /* OR  */
+					case 0x0010: /* ?? */
+					case 0x0011: /* ?? */
+					case 0x0016: /* ?? */
+					{
+						int x;
+
+						if (pNode->pointerID != INVALID_PTR_ID)
+							fprintf(outFile, "%u", pNode->pointerID);
+
+						fprintf(outFile, "\t%u", pNode->id);
+
+						if (pNode->subroutine_code == 0x000B)
+							fprintf(outFile, "\tAND %d:", pNode->subParams[0].value);
+						else if (pNode->subroutine_code == 0x000C)
+							fprintf(outFile, "\tNOT %d:", pNode->subParams[0].value);
+						else if (pNode->subroutine_code == 0x000D)
+							fprintf(outFile, "\tOR %d:", pNode->subParams[0].value);
+						else
+							fprintf(outFile, "\tUNKNOWN_%X %d:", pNode->subroutine_code, pNode->subParams[0].value);
+
+						for (x = 1; x < (int)(pNode->num_parameters-1); x++){
+							if (x >= 2)
+								fprintf(outFile, ",");
+							fprintf(outFile, "%d", pNode->subParams[x].value);
+						}
+						fprintf(outFile, "\r\n");
+						break;
+					}
+
+					case 0x0042: /* JUMPPACK */
+					{
+						if (pNode->pointerID != INVALID_PTR_ID)
+							fprintf(outFile, "%u", pNode->pointerID);
+
+						fprintf(outFile, "\t%u", pNode->id);
+
+						fprintf(outFile, "\tJUMPPACK %d:%d", (pNode->subParams[1].value>>8) & 0xFF,pNode->subParams[0].value);
+						fprintf(outFile, "\r\n");
+						break;
+					}
+
+					default:
+						; /* Do Nothing */
+				}
 			}
 			break;
 
@@ -1198,12 +1315,15 @@ int dumpScript(FILE* outFile){
 			/****************/
 			case NODE_RUN_CMDS:
 			{
-				int count = 0;
+				int ctrlMode = 0;
 				runParamType* rpNode = pNode->runParams;
 
-				fprintf(outFile, "%u", pNode->id);
+				if (pNode->pointerID != INVALID_PTR_ID)
+					fprintf(outFile, "%u", pNode->pointerID);
 
-				fprintf(outFile, "\tDialog", pNode->id);
+				fprintf(outFile, "\t%u", pNode->id);
+
+				fprintf(outFile, "\tTALK", pNode->id);
 
 				while (rpNode != NULL) {
 
@@ -1215,53 +1335,44 @@ int dumpScript(FILE* outFile){
 						break;
 					case SHOW_PORTRAIT_LEFT:
 					case SHOW_PORTRAIT_RIGHT:
-						if (count == 0){
-							count++;
-						}
-						else{
-							fprintf(outFile, "\t");
+						if (ctrlMode == 1){
+							ctrlMode = 0;
+							fprintf(outFile, "\r\n\t\t");
 						}
 						if (rpNode->type == SHOW_PORTRAIT_LEFT)
-							fprintf(outFile, "\t (portrait-left %s)\r\n", formatVal(rpNode->value));
+							fprintf(outFile, "\t>%d", rpNode->value);
 						else 
-							fprintf(outFile, "\t (portrait-right %s)\r\n", formatVal(rpNode->value));
-						break;
-					case TIME_DELAY:
-						if (count == 0){
-							count++;
-						}
-						else{
-							fprintf(outFile, "\t");
-						}
-						fprintf(outFile, "\t (delay-time %s)\r\n", formatVal(rpNode->value));
+							fprintf(outFile, "\t<%d", rpNode->value);
+						ctrlMode = 1;
 						break;
 					case PRINT_LINE:
-						if (count == 0){
-							count++;
-						}
-						else{
-							fprintf(outFile, "\t");
-						}
-						fprintf(outFile, "\t%s\r\n", rpNode->str);
-						break;
-					case CTRL_CODE:
-						if (count == 0){
-							count++;
-						}
-						else{
-							fprintf(outFile, "\t");
+						if (ctrlMode == 1){
+							ctrlMode = 0;
+							fprintf(outFile, "\r\n\t\t");
 						}
 
-						fprintf(outFile, "\t (control-code %s%s)\r\n", formatVal(rpNode->value), ctrlCodeLkup((unsigned short)rpNode->value));
+						fprintf(outFile, "\t%s\t", rpNode->str);
+						ctrlMode = 1;
+						break;
+					case TIME_DELAY:
+					case CTRL_CODE:
+						if (ctrlMode == 0){
+							ctrlMode = 1;
+							fprintf(outFile, "\t\t");
+						}
+						else{
+							fprintf(outFile, "(control-code %s%s) ", formatVal(rpNode->value), ctrlCodeLkup((unsigned short)rpNode->value));
+						}
 						break;
 					default:
 						printf("Error, bad run cmd parameter detected.\n");
 						return -1;
 					}
-
 					rpNode = rpNode->pNext;
 				}
+				fprintf(outFile, "\r\n");
 			}
+
 			break;
 
 
@@ -1270,11 +1381,13 @@ int dumpScript(FILE* outFile){
 			/***********/
 			case NODE_OPTIONS:
 			{
-				int count = 0;
+				int ctrlMode = 0;
 				runParamType* rpNode = NULL;
 
-				fprintf(outFile, "%u", pNode->id);
+				if (pNode->pointerID != INVALID_PTR_ID)
+					fprintf(outFile, "%u", pNode->pointerID);
 
+				fprintf(outFile, "\t%u", pNode->id);
 
 				/* Fixed at 2 options */
 				for (x = 0; x < 2; x++){
@@ -1284,9 +1397,9 @@ int dumpScript(FILE* outFile){
 					}
 					else{
 						rpNode = pNode->runParams2;
-						fprintf(outFile, "\tOpt2");
+						fprintf(outFile, "\r\n\t\tOpt2 : %d",pNode->subParams[0].value);
 					}
-					count = 0;
+					ctrlMode = 0;
 					while (rpNode != NULL) {
 
 						switch (rpNode->type){
@@ -1296,24 +1409,25 @@ int dumpScript(FILE* outFile){
 						case ALIGN_4_PARAM:
 							break;
 						case PRINT_LINE:
-							if (count == 0){
-								count++;
-							}
-							else{
-								fprintf(outFile, "\t");
+
+							if (ctrlMode == 1){
+								ctrlMode = 0;
+								fprintf(outFile, "\r\n\t\t");
 							}
 
-							fprintf(outFile, "\t%s\r\n", rpNode->str);
+							fprintf(outFile, "\t%s\t", rpNode->str);
+							ctrlMode = 1;
 							break;
 						case CTRL_CODE:
-							if (count == 0){
-								count++;
+
+							if (ctrlMode == 0){
+								ctrlMode = 1;
+								fprintf(outFile, "\t\t");
 							}
 							else{
-								fprintf(outFile, "\t");
+								fprintf(outFile, "(control-code %s%s) ", formatVal(rpNode->value), ctrlCodeLkup((unsigned short)rpNode->value));
 							}
 
-							fprintf(outFile, "\t (control-code %s%s)\r\n", formatVal(rpNode->value), ctrlCodeLkup((unsigned short)rpNode->value));
 							break;
 						default:
 							printf("Error, bad run cmd parameter detected.\n");
@@ -1323,7 +1437,9 @@ int dumpScript(FILE* outFile){
 						rpNode = rpNode->pNext;
 					}
 				}
+				fprintf(outFile, "\r\n");
 			}
+
 			break;
 
 
@@ -1380,5 +1496,229 @@ char* ctrlCodeLkup(unsigned short ctrlCode){
 		sprintf(ttxt, " <Space-%d>", spacelen);
 	}
 
+	/* Delay Check */
+	if ((ctrlCode & 0xFF00) == 0xF800){
+		int delaylen;
+		delaylen = ctrlCode & 0x00FF;
+		sprintf(ttxt, " <Delay-%d>", delaylen);
+	}
+
 	return ttxt;
 }
+
+
+
+#if 0
+/*****************************************************************************/
+/* Function: dumpScriptText                                                  */
+/* Purpose: Reads from a linked list data structure in memory to create a    */
+/*          CSV tab delimited version of the script.                         */
+/* Inputs:  Pointer to output file.                                          */
+/* Outputs: 0 on Pass, -1 on Fail.                                           */
+/*****************************************************************************/
+int dumpScript(FILE* outFile){
+
+	int x;
+	scriptNode* pNode = NULL;
+
+	/* Output Header */
+	fprintf(outFile, "Node ID\tType\tJP Text\r\n");
+
+	/* Get a Pointer to the Head of the linked list */
+	pNode = getHeadPtr();
+
+	/******************************************************************/
+	/* Loop until the binary output corresponding to all list entries */
+	/* has been output to memory.  Then write to disk.                */
+	/******************************************************************/
+	while (pNode != NULL){
+
+		switch (pNode->nodeType){
+
+			/********/
+			/* goto */
+			/********/
+		case NODE_GOTO:
+		{
+			;
+		}
+			break;
+
+
+			/********/
+			/* fill */
+			/********/
+		case NODE_FILL_SPACE:
+		{
+			;
+		}
+			break;
+
+
+			/***********/
+			/* pointer */
+			/***********/
+		case NODE_POINTER:
+		{
+			;
+		}
+			break;
+
+
+			/*****************************************************/
+			/* execute-subroutine                                */
+			/*****************************************************/
+		case NODE_EXE_SUB:
+		{
+			;
+		}
+			break;
+
+
+			/****************/
+			/* run-commands */
+			/****************/
+		case NODE_RUN_CMDS:
+		{
+			int count = 0;
+			runParamType* rpNode = pNode->runParams;
+
+			fprintf(outFile, "%u", pNode->id);
+
+			fprintf(outFile, "\tDialog", pNode->id);
+
+			while (rpNode != NULL) {
+
+				switch (rpNode->type){
+
+				case ALIGN_2_PARAM:
+					break;
+				case ALIGN_4_PARAM:
+					break;
+				case SHOW_PORTRAIT_LEFT:
+				case SHOW_PORTRAIT_RIGHT:
+					if (count == 0){
+						count++;
+					}
+					else{
+						fprintf(outFile, "\t");
+					}
+					if (rpNode->type == SHOW_PORTRAIT_LEFT)
+						fprintf(outFile, "\t (portrait-left %s)\r\n", formatVal(rpNode->value));
+					else
+						fprintf(outFile, "\t (portrait-right %s)\r\n", formatVal(rpNode->value));
+					break;
+				case TIME_DELAY:
+					if (count == 0){
+						count++;
+					}
+					else{
+						fprintf(outFile, "\t");
+					}
+					fprintf(outFile, "\t (delay-time %s)\r\n", formatVal(rpNode->value));
+					break;
+				case PRINT_LINE:
+					if (count == 0){
+						count++;
+					}
+					else{
+						fprintf(outFile, "\t");
+					}
+					fprintf(outFile, "\t%s\r\n", rpNode->str);
+					break;
+				case CTRL_CODE:
+					if (count == 0){
+						count++;
+					}
+					else{
+						fprintf(outFile, "\t");
+					}
+
+					fprintf(outFile, "\t (control-code %s%s)\r\n", formatVal(rpNode->value), ctrlCodeLkup((unsigned short)rpNode->value));
+					break;
+				default:
+					printf("Error, bad run cmd parameter detected.\n");
+					return -1;
+				}
+
+				rpNode = rpNode->pNext;
+			}
+		}
+			break;
+
+
+			/***********/
+			/* Options */
+			/***********/
+		case NODE_OPTIONS:
+		{
+			int count = 0;
+			runParamType* rpNode = NULL;
+
+			fprintf(outFile, "%u", pNode->id);
+
+
+			/* Fixed at 2 options */
+			for (x = 0; x < 2; x++){
+				if (x == 0){
+					rpNode = pNode->runParams;
+					fprintf(outFile, "\tOpt1");
+				}
+				else{
+					rpNode = pNode->runParams2;
+					fprintf(outFile, "\tOpt2");
+				}
+				count = 0;
+				while (rpNode != NULL) {
+
+					switch (rpNode->type){
+
+					case ALIGN_2_PARAM:
+						break;
+					case ALIGN_4_PARAM:
+						break;
+					case PRINT_LINE:
+						if (count == 0){
+							count++;
+						}
+						else{
+							fprintf(outFile, "\t");
+						}
+
+						fprintf(outFile, "\t%s\r\n", rpNode->str);
+						break;
+					case CTRL_CODE:
+						if (count == 0){
+							count++;
+						}
+						else{
+							fprintf(outFile, "\t");
+						}
+
+						fprintf(outFile, "\t (control-code %s%s)\r\n", formatVal(rpNode->value), ctrlCodeLkup((unsigned short)rpNode->value));
+						break;
+					default:
+						printf("Error, bad run cmd parameter detected.\n");
+						return -1;
+					}
+
+					rpNode = rpNode->pNext;
+				}
+			}
+		}
+			break;
+
+
+		default:
+		{
+			printf("ERROR, unrecognized node.  HALTING output.\n");
+			return -1;
+		}
+			break;
+		}
+		pNode = pNode->pNext;
+	}
+
+	return 0;
+}
+#endif
