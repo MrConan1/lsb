@@ -1227,7 +1227,7 @@ int dumpScript(FILE* outFile){
 						if (pNode->subroutine_code == 0x0003)
 							fprintf(outFile, "\tJUMP ");
 						else
-							fprintf(outFile, "\tJUMP_%X ",pNode->subroutine_code);
+							fprintf(outFile, "\tCALL ");
 						fprintf(outFile, "%d\r\n",pNode->subParams[0].value);
 						break;
 					}
@@ -1300,6 +1300,39 @@ int dumpScript(FILE* outFile){
 
 						fprintf(outFile, "\tJUMPPACK %d:%d", (pNode->subParams[1].value>>8) & 0xFF,pNode->subParams[0].value);
 						fprintf(outFile, "\r\n");
+						break;
+					}
+
+					case 0x001D:
+					{
+						if (pNode->pointerID != INVALID_PTR_ID)
+							fprintf(outFile, "%u", pNode->pointerID);
+
+						fprintf(outFile, "\t%u", pNode->id);
+						fprintf(outFile, "\tTAKEMONEY ");
+						fprintf(outFile, "%d\r\n", pNode->subParams[1].value);
+						break;
+					}
+
+					case 0x001E:
+					{
+						if (pNode->pointerID != INVALID_PTR_ID)
+							fprintf(outFile, "%u", pNode->pointerID);
+
+						fprintf(outFile, "\t%u", pNode->id);
+						fprintf(outFile, "\tCHKMONEY ");
+						fprintf(outFile, "%d:%d\r\n", pNode->subParams[0].value, pNode->subParams[1].value);
+						break;
+					}
+
+					case 0x0021:
+					{
+						if (pNode->pointerID != INVALID_PTR_ID)
+							fprintf(outFile, "%u", pNode->pointerID);
+
+						fprintf(outFile, "\t%u", pNode->id);
+						fprintf(outFile, "\tCHKITEM ");
+						fprintf(outFile, "%d:%d,%d\r\n", pNode->subParams[0].value, (pNode->subParams[1].value&0xFF00)>>8, pNode->subParams[1].value&0xFF);
 						break;
 					}
 
