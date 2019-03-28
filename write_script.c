@@ -1188,17 +1188,363 @@ int dumpScript(FILE* outFile){
 			/*****************************************************/
 			case NODE_EXE_SUB:
 			{
+				int x;
+
+				if (pNode->pointerID != INVALID_PTR_ID)
+					fprintf(outFile, "%u", pNode->pointerID);
+				fprintf(outFile, "\t%u", pNode->id);
+
 				switch (pNode->subroutine_code){
+
+					/* CHRREST */
+					case 0x000F:
+					{
+						fprintf(outFile, "\tCHRREST ");
+						int numparam = pNode->num_parameters;
+						for (x = 0; x < numparam; x++){
+							int val1, val2;
+							if (x > 0)
+								fprintf(outFile, ",");
+							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+							val2 = pNode->subParams[x].value & 0xFF;
+							if (x == (int)(pNode->num_parameters - 1))
+								fprintf(outFile, "%d", val1);
+							else
+								fprintf(outFile, "%d,%d", val1, val2);
+						}
+						break;
+					}
+
+
+					/* OPENRESET */
+					case 0x0019:
+					{
+						fprintf(outFile, "\tOPENRESET %d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
+						break;
+					}
+
+
+					/* TAKEMONEY */
+					case 0x001D:
+					{
+						fprintf(outFile, "\tTAKEMONEY %d\r\n", 
+							pNode->subParams[1].value);
+						break;
+					}
+
+					/* CHKMONEY */
+					case 0x001E:
+					{
+						fprintf(outFile, "\tCHKMONEY %d:%d\r\n", 
+							pNode->subParams[0].value, pNode->subParams[1].value);
+						break;
+					}
+
+					/* SETITEM */
+					case 0x001F:
+					{
+						fprintf(outFile, "\tSETITEM %d,%d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8, pNode->subParams[0].value & 0xFF);
+						break;
+					}
+
+					/* CHKITEM */
+					case 0x0021:
+					{
+						fprintf(outFile, "\tCHKITEM %d:%d,%d\r\n", 
+							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
+						break;
+					}
+
+					/* WITHIN */
+					case 0x0023:
+					{
+						fprintf(outFile, "\tWITHIN %d,%d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8, pNode->subParams[0].value & 0xFF);
+						break;
+					}
+
+					/* KILL */
+					case 0x0025:
+					{
+						fprintf(outFile, "\tKILL ");
+						int numparam = pNode->num_parameters;
+						for (x = 0; x < numparam; x++){
+							int val1, val2;
+							if (x > 0)
+								fprintf(outFile, ",");
+							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+							val2 = pNode->subParams[x].value & 0xFF;
+							if (x == (int)(pNode->num_parameters - 1))
+								fprintf(outFile, "%d", val1);
+							else
+								fprintf(outFile, "%d,%d", val1, val2);
+						}
+						break;
+					}
+
+					/* WARP */
+					case 0x0027:
+					{
+						fprintf(outFile, "\tWARP %d,%d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8, pNode->subParams[0].value & 0xFF);
+						break;
+					}
+
+					/* OPEN */
+					case 0x0028:
+					{
+						fprintf(outFile, "\tOPEN %d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
+						break;
+					}
+
+					/* FADEOUT */
+					case 0x0029:
+					{
+						fprintf(outFile, "\tFADEOUT %d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
+						break;
+					}
+
+					/* FADEIN */
+					case 0x002A:
+					{
+						fprintf(outFile, "\tFADEIN %d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
+						break;
+					}
+
+					/* SHAKE */
+					case 0x002C:
+					{
+						fprintf(outFile, "\tSHAKE %d",
+							(pNode->subParams[0].value & 0xFF00) >> 8);
+						for (x = 1; x < (int)(pNode->num_parameters); x++){
+							int val1, val2;
+							fprintf(outFile, ",");
+							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+							val2 = pNode->subParams[x].value & 0xFF;
+							if (x == (int)(pNode->num_parameters-1))
+								fprintf(outFile, "%d", val1);
+							else
+								fprintf(outFile, "%d,%d", val1, val2);
+						}
+						break;
+					}
+
+					/* EVENT */
+					case 0x002D:
+					{
+						fprintf(outFile, "\tEVENT ");
+						int numparam = pNode->num_parameters;
+						for (x = 0; x < numparam; x++){
+							int val1, val2;
+							if (x > 0)
+								fprintf(outFile, ",");
+							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+							val2 = pNode->subParams[x].value & 0xFF;
+							if (x == (int)(pNode->num_parameters - 1))
+								fprintf(outFile, "%d", val1);
+							else
+								fprintf(outFile, "%d,%d", val1, val2);
+						}
+						break;
+					}
+
+					/* PLAY */
+					case 0x0030:
+					{
+						fprintf(outFile, "\tPLAY %d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
+						break;
+					}
+
+					/* SE */
+					case 0x0031:
+					{
+						fprintf(outFile, "\tSE:%d:\r\n", pNode->subParams[0].value);
+						break;
+					}
+
+					/* MVSTART */
+					case 0x0032:
+					{
+						fprintf(outFile, "\tMVSTART\r\n");
+						break;
+					}
+
+					/* MVEND */
+					case 0x0033:
+					{
+						fprintf(outFile, "\tMVEND\r\n");
+						break;
+					}
+
+					/* MVSET */
+					case 0x0034:
+					{
+						fprintf(outFile, "\tMVSET %d:%d", (pNode->subParams[0].value & 0xFF00) >> 8, pNode->subParams[0].value & 0xFF);
+						if (((pNode->subParams[0].value & 0xFF00) >> 8) >= 0xB){
+							int val1, val2;
+							fprintf(outFile, ",");
+							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+							val2 = pNode->subParams[x].value & 0xFF;
+							if (x == (int)(pNode->num_parameters - 1))
+								fprintf(outFile, "%d", val1);
+							else
+								fprintf(outFile, "%d,%d", val1, val2);
+						}
+						fprintf(outFile, "\r\n");
+						break;
+					}
+
+					/* MVKILL */
+					case 0x0035:
+					{
+						fprintf(outFile, "\tMVKILL\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
+						break;
+					}
+
+					/* MVDATA */
+					case 0x0038:
+					{
+						fprintf(outFile, "\tMVDATA (TBD)\r\n");
+						break;
+					}
+
+					/* MVPARTYOFF */
+					case 0x003A:
+					{
+						fprintf(outFile, "\tMVPARTYOFF\r\n");
+						break;
+					}
+
+
+					/* MVSTOPOFF */
+					case 0x003C:
+					{
+						fprintf(outFile, "\tMVSTOPOFF\r\n");
+						break;
+					}
+
+					/* MVSYNC */
+					case 0x003D:
+					{
+						fprintf(outFile, "\tMVSYNC\r\n");
+						break;
+					}
+
+					/* FACELOAD */
+					case 0x003E:
+					{
+						fprintf(outFile, "\tFACELOAD ");
+						int numparam = pNode->num_parameters;
+						for (x = 0; x < numparam; x++){
+							int val1, val2;
+							if (x > 0)
+								fprintf(outFile, ",");
+							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+							val2 = pNode->subParams[x].value & 0xFF;
+							if (x == (int)(pNode->num_parameters - 1))
+								fprintf(outFile, "%d", val1);
+							else
+								fprintf(outFile, "%d,%d", val1, val2);
+						}
+						break;
+					}
+
+					/* MVSCROFF */
+					case 0x0040:
+					{
+						fprintf(outFile, "\tMVSCROFF\r\n");
+						break;
+					}
+
+
+					/* CHRON */
+					case 0x0041:
+					{
+						fprintf(outFile, "\tCHRON %d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
+						break;
+					}
+
+					/* WIPEIN */
+					case 0x0045:
+					{
+						fprintf(outFile, "\tWIPEIN %d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
+						break;
+					}
+
+					/* OFFSET */
+					case 0x0046:
+					{
+						fprintf(outFile, "\tOFFSET ");
+						int numparam = pNode->num_parameters;
+						for (x = 0; x < numparam; x++){
+							int val1, val2;
+							if (x > 0)
+								fprintf(outFile, ",");
+							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+							val2 = pNode->subParams[x].value & 0xFF;
+							if (x == (int)(pNode->num_parameters - 1))
+								fprintf(outFile, "%d", val1);
+							else
+								fprintf(outFile, "%d,%d", val1, val2);
+						}
+						break;
+					}
+
+					/* COLMIX */
+					case 0x0047:
+					{
+						fprintf(outFile, "\tCOLMIX ");
+						int numparam = pNode->num_parameters;
+						for (x = 0; x < numparam; x++){
+							int val1, val2;
+							if (x > 0)
+								fprintf(outFile, ",");
+							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+							val2 = pNode->subParams[x].value & 0xFF;
+							fprintf(outFile, "%d,%d", val1, val2);
+						}
+						break;
+					}
+
+					/* VOICELOAD */
+					case 0x0052:
+					{
+						fprintf(outFile, "\tVOICELOAD %d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
+						break;
+					}
+
+					/* VOICE */
+					case 0x0053:
+					{
+						fprintf(outFile, "\tVOICE\r\n");
+						break;
+					}
+
+					/* VOICESYNC */
+					case 0x0054:
+					{
+						fprintf(outFile, "\tVOICESYNC\r\n");
+						break;
+					}
+
+					/* FEEDSET */
+					case 0x0055:
+					{
+						fprintf(outFile, "\tFEEDSET\r\n");
+						break;
+					}
+
+					/* VOLUME */
+					case 0x005A:
+					{
+						fprintf(outFile, "\tVOLUME %d,%d\r\n", 
+							(pNode->subParams[0].value & 0xFF00) >> 8, (pNode->subParams[0].value & 0xFF));
+						break;
+					}
+
 
 					/* RETURNS */
 					case 0x0005:
 					case 0x0026:
 					{
-						if (pNode->pointerID != INVALID_PTR_ID)
-							fprintf(outFile, "%u", pNode->pointerID);
-
-						fprintf(outFile, "\t%u", pNode->id);
-
 						if (pNode->subroutine_code == 0x0005)
 							fprintf(outFile, "\tRETURN\r\n");
 						else{
@@ -1219,11 +1565,6 @@ int dumpScript(FILE* outFile){
 					case 0x0003:
 					case 0x0004:
 					{
-						if (pNode->pointerID != INVALID_PTR_ID)
-							fprintf(outFile, "%u", pNode->pointerID);
-
-						fprintf(outFile, "\t%u", pNode->id);
-
 						if (pNode->subroutine_code == 0x0003)
 							fprintf(outFile, "\tJUMP ");
 						else
@@ -1237,11 +1578,6 @@ int dumpScript(FILE* outFile){
 					case 0x0009:
 					case 0x000A:
 					{
-						if (pNode->pointerID != INVALID_PTR_ID)
-							fprintf(outFile, "%u", pNode->pointerID);
-
-						fprintf(outFile, "\t%u", pNode->id);
-
 						if (pNode->subroutine_code == 0x0009)
 							fprintf(outFile, "\tSET ");
 						else if (pNode->subroutine_code == 0x000A)
@@ -1262,23 +1598,17 @@ int dumpScript(FILE* outFile){
 					case 0x000B: /* AND */
 					case 0x000C: /* NOT */
 					case 0x000D: /* OR  */
-					case 0x0010: /* ?? */
+					case 0x0010: /* CHRAND */
 					case 0x0011: /* ?? */
-					case 0x0016: /* ?? */
 					{
-						int x;
-
-						if (pNode->pointerID != INVALID_PTR_ID)
-							fprintf(outFile, "%u", pNode->pointerID);
-
-						fprintf(outFile, "\t%u", pNode->id);
-
 						if (pNode->subroutine_code == 0x000B)
 							fprintf(outFile, "\tAND %d:", pNode->subParams[0].value);
 						else if (pNode->subroutine_code == 0x000C)
 							fprintf(outFile, "\tNOT %d:", pNode->subParams[0].value);
 						else if (pNode->subroutine_code == 0x000D)
 							fprintf(outFile, "\tOR %d:", pNode->subParams[0].value);
+						else if (pNode->subroutine_code == 0x0010)
+							fprintf(outFile, "\tCHRAND %d:", pNode->subParams[0].value);
 						else
 							fprintf(outFile, "\tUNKNOWN_%X %d:", pNode->subroutine_code, pNode->subParams[0].value);
 
@@ -1288,6 +1618,14 @@ int dumpScript(FILE* outFile){
 							fprintf(outFile, "%d", pNode->subParams[x].value);
 						}
 						fprintf(outFile, "\r\n");
+						break;
+					}
+
+					/* MONNOT */
+					case 0x0016:
+					{
+						fprintf(outFile, "\tMONNOT %d:%d,%d\r\n",
+							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
 						break;
 					}
 
@@ -1303,38 +1641,6 @@ int dumpScript(FILE* outFile){
 						break;
 					}
 
-					case 0x001D:
-					{
-						if (pNode->pointerID != INVALID_PTR_ID)
-							fprintf(outFile, "%u", pNode->pointerID);
-
-						fprintf(outFile, "\t%u", pNode->id);
-						fprintf(outFile, "\tTAKEMONEY ");
-						fprintf(outFile, "%d\r\n", pNode->subParams[1].value);
-						break;
-					}
-
-					case 0x001E:
-					{
-						if (pNode->pointerID != INVALID_PTR_ID)
-							fprintf(outFile, "%u", pNode->pointerID);
-
-						fprintf(outFile, "\t%u", pNode->id);
-						fprintf(outFile, "\tCHKMONEY ");
-						fprintf(outFile, "%d:%d\r\n", pNode->subParams[0].value, pNode->subParams[1].value);
-						break;
-					}
-
-					case 0x0021:
-					{
-						if (pNode->pointerID != INVALID_PTR_ID)
-							fprintf(outFile, "%u", pNode->pointerID);
-
-						fprintf(outFile, "\t%u", pNode->id);
-						fprintf(outFile, "\tCHKITEM ");
-						fprintf(outFile, "%d:%d,%d\r\n", pNode->subParams[0].value, (pNode->subParams[1].value&0xFF00)>>8, pNode->subParams[1].value&0xFF);
-						break;
-					}
 
 					default:
 						; /* Do Nothing */
