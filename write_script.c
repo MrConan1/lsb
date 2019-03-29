@@ -1219,6 +1219,7 @@ int dumpScript(FILE* outFile){
 							else
 								fprintf(outFile, "%d,%d", val1, val2);
 						}
+						fprintf(outFile, "\r\n");
 						break;
 					}
 
@@ -1239,6 +1240,7 @@ int dumpScript(FILE* outFile){
 							else
 								fprintf(outFile, "%d,%d", val1, val2);
 						}
+						fprintf(outFile, "\r\n");
 						break;
 					}
 
@@ -1258,6 +1260,7 @@ int dumpScript(FILE* outFile){
 							else
 								fprintf(outFile, "%d,%d", val1, val2);
 							}
+						fprintf(outFile, "\r\n");
 						break;
 					}
 
@@ -1268,16 +1271,17 @@ int dumpScript(FILE* outFile){
 					{
 						fprintf(outFile, "\tOPENSET ");
 						for (x = 0; x < (int)(pNode->num_parameters); x++){
-						int val1, val2;
-						if(x > 0)
- 							fprintf(outFile, ",");
-						val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
-						val2 = pNode->subParams[x].value & 0xFF;
-						if (x == (int)(pNode->num_parameters - 1))
-							fprintf(outFile, "%d", val1);
-						else
-							fprintf(outFile, "%d,%d", val1, val2);
+							int val1, val2;
+							if(x > 0)
+ 								fprintf(outFile, ",");
+							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+							val2 = pNode->subParams[x].value & 0xFF;
+							if (x == (int)(pNode->num_parameters - 1))
+								fprintf(outFile, "%d", val1);
+							else
+								fprintf(outFile, "%d,%d", val1, val2);
 						}
+						fprintf(outFile, "\r\n");
 						break;
 					}
 
@@ -1295,17 +1299,15 @@ int dumpScript(FILE* outFile){
 					case 0x001A:
 					{
 						fprintf(outFile, "\tBOXSET ");
-						for (x = 0; x < (int)(pNode->num_parameters); x++){
+						for (x = 0; x < (int)(pNode->num_parameters-1); x++){
 							int val1, val2;
 							if(x > 0)
 								fprintf(outFile, ",");
 							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
 							val2 = pNode->subParams[x].value & 0xFF;
-							if (x == (int)(pNode->num_parameters-1))
-								fprintf(outFile, "%d", val1);
-							else
-								fprintf(outFile, "%d,%d", val1, val2);
+							fprintf(outFile, "%d,%d", val1, val2);
 						}
+						fprintf(outFile, "\r\n");
 						break;
 					}
 
@@ -1407,6 +1409,7 @@ int dumpScript(FILE* outFile){
 							else
 								fprintf(outFile, "%d,%d", val1, val2);
 						}
+						fprintf(outFile, "\r\n");
 						break;
 					}
 
@@ -1465,6 +1468,7 @@ int dumpScript(FILE* outFile){
 							else
 								fprintf(outFile, "%d,%d", val1, val2);
 						}
+						fprintf(outFile, "\r\n");
 						break;
 					}
 
@@ -1484,6 +1488,7 @@ int dumpScript(FILE* outFile){
 							else
 								fprintf(outFile, "%d,%d", val1, val2);
 						}
+						fprintf(outFile, "\r\n");
 						break;
 					}
 
@@ -1562,7 +1567,7 @@ int dumpScript(FILE* outFile){
 					case 0x0036:
 					{
 						fprintf(outFile, "\tTBD ",
-							for (x = 0; x < (int)(pNode->num_parameters); x++){
+						for (x = 0; x < (int)(pNode->num_parameters); x++){
 							int val1, val2;
 							fprintf(outFile, ",");
 							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
@@ -1571,7 +1576,8 @@ int dumpScript(FILE* outFile){
 								fprintf(outFile, "%d", val1);
 							else
 								fprintf(outFile, "%d,%d", val1, val2);
-							}
+						}
+						fprintf(outFile, "\r\n");
 						break;
 					}
 
@@ -1644,6 +1650,7 @@ int dumpScript(FILE* outFile){
 							else
 								fprintf(outFile, "%d,%d", val1, val2);
 						}
+						fprintf(outFile, "\r\n");
 						break;
 					}
 
@@ -1715,6 +1722,7 @@ int dumpScript(FILE* outFile){
 							else
 								fprintf(outFile, "%d,%d", val1, val2);
 						}
+						fprintf(outFile, "\r\n");
 						break;
 					}
 
@@ -1731,6 +1739,7 @@ int dumpScript(FILE* outFile){
 							val2 = pNode->subParams[x].value & 0xFF;
 							fprintf(outFile, "%d,%d", val1, val2);
 						}
+						fprintf(outFile, "\r\n");
 						break;
 					}
 
@@ -1775,7 +1784,7 @@ int dumpScript(FILE* outFile){
 					case 0x004E:
 					{
 						fprintf(outFile, "\tTBD ",
-							for (x = 0; x < (int)(pNode->num_parameters); x++){
+						for (x = 0; x < (int)(pNode->num_parameters); x++){
 							int val1, val2;
 							fprintf(outFile, ",");
 							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
@@ -1784,7 +1793,8 @@ int dumpScript(FILE* outFile){
 								fprintf(outFile, "%d", val1);
 							else
 								fprintf(outFile, "%d,%d", val1, val2);
-							}
+						}
+						fprintf(outFile, "\r\n");
 						break;
 					}
 
@@ -1795,7 +1805,7 @@ int dumpScript(FILE* outFile){
 					case 0x004F:
 					{
 						fprintf(outFile, "\tTBD ",
-							for (x = 0; x < (int)(pNode->num_parameters); x++){
+						for (x = 0; x < (int)(pNode->num_parameters); x++){
 							int val1, val2;
 							fprintf(outFile, ",");
 							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
@@ -1804,7 +1814,8 @@ int dumpScript(FILE* outFile){
 								fprintf(outFile, "%d", val1);
 							else
 								fprintf(outFile, "%d,%d", val1, val2);
-							}
+						}
+						fprintf(outFile, "\r\n");
 						break;
 					}
 
@@ -1968,15 +1979,9 @@ int dumpScript(FILE* outFile){
 						if (pNode->subroutine_code == 0x0005)
 							fprintf(outFile, "\tRETURN\r\n");
 						else{
-							int x;
-							fprintf(outFile, "\tEXIT ");
-
-							for (x = 0; x < (int)(pNode->num_parameters); x++){
-								if (x >= 1)
-									fprintf(outFile, ",");
-								fprintf(outFile, "%d", pNode->subParams[x].value);
-							}
-							fprintf(outFile, "\r\n");
+							fprintf(outFile, "\tEXIT %d,%d,%d\r\n",
+								pNode->subParams[1].value >> 8, pNode->subParams[1].value & 0xFF,
+								pNode->subParams[0].value);
 						}
 						break;
 					}
@@ -2051,11 +2056,6 @@ int dumpScript(FILE* outFile){
 
 					case 0x0042: /* JUMPPACK */
 					{
-						if (pNode->pointerID != INVALID_PTR_ID)
-							fprintf(outFile, "%u", pNode->pointerID);
-
-						fprintf(outFile, "\t%u", pNode->id);
-
 						fprintf(outFile, "\tJUMPPACK %d:%d", (pNode->subParams[1].value>>8) & 0xFF,pNode->subParams[0].value);
 						fprintf(outFile, "\r\n");
 						break;
