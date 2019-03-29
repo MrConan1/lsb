@@ -36,14 +36,17 @@ void printUsage(){
     printf("Error in input arguments.\n");
     printf("Usage:\n=========\n");
 	printf("lsb.exe decode InputFname OutputFname ienc [sss]\n");
-	printf("lsb.exe encode InputFname OutputFname [sss]\n");
+	printf("    ienc = 0 for 2-Byte decoding of text\n");
+	printf("    ienc = 1 for 1-Byte decoding of text hack\n");
+	printf("    ienc = 2 for utf8 (iOS) decoding of text\n");
+	printf("    ienc = 3 for utf8 (Eng iOS) decoding of text\n");
+	printf("lsb.exe encode InputFname OutputFname oenc [sss]\n");
+	printf("    oenc = 0 for 2-Byte output encoded text\n");
+	printf("    oenc = 1 for 1-Byte output encoded text hack\n");
     printf("lsb.exe update InputFname OutputFname UpdateFname\n");
 	printf("Use Decode to take a binary TEXTxxx.DAT file and convert to metadata format.\n");
 	printf("Use Encode to take a script in metadata format and convert to binary.\n");
     printf("Use Update to create modified version of a script in metadata format.\n");
-	printf("    ienc = 0 for 2-Byte encoded text\n");
-	printf("    ienc = 1 for 1-Byte encoded text hack\n");
-	printf("    ienc = 2 for utf8 (iOS) encoded text\n");
 	printf("    sss will interpret SSSC JP table as the SSS JP table.\n");
 	printf("    Table file must be for SSSC, named \"font_table.txt\", and be located in the exe directory.\n");
 	printf("\n\n");
@@ -61,7 +64,7 @@ int main(int argc, char** argv){
     static char upFileName[300];
     static char outFileName[300];
 	static char csvOutFileName[300];
-    int rval, ienc;
+    int rval, ienc, oenc;
 
     printf("Lunar Script Builder v%d.%02d\n", VER_MAJ, VER_MIN);
 
@@ -70,7 +73,7 @@ int main(int argc, char** argv){
     /**************************/
 
     /* Check for valid # of args */
-    if (argc < 4){
+    if (argc < 5){
         printUsage();
         return -1;
     }
@@ -99,9 +102,11 @@ int main(int argc, char** argv){
 	}
     else if ((strcmp(argv[1], "encode") == 0)){
 		/* Check encode parameters */
-		if ((argc == 5) && (strcmp(argv[4], "sss") == 0))
+		oenc = atoi(argv[4]);
+		setTableOutputMode(oenc);
+		if ((argc == 6) && (strcmp(argv[5], "sss") == 0))
 			setSSSEncode();
-		if (argc > 5){
+		if (argc > 6){
 			printUsage();
 			return -1;
 		}

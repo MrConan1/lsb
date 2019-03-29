@@ -5,7 +5,7 @@
 #define TEXT_DECODE_TWO_BYTES_PER_CHAR 0
 #define TEXT_DECODE_ONE_BYTE_PER_CHAR  1
 #define TEXT_DECODE_UTF8               2
-
+#define TEXT_DECODE_UTF8_ENG           3
 
 /* Function Prototypes */
 void setSSSEncode();

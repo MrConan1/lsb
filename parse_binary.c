@@ -31,7 +31,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag);
 int encodeScript(FILE* inFile, FILE* outFile);
 runParamType* getRunParam(int textMode, char* pdata);
 
-
+extern int G_IOS_ENG;
 
 
 /*****************************************************************************/
@@ -297,9 +297,9 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 			return -1;
 		}
 		swap16(&cmd);
-
+#if 0
 		printf("CMD = 0x%X  Offset= 0x%X (0x%X short)\n", (unsigned int)cmd, offset, offset / 2);
-
+#endif
 		/****************************************************/
 		/* Determine what to do based on the Script Command */
 		/****************************************************/
@@ -1237,6 +1237,14 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 						prev = cur = 0;
 						continue;
 					}
+					else if ((nbytes == 1) && (G_IOS_ENG == 1) && (pdata[index-1] == 0x0A)){
+						//Hack in space for iOS Eng
+						pdata[index - 1] = 0xFF;
+						pdata[index++] = 0x02;
+						nbytes++;
+						//This cant be the termination. Reset.
+						prev = cur = 0;
+					}
 				}
 				else if (textMode == TEXT_DECODE_UTF8){  // >= 0xF0
 					//Read again
@@ -1366,6 +1374,14 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 							//This cant be the termination.  0xFF is 1 byte
 							prev = cur = 0;
 							continue;
+						}
+						else if ((nbytes == 1) && (G_IOS_ENG == 1) && (pdata[index - 1] == 0x0A)){
+							//Hack in space for iOS Eng
+							pdata[index - 1] = 0xFF;
+							pdata[index++] = 0x02;
+							nbytes++;
+							//This cant be the termination. Reset.
+							prev = cur = 0;
 						}
 					}
 					else if (textMode == TEXT_DECODE_UTF8){  // >= 0xF0

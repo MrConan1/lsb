@@ -1542,14 +1542,16 @@ int dumpScript(FILE* outFile){
 					{
 						fprintf(outFile, "\tMVSET %d:%d", (pNode->subParams[0].value & 0xFF00) >> 8, pNode->subParams[0].value & 0xFF);
 						if (((pNode->subParams[0].value & 0xFF00) >> 8) >= 0xB){
-							int val1, val2;
-							fprintf(outFile, ",");
-							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
-							val2 = pNode->subParams[x].value & 0xFF;
-							if (x == (int)(pNode->num_parameters - 1))
-								fprintf(outFile, "%d", val1);
-							else
-								fprintf(outFile, "%d,%d", val1, val2);
+							for (x = 1; x < (int)(pNode->num_parameters); x++){
+								int val1, val2;
+								fprintf(outFile, ",");
+								val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+								val2 = pNode->subParams[x].value & 0xFF;
+								if (x == (int)(pNode->num_parameters - 1))
+									fprintf(outFile, "%d", val1);
+								else
+									fprintf(outFile, "%d,%d", val1, val2);
+							}
 						}
 						fprintf(outFile, "\r\n");
 						break;
@@ -1566,7 +1568,7 @@ int dumpScript(FILE* outFile){
 					/* TBD B -  200*/
 					case 0x0036:
 					{
-						fprintf(outFile, "\tTBD ",
+						fprintf(outFile, "\tTBD ");
 						for (x = 0; x < (int)(pNode->num_parameters); x++){
 							int val1, val2;
 							fprintf(outFile, ",");
@@ -1944,8 +1946,7 @@ int dumpScript(FILE* outFile){
 					/* TBD - iOS - 42 */
 					case 0x005E:
 					{
-						fprintf(outFile, "\tiOS Subroutine 5E %d,%d\r\n",
-							pNode->subParams[0].value, pNode->subParams[1].value);
+						fprintf(outFile, "\tiOS Subroutine 5E\r\n");
 						break;
 					}
 
@@ -1953,8 +1954,7 @@ int dumpScript(FILE* outFile){
 					/* TBD2 - iOS  13,17 */
 					case 0x005F:
 					{
-						fprintf(outFile, "\tiOS Subroutine 5F %d,%d\r\n",
-							pNode->subParams[0].value, pNode->subParams[1].value);
+						fprintf(outFile, "\tiOS Subroutine 5F\r\n");
 						break;
 					}
 #endif
@@ -1963,8 +1963,7 @@ int dumpScript(FILE* outFile){
 					/* TBD2 iOS 14, 17, 18, 25, 30 */
 					case 0x0060:
 					{
-						fprintf(outFile, "\tiOS Subroutine 60 %d,%d\r\n",
-							pNode->subParams[0].value, pNode->subParams[1].value);
+						fprintf(outFile, "\tiOS Subroutine 60\r\n");
 						break;
 					}
 

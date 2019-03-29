@@ -14,9 +14,10 @@
 #define RADIX_HEX     1
 
 /* Table output mode */
+#define TWO_BYTE_ENC 0
 #define ONE_BYTE_ENC 1
-#define TWO_BYTE_ENC 2
-#define UTF8_ENC     3
+#define UTF8_ENC     2 /* Not Supported */
+#define UTF8_ENC_ENG 3 /* Not Supported */
 
 /* Default Fill Byte Value */
 #define DEFAULT_FILL  0x00

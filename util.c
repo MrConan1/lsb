@@ -62,7 +62,7 @@ static int outputMode = BIG_ENDIAN;  //Script Text File Value Encoding
 static int inputMode = RADIX_HEX;    //Script Text File Value Representation
 static int tableMode = TWO_BYTE_ENC; //Table File Encoding Method
 static unsigned int maxBinFsize = 0; //MAX allowed size of a binary script file
-
+int G_IOS_ENG = 0; //Flag to signify IOS ENG Input
 
 /***********************************************************************/
 /* setSSSEncode                                                        */
@@ -346,8 +346,6 @@ void setTableOutputMode(int mode){
         tableMode = ONE_BYTE_ENC;
     else if (mode == TWO_BYTE_ENC)
         tableMode = TWO_BYTE_ENC;
-    else if (mode == UTF8_ENC)
-        tableMode = UTF8_ENC;
     else{
         printf("Invalid Table Output Mode, defaulting to TWO_BYTE_ENC.\n");
         tableMode = TWO_BYTE_ENC;
@@ -461,6 +459,12 @@ int getTextDecodeMethod(){
 /* Either 1-byte encoding, or 2-byte        */
 /********************************************/
 void setTextDecodeMethod(int method){
+	if (method == 3){
+		method = 2;
+		G_IOS_ENG = 1;
+	}
+
+
 	textDecodeMode = method;
 	return;
 }
