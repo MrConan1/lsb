@@ -1222,27 +1222,29 @@ int dumpScript(FILE* outFile){
 						break;
 					}
 
-#if 0
-					/* TBD B -  1,100,200*/
+
+					/* MONSET -  1,100,200*/
 					case 0x0013:
 					{
-						fprintf(outFile, "\tTBD ",
-							for (x = 0; x < (int)(pNode->num_parameters); x++){
+						fprintf(outFile, "\tMONSET ");
+						for (x = 0; x < (int)(pNode->num_parameters); x++){
 							int val1, val2;
 							fprintf(outFile, ",");
 							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
 							val2 = pNode->subParams[x].value & 0xFF;
+							if( x > 0)
+								fprintf(outFile, ":");
 							if (x == (int)(pNode->num_parameters - 1))
-								fprintf(outFile, "%d", val1);
+								;
 							else
 								fprintf(outFile, "%d,%d", val1, val2);
-							}
+						}
 						break;
 					}
 
-#endif
+
 #if 0
-					/* TBD B -  0,1,2,5,6*/
+					/* TBD B -  7 */
 					case 0x0014:
 					{
 						fprintf(outFile, "\tTBD ",
@@ -1260,21 +1262,22 @@ int dumpScript(FILE* outFile){
 					}
 
 #endif
-#if 0
-					/* TBD B -  1,7,8,20*/
+#if 1
+					/* OPENSET -  1,7,8,20*/
 					case 0x0018:
 					{
-						fprintf(outFile, "\tTBD ",
-							for (x = 0; x < (int)(pNode->num_parameters); x++){
-							int val1, val2;
-							fprintf(outFile, ",");
-							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
-							val2 = pNode->subParams[x].value & 0xFF;
-							if (x == (int)(pNode->num_parameters - 1))
-								fprintf(outFile, "%d", val1);
-							else
-								fprintf(outFile, "%d,%d", val1, val2);
-							}
+						fprintf(outFile, "\tOPENSET ");
+						for (x = 0; x < (int)(pNode->num_parameters); x++){
+						int val1, val2;
+						if(x > 0)
+ 							fprintf(outFile, ",");
+						val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+						val2 = pNode->subParams[x].value & 0xFF;
+						if (x == (int)(pNode->num_parameters - 1))
+							fprintf(outFile, "%d", val1);
+						else
+							fprintf(outFile, "%d,%d", val1, val2);
+						}
 						break;
 					}
 
@@ -1287,14 +1290,15 @@ int dumpScript(FILE* outFile){
 						break;
 					}
 
-#if 0
-					/* TBD B -  1,2,4,11*/
+#if 1
+					/* BOXSET -  1,2,4,11*/
 					case 0x001A:
 					{
-						fprintf(outFile, "\tTBD ",
+						fprintf(outFile, "\tBOXSET ");
 						for (x = 0; x < (int)(pNode->num_parameters); x++){
 							int val1, val2;
-							fprintf(outFile, ",");
+							if(x > 0)
+								fprintf(outFile, ",");
 							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
 							val2 = pNode->subParams[x].value & 0xFF;
 							if (x == (int)(pNode->num_parameters-1))
@@ -1376,12 +1380,12 @@ int dumpScript(FILE* outFile){
 					}
 
 
-#if 0
-						/* TBD3 - 0,1,2,4,5,6,7*/
+#if 1
+						/* WITHOUT - 0,1,2,4,5,6,7*/
 					case 0x0024:
 					{
-						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
-							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
+						fprintf(outFile, "\tWITHOUT %d,%d\r\n",
+							pNode->subParams[0].value & 0xFF,(pNode->subParams[0].value & 0xFF00) >> 8);
 						break;
 					}
 #endif
@@ -1483,12 +1487,12 @@ int dumpScript(FILE* outFile){
 						break;
 					}
 
-#if 0
-					/* TBD2 0,2,3,5  */
+#if 1
+					/* SHOP 0,2,3,5  */
 					case 0x002E:
 					{
-						fprintf(outFile, "\tTBD %d,%d\r\n",
-							pNode->subParams[0].value, pNode->subParams[1].value);
+						fprintf(outFile, "\tSHOP %d\r\n",
+							pNode->subParams[0].value >> 8);
 						break;
 					}
 #endif
@@ -1576,7 +1580,14 @@ int dumpScript(FILE* outFile){
 					/* MVDATA */
 					case 0x0038:
 					{
-						fprintf(outFile, "\tMVDATA (TBD)\r\n");
+						fprintf(outFile, "\tMVDATA ");
+						for (x = 0; x < (int)(pNode->num_parameters); x++){
+							int val1, val2;
+							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+							val2 = pNode->subParams[x].value & 0xFF;
+							fprintf(outFile, "%d,%d", val1, val2);
+						}
+						fprintf(outFile, "\r\n");
 						break;
 					}
 
@@ -1636,11 +1647,11 @@ int dumpScript(FILE* outFile){
 						break;
 					}
 
-#if 0
-						/* TBD - 1,2,4 */
+#if 1
+						/* MVSCRON - 1,2,4 */
 					case 0x003F:
 					{
-						fprintf(outFile, "\tTBD\r\n");
+						fprintf(outFile, "\tMVSCRON\r\n");
 						break;
 					}
 #endif
@@ -1661,22 +1672,12 @@ int dumpScript(FILE* outFile){
 					}
 
 
-#if 0
-						/* TBD3 0,2,3,5,6,7*/
-					case 0x0042:
-					{
-						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
-							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
-						break;
-					}
-#endif
-
-#if 0
-					/* TBD2 0,1,29,39,42,200*/
+#if 1
+					/* CHANGE 0,1,29,39,42,200*/
 					case 0x0043:
 					{
-						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
-							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
+						fprintf(outFile, "\tCHANGE %d\r\n",
+							pNode->subParams[0].value >> 8);
 						break;
 					}
 #endif
@@ -1937,7 +1938,7 @@ int dumpScript(FILE* outFile){
 						break;
 					}
 
-#if 0
+#if 1
 					/* TBD2 - iOS  13,17 */
 					case 0x005F:
 					{
