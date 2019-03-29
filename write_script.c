@@ -1196,11 +1196,18 @@ int dumpScript(FILE* outFile){
 
 				switch (pNode->subroutine_code){
 
+					/* CHRSET */
 					/* CHRREST */
+					case 0x000E:
 					case 0x000F:
 					{
-						fprintf(outFile, "\tCHRREST ");
 						int numparam = pNode->num_parameters;
+
+						if (pNode->subroutine_code == 0x000E)
+							fprintf(outFile, "\tCHRSET ");
+						else
+							fprintf(outFile, "\tCHRREST ");
+
 						for (x = 0; x < numparam; x++){
 							int val1, val2;
 							if (x > 0)
@@ -1215,6 +1222,63 @@ int dumpScript(FILE* outFile){
 						break;
 					}
 
+#if 0
+					/* TBD B -  1,100,200*/
+					case 0x0013:
+					{
+						fprintf(outFile, "\tTBD ",
+							for (x = 0; x < (int)(pNode->num_parameters); x++){
+							int val1, val2;
+							fprintf(outFile, ",");
+							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+							val2 = pNode->subParams[x].value & 0xFF;
+							if (x == (int)(pNode->num_parameters - 1))
+								fprintf(outFile, "%d", val1);
+							else
+								fprintf(outFile, "%d,%d", val1, val2);
+							}
+						break;
+					}
+
+#endif
+#if 0
+					/* TBD B -  0,1,2,5,6*/
+					case 0x0014:
+					{
+						fprintf(outFile, "\tTBD ",
+							for (x = 0; x < (int)(pNode->num_parameters); x++){
+							int val1, val2;
+							fprintf(outFile, ",");
+							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+							val2 = pNode->subParams[x].value & 0xFF;
+							if (x == (int)(pNode->num_parameters - 1))
+								fprintf(outFile, "%d", val1);
+							else
+								fprintf(outFile, "%d,%d", val1, val2);
+							}
+						break;
+					}
+
+#endif
+#if 0
+					/* TBD B -  1,7,8,20*/
+					case 0x0018:
+					{
+						fprintf(outFile, "\tTBD ",
+							for (x = 0; x < (int)(pNode->num_parameters); x++){
+							int val1, val2;
+							fprintf(outFile, ",");
+							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+							val2 = pNode->subParams[x].value & 0xFF;
+							if (x == (int)(pNode->num_parameters - 1))
+								fprintf(outFile, "%d", val1);
+							else
+								fprintf(outFile, "%d,%d", val1, val2);
+							}
+						break;
+					}
+
+#endif
 
 					/* OPENRESET */
 					case 0x0019:
@@ -1223,6 +1287,35 @@ int dumpScript(FILE* outFile){
 						break;
 					}
 
+#if 0
+					/* TBD B -  1,2,4,11*/
+					case 0x001A:
+					{
+						fprintf(outFile, "\tTBD ",
+						for (x = 0; x < (int)(pNode->num_parameters); x++){
+							int val1, val2;
+							fprintf(outFile, ",");
+							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+							val2 = pNode->subParams[x].value & 0xFF;
+							if (x == (int)(pNode->num_parameters-1))
+								fprintf(outFile, "%d", val1);
+							else
+								fprintf(outFile, "%d,%d", val1, val2);
+						}
+						break;
+					}
+
+#endif
+
+#if 0
+						/* TBD3 0, 2,33,7,9,45,51*/
+					case 0x001C:
+					{
+						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
+							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
+						break;
+					}
+#endif						
 
 					/* TAKEMONEY */
 					case 0x001D:
@@ -1247,6 +1340,16 @@ int dumpScript(FILE* outFile){
 						break;
 					}
 
+#if 0
+					/* TBD2 0,3,4,5,7,8,13,14,15,17,25,27,42,44,45,50,200*/
+					case 0x0020:
+					{
+						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
+							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
+						break;
+					}
+#endif
+
 					/* CHKITEM */
 					case 0x0021:
 					{
@@ -1255,12 +1358,34 @@ int dumpScript(FILE* outFile){
 						break;
 					}
 
+#if 0
+						/* TBD3 0, 44, 200*/
+					case 0x0022:
+					{
+						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
+							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
+						break;
+					}
+#endif
+
 					/* WITHIN */
 					case 0x0023:
 					{
 						fprintf(outFile, "\tWITHIN %d,%d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8, pNode->subParams[0].value & 0xFF);
 						break;
 					}
+
+
+#if 0
+						/* TBD3 - 0,1,2,4,5,6,7*/
+					case 0x0024:
+					{
+						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
+							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
+						break;
+					}
+#endif
+
 
 					/* KILL */
 					case 0x0025:
@@ -1309,6 +1434,18 @@ int dumpScript(FILE* outFile){
 						break;
 					}
 
+
+#if 0
+						/* TBD3 0, 4,5,6,8,9,11*/
+					case 0x002B:
+					{
+						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
+							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
+						break;
+					}
+#endif
+
+
 					/* SHAKE */
 					case 0x002C:
 					{
@@ -1343,6 +1480,23 @@ int dumpScript(FILE* outFile){
 							else
 								fprintf(outFile, "%d,%d", val1, val2);
 						}
+						break;
+					}
+
+#if 0
+					/* TBD2 0,2,3,5  */
+					case 0x002E:
+					{
+						fprintf(outFile, "\tTBD %d,%d\r\n",
+							pNode->subParams[0].value, pNode->subParams[1].value);
+						break;
+					}
+#endif
+
+					/* FIGURE */
+					case 0x002F:
+					{
+						fprintf(outFile, "\tFIGURE\r\n");
 						break;
 					}
 
@@ -1399,10 +1553,37 @@ int dumpScript(FILE* outFile){
 						break;
 					}
 
+#if 0
+					/* TBD B -  200*/
+					case 0x0036:
+					{
+						fprintf(outFile, "\tTBD ",
+							for (x = 0; x < (int)(pNode->num_parameters); x++){
+							int val1, val2;
+							fprintf(outFile, ",");
+							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+							val2 = pNode->subParams[x].value & 0xFF;
+							if (x == (int)(pNode->num_parameters - 1))
+								fprintf(outFile, "%d", val1);
+							else
+								fprintf(outFile, "%d,%d", val1, val2);
+							}
+						break;
+					}
+
+#endif
+
 					/* MVDATA */
 					case 0x0038:
 					{
 						fprintf(outFile, "\tMVDATA (TBD)\r\n");
+						break;
+					}
+
+					/* MVPARTYON */
+					case 0x0039:
+					{
+						fprintf(outFile, "\tMVPARTYON\r\n");
 						break;
 					}
 
@@ -1413,6 +1594,14 @@ int dumpScript(FILE* outFile){
 						break;
 					}
 
+#if 0
+					/* TBD - 8,9,14,17,34,39,50 */
+					case 0x003B:
+					{
+						fprintf(outFile, "\tTBD\r\n");
+						break;
+					}
+#endif
 
 					/* MVSTOPOFF */
 					case 0x003C:
@@ -1447,6 +1636,15 @@ int dumpScript(FILE* outFile){
 						break;
 					}
 
+#if 0
+						/* TBD - 1,2,4 */
+					case 0x003F:
+					{
+						fprintf(outFile, "\tTBD\r\n");
+						break;
+					}
+#endif
+
 					/* MVSCROFF */
 					case 0x0040:
 					{
@@ -1461,6 +1659,37 @@ int dumpScript(FILE* outFile){
 						fprintf(outFile, "\tCHRON %d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
 						break;
 					}
+
+
+#if 0
+						/* TBD3 0,2,3,5,6,7*/
+					case 0x0042:
+					{
+						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
+							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
+						break;
+					}
+#endif
+
+#if 0
+					/* TBD2 0,1,29,39,42,200*/
+					case 0x0043:
+					{
+						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
+							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
+						break;
+					}
+#endif
+
+#if 0
+					/* TBD2 40,42*/
+					case 0x0044:
+					{
+						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
+							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
+						break;
+					}
+#endif
 
 					/* WIPEIN */
 					case 0x0045:
@@ -1504,6 +1733,100 @@ int dumpScript(FILE* outFile){
 						break;
 					}
 
+#if 0
+					/* TBD2 0,4,18,25,28,41,42,44,51,200*/
+					case 0x0048:
+					{
+						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
+							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
+						break;
+					}
+#endif
+
+#if 0
+					/* TBD2 25,45,200 */
+					case 0x0049:
+					{
+						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
+							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
+						break;
+					}
+#endif
+
+#if 0
+					/* TBD - 20,22,28,30,34,50 */
+					case 0x004C:
+					{
+						fprintf(outFile, "\tTBD\r\n");
+						break;
+					}
+
+					/* TBD - 20,22,28,30,34,50 */
+					case 0x004D:
+					{
+						fprintf(outFile, "\tTBD\r\n");
+						break;
+					}
+#endif
+
+#if 0
+					/* TBD B -  16,18,20*/
+					case 0x004E:
+					{
+						fprintf(outFile, "\tTBD ",
+							for (x = 0; x < (int)(pNode->num_parameters); x++){
+							int val1, val2;
+							fprintf(outFile, ",");
+							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+							val2 = pNode->subParams[x].value & 0xFF;
+							if (x == (int)(pNode->num_parameters - 1))
+								fprintf(outFile, "%d", val1);
+							else
+								fprintf(outFile, "%d,%d", val1, val2);
+							}
+						break;
+					}
+
+#endif
+
+#if 0
+					/* TBD B -  16,18,20*/
+					case 0x004F:
+					{
+						fprintf(outFile, "\tTBD ",
+							for (x = 0; x < (int)(pNode->num_parameters); x++){
+							int val1, val2;
+							fprintf(outFile, ",");
+							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+							val2 = pNode->subParams[x].value & 0xFF;
+							if (x == (int)(pNode->num_parameters - 1))
+								fprintf(outFile, "%d", val1);
+							else
+								fprintf(outFile, "%d,%d", val1, val2);
+							}
+						break;
+					}
+
+#endif
+
+#if 0
+					/* TBD2  16,18,20 */
+					case 0x0050:
+					{
+						fprintf(outFile, "\tTBD %d,%d\r\n",
+							pNode->subParams[0].value, pNode->subParams[1].value);
+						break;
+					}
+#endif
+
+#if 0
+					/* TBD 16, 20, 2, 29, 30, 39, 41, 42*/
+					case 0x0051:
+					{
+						fprintf(outFile, "\tTBD\r\n");
+						break;
+					}
+#endif
 					/* VOICELOAD */
 					case 0x0052:
 					{
@@ -1532,6 +1855,45 @@ int dumpScript(FILE* outFile){
 						break;
 					}
 
+#if 0
+						/* TBD2  12 */
+					case 0x0056:
+					{
+						fprintf(outFile, "\tTBD %d,%d\r\n",
+							pNode->subParams[0].value, pNode->subParams[1].value);
+						break;
+					}
+#endif
+
+#if 0
+						/* TBD2  4,5,9,10,11,12,28,34,47 */
+					case 0x0057:
+					{
+						fprintf(outFile, "\tTBD %d,%d\r\n",
+							pNode->subParams[0].value, pNode->subParams[1].value);
+						break;
+					}
+#endif
+
+#if 0
+					/* TBD - 28*/
+					case 0x0058:
+					{
+						fprintf(outFile, "\tTBD\r\n");
+						break;
+					}
+#endif
+
+#if 0
+					/* TBD2  14,17,18,25,30 */
+					case 0x0059:
+					{
+						fprintf(outFile, "\tTBD %d,%d\r\n",
+							pNode->subParams[0].value, pNode->subParams[1].value);
+						break;
+					}
+#endif
+
 					/* VOLUME */
 					case 0x005A:
 					{
@@ -1539,6 +1901,63 @@ int dumpScript(FILE* outFile){
 							(pNode->subParams[0].value & 0xFF00) >> 8, (pNode->subParams[0].value & 0xFF));
 						break;
 					}
+
+#if 0
+					/* TBD - 58, 200 */
+					case 0x005B:
+					{
+						fprintf(outFile, "\tTBD\r\n");
+						break;
+					}
+#endif
+#if 0
+						/* TBD3 200*/
+					case 0x005C:
+					{
+						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
+							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
+						break;
+					}
+#endif
+#if 0
+						/* TBD3 200*/
+					case 0x005D:
+					{
+						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
+							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
+						break;
+					}
+#endif
+
+					/* TBD - iOS - 42 */
+					case 0x005E:
+					{
+						fprintf(outFile, "\tiOS Subroutine 5E %d,%d\r\n",
+							pNode->subParams[0].value, pNode->subParams[1].value);
+						break;
+					}
+
+#if 0
+					/* TBD2 - iOS  13,17 */
+					case 0x005F:
+					{
+						fprintf(outFile, "\tiOS Subroutine 5F %d,%d\r\n",
+							pNode->subParams[0].value, pNode->subParams[1].value);
+						break;
+					}
+#endif
+
+
+					/* TBD2 iOS 14, 17, 18, 25, 30 */
+					case 0x0060:
+					{
+						fprintf(outFile, "\tiOS Subroutine 60 %d,%d\r\n",
+							pNode->subParams[0].value, pNode->subParams[1].value);
+						break;
+					}
+
+
+
 
 
 					/* RETURNS */
@@ -1599,7 +2018,7 @@ int dumpScript(FILE* outFile){
 					case 0x000C: /* NOT */
 					case 0x000D: /* OR  */
 					case 0x0010: /* CHRAND */
-					case 0x0011: /* ?? */
+					case 0x0011: /* ?? - 21 */
 					{
 						if (pNode->subroutine_code == 0x000B)
 							fprintf(outFile, "\tAND %d:", pNode->subParams[0].value);
