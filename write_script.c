@@ -922,7 +922,7 @@ int writeScript(FILE* outFile){
             /********/
             case NODE_GOTO:
             {
-                fprintf(outFile, "(goto id=%u\r\n", pNode->id);
+                fprintf(outFile, "(goto id=%s\r\n", formatVal(pNode->id));
                 fprintf(outFile, "    (location %s)\r\n", formatVal(pNode->byteOffset));
                 fprintf(outFile, ")\r\n");
             }
@@ -934,7 +934,7 @@ int writeScript(FILE* outFile){
             /********/
             case NODE_FILL_SPACE:
             {
-                fprintf(outFile, "(fill-space id=%u\r\n", pNode->id);
+				fprintf(outFile, "(fill-space id=%s\r\n", formatVal(pNode->id));
                 fprintf(outFile, "    (unit-size %s)\r\n", formatVal(pNode->unit_size));
                 fprintf(outFile, "    (fill-value %s)\r\n", formatVal(pNode->fillVal));
                 fprintf(outFile, "    (unit-count %s)\r\n", formatVal(pNode->unit_count));
@@ -948,7 +948,7 @@ int writeScript(FILE* outFile){
             /***********/
             case NODE_POINTER:
             {
-                fprintf(outFile, "(pointer id=%u\r\n", pNode->id);
+				fprintf(outFile, "(pointer id=%s\r\n", formatVal(pNode->id));
                 fprintf(outFile, "    (byteoffset %s)\r\n", formatVal(pNode->byteOffset));
                 fprintf(outFile, "    (size %s)\r\n", formatVal(pNode->ptrSize));
                 if (pNode->ptrValueFlag)
@@ -965,7 +965,7 @@ int writeScript(FILE* outFile){
             /*****************************************************/
             case NODE_EXE_SUB:
             {
-                fprintf(outFile, "(execute-subroutine id=%u\r\n", pNode->id);
+				fprintf(outFile, "(execute-subroutine id=%s\r\n", formatVal(pNode->id));
                 fprintf(outFile, "    (subroutine %s)\r\n", formatVal(pNode->subroutine_code));
                 fprintf(outFile, "    (num-parameters %s)\r\n", formatVal(pNode->num_parameters));
                 if (pNode->num_parameters > 0){
@@ -1015,7 +1015,7 @@ int writeScript(FILE* outFile){
             {
                 runParamType* rpNode = pNode->runParams;
 
-                fprintf(outFile, "(run-commands id=%u\r\n", pNode->id);
+				fprintf(outFile, "(run-commands id=%s\r\n", formatVal(pNode->id));
 
                 while (rpNode != NULL) {
 
@@ -1062,7 +1062,7 @@ int writeScript(FILE* outFile){
 			{
 				runParamType* rpNode = NULL;
 
-				fprintf(outFile, "(options id=%u\r\n", pNode->id);
+				fprintf(outFile, "(options id=%s\r\n", formatVal(pNode->id));
 
 				/* Print the 2 required parameters */
 				fprintf(outFile, "    (jmpparam %s)\r\n", formatVal(pNode->subParams[0].value));

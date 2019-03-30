@@ -373,10 +373,25 @@ int read_ID(unsigned char* pInput){
         return -1;
     }
     pInput = strtok(NULL, "()\t = \r\n");
+#if 0
     if (sscanf(pInput, "%u", &id) != 1){
         printf("Error reading ID\n");
         return -1;
     }
+#else
+	if (inputMode == RADIX_HEX){
+		if (sscanf(pInput, "%X", &id) != 1){
+			printf("Error reading ID\n");
+			return -1;
+		}
+	}
+	else{
+		if (sscanf(pInput, "%u", &id) != 1){
+			printf("Error reading ID\n");
+			return -1;
+		}
+	}
+#endif
 
     return (int)id;
 }
