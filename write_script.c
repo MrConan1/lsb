@@ -2098,9 +2098,9 @@ int dumpScript(FILE* outFile){
 							fprintf(outFile, "\r\n\t\t");
 						}
 						if (rpNode->type == SHOW_PORTRAIT_LEFT)
-							fprintf(outFile, "\t>%d", rpNode->value);
+							fprintf(outFile, "\t>%d\t", rpNode->value);
 						else 
-							fprintf(outFile, "\t<%d", rpNode->value);
+							fprintf(outFile, "\t<%d\t", rpNode->value);
 						ctrlMode = 1;
 						break;
 					case PRINT_LINE:
