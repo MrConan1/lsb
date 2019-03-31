@@ -31,7 +31,7 @@ static unsigned int max_boutput_size_bytes = 0;
 /* Function Prototypes */
 int writeBinScript(FILE* outFile);
 int writeScript(FILE* outFile);
-int dumpScript(FILE* outFile);
+int dumpScript(FILE* outFile, FILE* txtOutFile);
 
 /* Write Fctns */
 static int writeLW(unsigned int data);
@@ -1128,13 +1128,14 @@ int writeScript(FILE* outFile){
 
 
 /*****************************************************************************/
-/* Function: dumpScriptText                                                  */
+/* Function: dumpScript                                                      */
 /* Purpose: Reads from a linked list data structure in memory to create a    */
-/*          CSV tab delimited version of the script.                         */
+/*          CSV tab delimited version of the script.  Also makes a stripped  */
+/*          down text-only version.                                          */
 /* Inputs:  Pointer to output file.                                          */
 /* Outputs: 0 on Pass, -1 on Fail.                                           */
 /*****************************************************************************/
-int dumpScript(FILE* outFile){
+int dumpScript(FILE* outFile, FILE* txtOutFile){
 
 	int x;
 	scriptNode* pNode = NULL;
@@ -2074,6 +2075,7 @@ int dumpScript(FILE* outFile){
 			case NODE_RUN_CMDS:
 			{
 				int ctrlMode = 0;
+				int textDetected = 0;
 				runParamType* rpNode = pNode->runParams;
 
 				if (pNode->pointerID != INVALID_PTR_ID)
@@ -2111,6 +2113,13 @@ int dumpScript(FILE* outFile){
 
 						fprintf(outFile, "\t%s\t", rpNode->str);
 						ctrlMode = 1;
+
+						//Text Dump
+						if (textDetected == 0){
+							textDetected = 1;
+							fprintf(txtOutFile, "\"");
+						}
+						fprintf(txtOutFile, "%s", rpNode->str);
 						break;
 					case TIME_DELAY:
 					case CTRL_CODE:
@@ -2121,6 +2130,19 @@ int dumpScript(FILE* outFile){
 						else{
 							fprintf(outFile, "(control-code %s%s) ", formatVal(rpNode->value), ctrlCodeLkup((unsigned short)rpNode->value));
 						}
+
+						//Text Dump
+						if (rpNode->value == 0xFF02){
+							if (textDetected == 0){
+								textDetected = 1;
+								fprintf(txtOutFile, "\"");
+							}
+							fprintf(txtOutFile, "\n");
+						}
+						else if ((textDetected == 1) && (rpNode->value == 0xFFFF)){
+							fprintf(txtOutFile, "\"\n");
+						}
+
 						break;
 					default:
 						printf("Error, bad run cmd parameter detected.\n");

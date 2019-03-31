@@ -59,11 +59,12 @@ void printUsage(){
 /******************************************************************************/
 int main(int argc, char** argv){
 
-	FILE *inFile, *upFile, *outFile, *csvOutFile;
+	FILE *inFile, *upFile, *outFile, *csvOutFile, *txtOutFile;
     static char inFileName[300];
     static char upFileName[300];
     static char outFileName[300];
 	static char csvOutFileName[300];
+	static char txtOutFileName[300];
     int rval, ienc, oenc;
 
     printf("Lunar Script Builder v%d.%02d\n", VER_MAJ, VER_MIN);
@@ -85,6 +86,8 @@ int main(int argc, char** argv){
 	strcpy(outFileName, argv[3]);
 	strcpy(csvOutFileName, argv[3]);
 	strcat(csvOutFileName, "_dump.csv");
+	strcpy(txtOutFileName, argv[3]);
+	strcat(txtOutFileName, "_dump.txt");
 
 	/***********************************/
 	/* Check & Decode Input Parameters */
@@ -238,20 +241,28 @@ int main(int argc, char** argv){
 			printf("Input Script File Updating FAILED.\n");
 		}
 
-		/* CSV File Output */
+		/* Text Script Output */
+		txtOutFile = fopen(txtOutFileName, "wb");
+		if (txtOutFile == NULL){
+			printf("Error occurred while opening TXT dump output file %s for writing\n", txtOutFileName);
+			return -1;
+		}
+
+		/* CSV Script Output */
 		csvOutFile = fopen(csvOutFileName, "wb");
 		if (csvOutFile == NULL){
-			printf("Error occurred while opening CSV output file %s for writing\n", csvOutFile);
+			printf("Error occurred while opening CSV dump output file %s for writing\n", csvOutFileName);
 			return -1;
 		}
 		else{
-			rval = dumpScript(csvOutFile);
+			rval = dumpScript(csvOutFile, txtOutFile);
 			if (rval == 0){
-				printf("Script File CSV Dump Created.\n");
+				printf("Script File Dumps Created.\n");
 			}
 			else{
-				printf("Script File CSV Dump FAILED.\n");
+				printf("Script File Dumps FAILED.\n");
 			}
+			fclose(txtOutFile);
 			fclose(csvOutFile);
 		}
 	}
