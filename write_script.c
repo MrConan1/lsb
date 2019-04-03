@@ -1314,12 +1314,11 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 
 #endif
 
-#if 0
-						/* TBD3 0, 2,33,7,9,45,51*/
+#if 1
+					/* SETMONEY */
 					case 0x001C:
 					{
-						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
-							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
+						fprintf(outFile, "\tSETMONEY %d\r\n", pNode->subParams[1].value);
 						break;
 					}
 #endif						
@@ -1347,12 +1346,12 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 						break;
 					}
 
-#if 0
-					/* TBD2 0,3,4,5,7,8,13,14,15,17,25,27,42,44,45,50,200*/
+#if 1
+					/* TAKEITEM */
 					case 0x0020:
 					{
-						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
-							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
+						fprintf(outFile, "\tTAKEITEM %d,%d\r\n",
+							(pNode->subParams[0].value & 0xFF00) >> 8, pNode->subParams[0].value & 0xFF);
 						break;
 					}
 #endif
@@ -1366,7 +1365,7 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 					}
 
 #if 0
-						/* TBD3 0, 44, 200*/
+					/* TBD3 0, 44, 200*/
 					case 0x0022:
 					{
 						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
@@ -1443,12 +1442,14 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 					}
 
 
-#if 0
-						/* TBD3 0, 4,5,6,8,9,11*/
+#if 1
+					/* FIGHT */
 					case 0x002B:
 					{
-						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
-							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
+						fprintf(outFile, "\tFIGHT %d:%d,%d,%d\r\n",
+							pNode->subParams[0].value, 
+							(pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF,
+							(pNode->subParams[2].value & 0xFF00) >> 8);
 						break;
 					}
 #endif
@@ -1614,11 +1615,11 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 						break;
 					}
 
-#if 0
-					/* TBD - 8,9,14,17,34,39,50 */
+#if 1
+					/* MVSTOPON */
 					case 0x003B:
 					{
-						fprintf(outFile, "\tTBD\r\n");
+						fprintf(outFile, "\tM_STOP_ON\r\n");
 						break;
 					}
 #endif
@@ -1658,18 +1659,18 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 					}
 
 #if 1
-						/* MVSCRON - 1,2,4 */
+					/* MVSCROLLON */
 					case 0x003F:
 					{
-						fprintf(outFile, "\tMVSCRON\r\n");
+						fprintf(outFile, "\tMVSCROLLON\r\n");
 						break;
 					}
 #endif
 
-					/* MVSCROFF */
+					/* MVSCROLLOFF */
 					case 0x0040:
 					{
-						fprintf(outFile, "\tMVSCROFF\r\n");
+						fprintf(outFile, "\tMVSCROLLFF\r\n");
 						break;
 					}
 
@@ -1683,7 +1684,7 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 
 
 #if 1
-					/* CHANGE 0,1,29,39,42,200*/
+					/* CHANGE */
 					case 0x0043:
 					{
 						fprintf(outFile, "\tCHANGE %d\r\n",
@@ -1692,12 +1693,12 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 					}
 #endif
 
-#if 0
-					/* TBD2 40,42*/
+#if 1
+					/* WIPEOUT */
 					case 0x0044:
 					{
-						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
-							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
+						fprintf(outFile, "\tWIPEOUT %d\r\n",
+							(pNode->subParams[0].value & 0xFF00) >> 8);
 						break;
 					}
 #endif
@@ -1746,47 +1747,48 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 						break;
 					}
 
-#if 0
-					/* TBD2 0,4,18,25,28,41,42,44,51,200*/
+#if 1
+					/* ATRSET */
 					case 0x0048:
 					{
-						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
-							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
+						fprintf(outFile, "\tATRSET %d\r\n",
+							(pNode->subParams[0].value & 0xFF00) >> 8);
 						break;
 					}
 #endif
 
-#if 0
-					/* TBD2 25,45,200 */
+#if 1
+					/* PLACESET */
 					case 0x0049:
 					{
-						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
-							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
+						fprintf(outFile, "\tPLACESET %d\r\n",
+							(pNode->subParams[0].value & 0xFF00) >> 8);
 						break;
 					}
 #endif
 
-#if 0
-					/* TBD - 20,22,28,30,34,50 */
+#if 1
+					/* MVEFFON */
 					case 0x004C:
 					{
-						fprintf(outFile, "\tTBD\r\n");
+						fprintf(outFile, "\tMVEFFON\r\n");
 						break;
 					}
-
-					/* TBD - 20,22,28,30,34,50 */
+#endif
+#if 1
+					/* MVEFFOFF */
 					case 0x004D:
 					{
-						fprintf(outFile, "\tTBD\r\n");
+						fprintf(outFile, "\tMVEFFOFF\r\n");
 						break;
 					}
 #endif
 
-#if 0
-					/* TBD B -  16,18,20*/
+#if 1
+					/* FADESET */
 					case 0x004E:
 					{
-						fprintf(outFile, "\tTBD ",
+						fprintf(outFile, "\tFADESET ");
 						for (x = 0; x < (int)(pNode->num_parameters); x++){
 							int val1, val2;
 							fprintf(outFile, ",");
@@ -1803,11 +1805,11 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 
 #endif
 
-#if 0
-					/* TBD B -  16,18,20*/
+#if 1
+					/* FADEKILL */
 					case 0x004F:
 					{
-						fprintf(outFile, "\tTBD ",
+						fprintf(outFile, "\tFADEKILL ");
 						for (x = 0; x < (int)(pNode->num_parameters); x++){
 							int val1, val2;
 							fprintf(outFile, ",");
@@ -1824,21 +1826,31 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 
 #endif
 
-#if 0
-					/* TBD2  16,18,20 */
+#if 1
+					/* CHRFADE */
 					case 0x0050:
 					{
-						fprintf(outFile, "\tTBD %d,%d\r\n",
-							pNode->subParams[0].value, pNode->subParams[1].value);
+						fprintf(outFile, "\tCHRFADE %d:",(pNode->subParams[0].value & 0xFF00) >> 8);
+						for (x = 1; x < (int)(pNode->num_parameters); x++){
+							int val1, val2;
+							fprintf(outFile, ",");
+							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+							val2 = pNode->subParams[x-1].value & 0xFF;
+							if (x == (int)(pNode->num_parameters - 1))
+								fprintf(outFile, "%d", val2);
+							else
+								fprintf(outFile, "%d,%d", val2, val1);
+						}
+						fprintf(outFile, "\r\n");
 						break;
 					}
 #endif
 
-#if 0
-					/* TBD 16, 20, 2, 29, 30, 39, 41, 42*/
+#if 1
+					/* FADESYNC */
 					case 0x0051:
 					{
-						fprintf(outFile, "\tTBD\r\n");
+						fprintf(outFile, "\tFADESYNC\r\n");
 						break;
 					}
 #endif
@@ -1871,7 +1883,7 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 					}
 
 #if 0
-						/* TBD2  12 */
+					/* TBD2  12 */
 					case 0x0056:
 					{
 						fprintf(outFile, "\tTBD %d,%d\r\n",
@@ -1880,31 +1892,31 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 					}
 #endif
 
-#if 0
-						/* TBD2  4,5,9,10,11,12,28,34,47 */
+#if 1
+					/* LEVEL */
 					case 0x0057:
 					{
-						fprintf(outFile, "\tTBD %d,%d\r\n",
-							pNode->subParams[0].value, pNode->subParams[1].value);
+						fprintf(outFile, "\tLEVEL %d,%d\r\n",
+							(pNode->subParams[0].value & 0xFF00) >> 8, pNode->subParams[0].value & 0xFF);
 						break;
 					}
 #endif
 
-#if 0
-					/* TBD - 28*/
+#if 1
+					/* DRAIN */
 					case 0x0058:
 					{
-						fprintf(outFile, "\tTBD\r\n");
+						fprintf(outFile, "\tDRAIN\r\n");
 						break;
 					}
 #endif
 
-#if 0
-					/* TBD2  14,17,18,25,30 */
+#if 1
+					/* MAGICSET */
 					case 0x0059:
 					{
-						fprintf(outFile, "\tTBD %d,%d\r\n",
-							pNode->subParams[0].value, pNode->subParams[1].value);
+						fprintf(outFile, "\tMAGICSET %d,%d\r\n",
+							(pNode->subParams[0].value & 0xFF00) >> 8, (pNode->subParams[0].value & 0xFF));
 						break;
 					}
 #endif
@@ -1926,7 +1938,7 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 					}
 #endif
 #if 0
-						/* TBD3 200*/
+					/* TBD3 200*/
 					case 0x005C:
 					{
 						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
@@ -1935,7 +1947,7 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 					}
 #endif
 #if 0
-						/* TBD3 200*/
+					/* TBD3 200*/
 					case 0x005D:
 					{
 						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
