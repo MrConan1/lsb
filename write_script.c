@@ -1246,12 +1246,12 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 					}
 
 
-#if 0
-					/* TBD B -  7 */
+#if 1
+					/* DEBUG_0x0014? - 7 */
 					case 0x0014:
 					{
-						fprintf(outFile, "\tTBD ",
-							for (x = 0; x < (int)(pNode->num_parameters); x++){
+						fprintf(outFile, "\tDEBUG_0x0014? ");
+						for (x = 0; x < (int)(pNode->num_parameters); x++){
 							int val1, val2;
 							fprintf(outFile, ",");
 							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
@@ -1260,7 +1260,7 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 								fprintf(outFile, "%d", val1);
 							else
 								fprintf(outFile, "%d,%d", val1, val2);
-							}
+						}
 						fprintf(outFile, "\r\n");
 						break;
 					}
@@ -1364,12 +1364,12 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 						break;
 					}
 
-#if 0
-					/* TBD3 0, 44, 200*/
+#if 1
+					/* SETPARAM */
 					case 0x0022:
 					{
-						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
-							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
+						fprintf(outFile, "\tSETPARAM %d,%d,%d\r\n",
+							(pNode->subParams[0].value & 0xFF00) >> 8, pNode->subParams[0].value & 0xFF, (pNode->subParams[1].value & 0xFF00) >> 8);
 						break;
 					}
 #endif
@@ -1566,11 +1566,11 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 						break;
 					}
 
-#if 0
-					/* TBD B -  200*/
+#if 1
+					/* DEBUG_0x0036? -  200*/
 					case 0x0036:
 					{
-						fprintf(outFile, "\tTBD ");
+						fprintf(outFile, "\tDEBUG_0x0036? ");
 						for (x = 0; x < (int)(pNode->num_parameters); x++){
 							int val1, val2;
 							fprintf(outFile, ",");
@@ -1882,12 +1882,12 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 						break;
 					}
 
-#if 0
-					/* TBD2  12 */
+#if 1
+					/* CONFUSION */
 					case 0x0056:
 					{
-						fprintf(outFile, "\tTBD %d,%d\r\n",
-							pNode->subParams[0].value, pNode->subParams[1].value);
+						fprintf(outFile, "\tCONFUSION %d\r\n",
+							pNode->subParams[0].value);
 						break;
 					}
 #endif
@@ -1929,28 +1929,28 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 						break;
 					}
 
-#if 0
-					/* TBD - 58, 200 */
+#if 1
+					/* ALLRESET */
 					case 0x005B:
 					{
-						fprintf(outFile, "\tTBD\r\n");
+						fprintf(outFile, "\tALLRESET\r\n");
 						break;
 					}
 #endif
-#if 0
-					/* TBD3 200*/
+#if 1
+					/* DEBUG_0x005C? */
 					case 0x005C:
 					{
-						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
+						fprintf(outFile, "\tDEBUG_0x005C? %d:%d,%d\r\n",
 							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
 						break;
 					}
 #endif
-#if 0
-					/* TBD3 200*/
+#if 1
+					/* DEBUG_0x005D? */
 					case 0x005D:
 					{
-						fprintf(outFile, "\tTBD %d:%d,%d\r\n",
+						fprintf(outFile, "\tDEBUG_0x005D? %d:%d,%d\r\n",
 							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
 						break;
 					}
