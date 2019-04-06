@@ -58,7 +58,7 @@ static int writeLW(unsigned int data){
         return -1;
     }
 
-    if (output_endian_type == LITTLE_ENDIAN){
+    if (output_endian_type == LUNAR_LITTLE_ENDIAN){
         *pData = data;
     }
     else{
@@ -100,7 +100,7 @@ static int writeSW(unsigned short data){
         return -1;
     }
 
-    if (output_endian_type == LITTLE_ENDIAN){
+    if (output_endian_type == LUNAR_LITTLE_ENDIAN){
         *pData = data;
     }
     else{
@@ -895,7 +895,7 @@ int writeScript(FILE* outFile){
 
     /* Output Header */
     fprintf(outFile, "(start\r\n");
-    if( getBinOutputMode() == BIG_ENDIAN)
+    if( getBinOutputMode() == LUNAR_BIG_ENDIAN)
         fprintf(outFile, "    (endian=big)\r\n");
     else
         fprintf(outFile, "    (endian=little)\r\n");
