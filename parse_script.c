@@ -68,8 +68,8 @@ int encodeScript(FILE* infile, FILE* outfile){
     /****************************************************/
     /* Parse the input file to create the binary output */
     /****************************************************/
-    pInput = strtok(pBuffer, "() \t=\r\n");
-    if ((pInput == NULL) || (strcmp(pInput, "start") != 0)) {
+    pInput = (unsigned char*)strtok((char *)pBuffer, "() \t=\r\n");
+    if ((pInput == NULL) || (strcmp((char *)pInput, "start") != 0)) {
         printf("Error, start not found\n");
         return -1;
     }
@@ -79,17 +79,17 @@ int encodeScript(FILE* infile, FILE* outfile){
     /*********/
 
     /* start - endian (big or little) */
-    pInput = strtok(NULL, "()\t = \r\n");
-    if (strcmp(pInput, "endian") != 0) {
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (strcmp((char *)pInput, "endian") != 0) {
         printf("Error, start endian not found\n");
         return -1;
     }
-    pInput = strtok(NULL, "()\t = \r\n");
-    if (strcmp(pInput, "big") == 0) {
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (strcmp((char *)pInput, "big") == 0) {
         output_endian_type = BIG_ENDIAN;
         printf("Setting Big Endian.\n");
     }
-    else if (strcmp(pInput, "little") == 0){
+    else if (strcmp((char *)pInput, "little") == 0){
         output_endian_type = LITTLE_ENDIAN;
         printf("Setting Little Endian.\n");
     }
@@ -100,17 +100,17 @@ int encodeScript(FILE* infile, FILE* outfile){
     setBinOutputMode(output_endian_type);
 
     /* start - radix (hex or decimal) */
-    pInput = strtok(NULL, "()\t = \r\n");
-    if (strcmp(pInput, "radix") != 0) {
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (strcmp((char *)pInput, "radix") != 0) {
         printf("Error, start radix not found\n");
         return -1;
     }
-    pInput = strtok(NULL, "()\t = \r\n");
-    if (strcmp(pInput, "hex") == 0) {
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (strcmp((char *)pInput, "hex") == 0) {
         radix_type = RADIX_HEX;
         printf("Setting Radix to HEX.\n");
     }
-    else if(strcmp(pInput, "dec") == 0) {
+    else if(strcmp((char *)pInput, "dec") == 0) {
         radix_type = RADIX_DEC;
         printf("Setting Radix to DEC.\n");
     }
@@ -121,12 +121,12 @@ int encodeScript(FILE* infile, FILE* outfile){
     setMetaScriptInputMode(radix_type);
 
     /* start - max_size_bytes */
-    pInput = strtok(NULL, "()\t = \r\n");
-    if (strcmp(pInput, "max_size_bytes") != 0) {
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (strcmp((char *)pInput, "max_size_bytes") != 0) {
         printf("Error, max_size_bytes not found\n");
         return -1;
     }
-    pInput = strtok(NULL, "()\t = \r\n");
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
     if (readLW(pInput, &max_size_bytes) < 0){
         printf("Error invalid max_size_bytes\n");
         return -1;
@@ -142,48 +142,48 @@ int encodeScript(FILE* infile, FILE* outfile){
     /* Parse the rest of the file until EOF or "end" is located */
     /************************************************************/
     rval = 0;
-    pInput = strtok(NULL, "()\t = \r\n");
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
     while ((pInput != NULL) && rval == 0){
         int id;
 
         /* goto */
-        if (strcmp(pInput, "goto") == 0){
+        if (strcmp((char *)pInput, "goto") == 0){
             id = read_ID(pInput);
             rval = decode_goto(id);
         }
 
         /* fill-space */
-        else if (strcmp(pInput, "fill-space") == 0){
+        else if (strcmp((char *)pInput, "fill-space") == 0){
             id = read_ID(pInput);
             rval = decode_fill(id);
         }
 
         /* pointer */
-        else if (strcmp(pInput, "pointer") == 0){
+        else if (strcmp((char *)pInput, "pointer") == 0){
             id = read_ID(pInput);
             rval = decode_pointer(id);
         }
 
         /* execute-subroutine */
-        else if (strcmp(pInput, "execute-subroutine") == 0){
+        else if (strcmp((char *)pInput, "execute-subroutine") == 0){
             id = read_ID(pInput);
             rval = decode_exesub(id);
         }
 
         /* run-commands */
-        else if (strcmp(pInput, "run-commands") == 0){
+        else if (strcmp((char *)pInput, "run-commands") == 0){
             id = read_ID(pInput);
             rval = decode_runcmds(id);
         }
 
 		/* options */
-		else if (strcmp(pInput, "options") == 0){
+		else if (strcmp((char *)pInput, "options") == 0){
 			id = read_ID(pInput);
 			rval = decode_options(id);
 		}
 
         /* end */
-        else if (strcmp(pInput, "end") == 0){
+        else if (strcmp((char *)pInput, "end") == 0){
             printf("Detected END\n");
             break;
         }
@@ -197,7 +197,7 @@ int encodeScript(FILE* infile, FILE* outfile){
             return rval;
 
         /* Read Next Token */
-        pInput = strtok(NULL, "()\t = \r\n");
+        pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
     }
 
     return 0;
@@ -213,14 +213,14 @@ int decode_goto(int id){
     scriptNode* newNode = NULL;
 
     /* read location */
-    pInput = strtok(NULL, "()\t = \r\n");
-    if (strcmp(pInput, "location") != 0) {
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (strcmp((char *)pInput, "location") != 0) {
         printf("Error, location expected\n");
         return -1;
     }
 
     /* read offset */
-    pInput = strtok(NULL, "()\t = \r\n");
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
     if (readLW(pInput, &offset) < 0){
         printf("Error invalid goto offset\n");
         return -1;
@@ -251,36 +251,36 @@ int decode_fill(int id){
     unsigned int fillValue = 0;
 
     /* read unit-size */
-    pInput = strtok(NULL, "()\t = \r\n");
-    if (strcmp(pInput, "unit-size") != 0) {
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (strcmp((char *)pInput, "unit-size") != 0) {
         printf("Error, unit-size expected\n");
         return -1;
     }
-    pInput = strtok(NULL, "()\t = \r\n");
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
     if (readLW(pInput, &unitSize) < 0){
         printf("Error invalid goto offset\n");
         return -1;
     }
 
     /* read fill-value */
-    pInput = strtok(NULL, "()\t = \r\n");
-    if (strcmp(pInput, "fill-value") != 0) {
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (strcmp((char *)pInput, "fill-value") != 0) {
         printf("Error, fill-value expected\n");
         return -1;
     }
-    pInput = strtok(NULL, "()\t = \r\n");
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
     if (readLW(pInput, &fillValue) < 0){
         printf("Error invalid unit size\n");
         return -1;
     }
 
     /* read unit-count */
-    pInput = strtok(NULL, "()\t = \r\n");
-    if (strcmp(pInput, "unit-count") != 0) {
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (strcmp((char *)pInput, "unit-count") != 0) {
         printf("Error, unit-count expected\n");
         return -1;
     }
-    pInput = strtok(NULL, "()\t = \r\n");
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
     if (readLW(pInput, &unitCount) < 0){
         printf("Error invalid unit count\n");
         return -1;
@@ -315,41 +315,41 @@ int decode_pointer(int id){
     unsigned int value_selected = 0;
 
     /* read byteoffset */
-    pInput = strtok(NULL, "()\t = \r\n");
-    if (strcmp(pInput, "byteoffset") != 0) {
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (strcmp((char *)pInput, "byteoffset") != 0) {
         printf("Error, byteoffset expected\n");
         return -1;
     }
-    pInput = strtok(NULL, "()\t = \r\n");
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
     if (readLW(pInput, &byteOffset) < 0){
         printf("Error invalid pointer byte offset\n");
         return -1;
     }
 
     /* read size of pointer */
-    pInput = strtok(NULL, "()\t = \r\n");
-    if (strcmp(pInput, "size") != 0) {
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (strcmp((char *)pInput, "size") != 0) {
         printf("Error, size expected\n");
         return -1;
     }
-    pInput = strtok(NULL, "()\t = \r\n");
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
     if (readLW(pInput, &dataSize) < 0){
         printf("Error invalid pointer data size\n");
         return -1;
     }
 
     /* read value or id to point to */
-    pInput = strtok(NULL, "()\t = \r\n");
-    if (strcmp(pInput, "value") == 0) {
-        pInput = strtok(NULL, "()\t = \r\n");
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (strcmp((char *)pInput, "value") == 0) {
+        pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
         if (readLW(pInput, &value) < 0){
             printf("Error invalid value\n");
             return -1;
         }
         value_selected = 1;
     }
-    else if (strcmp(pInput, "id-link") == 0) {
-        pInput = strtok(NULL, "()\t = \r\n");
+    else if (strcmp((char *)pInput, "id-link") == 0) {
+        pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
         if (readLW(pInput, &id_link) < 0){
             printf("Error invalid id\n");
             return -1;
@@ -397,24 +397,24 @@ int decode_exesub(int id){
     paramType* params = NULL;
 
     /* Read subroutine value */
-    pInput = strtok(NULL, "()\t = \r\n");
-    if (strcmp(pInput, "subroutine") != 0) {
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (strcmp((char *)pInput, "subroutine") != 0) {
         printf("Error, subroutine expected\n");
         return -1;
     }
-    pInput = strtok(NULL, "()\t = \r\n");
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
     if (readSW(pInput, &subrtn_code) < 0){
         printf("Error invalid subroutine code\n");
         return -1;
     }
 
     /* read num-parameters */
-    pInput = strtok(NULL, "()\t = \r\n");
-    if (strcmp(pInput, "num-parameters") != 0) {
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (strcmp((char *)pInput, "num-parameters") != 0) {
         printf("Error, num-parameters expected\n");
         return -1;
     }
-    pInput = strtok(NULL, "()\t = \r\n");
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
     if (readLW(pInput, &numparam) < 0){
         printf("Error invalid number of parameters\n");
 
@@ -424,12 +424,12 @@ int decode_exesub(int id){
     if (numparam > 0){
 
         /* read align-fill-byteval */
-        pInput = strtok(NULL, "()\t = \r\n");
-        if (strcmp(pInput, "align-fill-byteval") != 0) {
+        pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+        if (strcmp((char *)pInput, "align-fill-byteval") != 0) {
             printf("Error, align-fill-byteval expected\n");
             return -1;
         }
-        pInput = strtok(NULL, "()\t = \r\n");
+        pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
         if (readBYTE(pInput, &fillVal) < 0){
             printf("Error invalid alignment byte fill value\n");
             return -1;
@@ -447,22 +447,22 @@ int decode_exesub(int id){
         /**********************/
 
         /* Parameter Type Information */
-        pInput = strtok(NULL, "()\t = \r\n");
-        if (strcmp(pInput, "parameter-types") != 0) {
+        pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+        if (strcmp((char *)pInput, "parameter-types") != 0) {
             printf("Error, parameter-types expected\n");
             return -1;
         }
         for (x = 0; x < (int)numparam; x++){
-            pInput = strtok(NULL, "()\t = \r\n");
-            if (strcmp(pInput, "1") == 0)
+            pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+            if (strcmp((char *)pInput, "1") == 0)
                 params[x].type = BYTE_PARAM;
-            else if (strcmp(pInput, "2") == 0)
+            else if (strcmp((char *)pInput, "2") == 0)
                 params[x].type = SHORT_PARAM;
-            else if (strcmp(pInput, "4") == 0)
+            else if (strcmp((char *)pInput, "4") == 0)
                 params[x].type = LONG_PARAM;
-            else if (strcmp(pInput, "align-2") == 0)
+            else if (strcmp((char *)pInput, "align-2") == 0)
                 params[x].type = ALIGN_2_PARAM;
-            else if (strcmp(pInput, "align-4") == 0)
+            else if (strcmp((char *)pInput, "align-4") == 0)
                 params[x].type = ALIGN_4_PARAM;
             else{
                 printf("Error invalid parameter type read\n");
@@ -471,8 +471,8 @@ int decode_exesub(int id){
         }
 
         /* Parameter Values */
-        pInput = strtok(NULL, "()\t = \r\n");
-        if (strcmp(pInput, "parameter-values") != 0) {
+        pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+        if (strcmp((char *)pInput, "parameter-values") != 0) {
             printf("Error, parameter-values expected\n");
             return -1;
         }
@@ -480,7 +480,7 @@ int decode_exesub(int id){
             if ((params[x].type == ALIGN_2_PARAM) || (params[x].type == ALIGN_4_PARAM))
                 continue;
 
-            pInput = strtok(NULL, "()\t = \r\n");
+            pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
             if (readLW(pInput, &params[x].value) < 0){
                 printf("Error invalid parameter value\n");
                 return -1;
@@ -523,8 +523,8 @@ int decode_runcmds(int id){
     int len = 0;
 
     /* read series of commands until the end of them is reached */
-    pInput = strtok(NULL, "()\t = \r\n");
-    while (strcmp(pInput, "commands-end") != 0) {
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    while (strcmp((char *)pInput, "commands-end") != 0) {
 
         /* Create a runcmds parameter */
         rpNode = (runParamType*)malloc(sizeof(runParamType));
@@ -543,28 +543,28 @@ int decode_runcmds(int id){
         }
 
         /* print-line */
-        if (strcmp(pInput, "print-line") == 0){
+        if (strcmp((char *)pInput, "print-line") == 0){
             unsigned char* pText;
 
             /* Get Text String (UTF-8) */
-            pInput = strtok(NULL, "\"");
+            pInput = (unsigned char*)strtok(NULL, "\"");
             if (pInput == NULL){
                 printf("Error, bad text input.\n");
                 return -1;
             }
             pText = pInput;
-            len = strlen(pText);
+            len = strlen((char *)pText);
 
             rpNode->type = PRINT_LINE;
-            rpNode->str = (char*)malloc(len+1);
+            rpNode->str = malloc(len+1);
             memset(rpNode->str,0,len+1);
             memcpy(rpNode->str,pText,len);
         }
         
         /* show-portrait-left */
-        else if (strcmp(pInput, "show-portrait-left") == 0){
+        else if (strcmp((char *)pInput, "show-portrait-left") == 0){
             unsigned char portraitCode;
-            pInput = strtok(NULL, "()\t = \r\n");
+            pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
             if (readBYTE(pInput, &portraitCode) < 0){
                 printf("Error invalid portrait code.\n");
                 return -1;
@@ -576,9 +576,9 @@ int decode_runcmds(int id){
         }
 
 		/* show-portrait-right */
-		else if (strcmp(pInput, "show-portrait-right") == 0){
+		else if (strcmp((char *)pInput, "show-portrait-right") == 0){
 			unsigned char portraitCode;
-			pInput = strtok(NULL, "()\t = \r\n");
+			pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
 			if (readBYTE(pInput, &portraitCode) < 0){
 				printf("Error invalid portrait code.\n");
 				return -1;
@@ -590,9 +590,9 @@ int decode_runcmds(int id){
 		}
 
 		/* time-delay */
-		else if (strcmp(pInput, "time-delay") == 0){
+		else if (strcmp((char *)pInput, "time-delay") == 0){
 			unsigned char timedelay;
-			pInput = strtok(NULL, "()\t = \r\n");
+			pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
 			if (readBYTE(pInput, &timedelay) < 0){
 				printf("Error invalid time delay.\n");
 				return -1;
@@ -604,9 +604,9 @@ int decode_runcmds(int id){
 		}
 
         /* control-code */
-        else if (strcmp(pInput, "control-code") == 0){
+        else if (strcmp((char *)pInput, "control-code") == 0){
             unsigned short ctrlCode;
-            pInput = strtok(NULL, "()\t = \r\n");
+            pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
             if (readSW(pInput, &ctrlCode) < 0){
                 printf("Error invalid control code.\n");
                 return -1;
@@ -618,9 +618,9 @@ int decode_runcmds(int id){
         }
 
         /* align-2 */
-        else if (strcmp(pInput, "align-2") == 0){
+        else if (strcmp((char *)pInput, "align-2") == 0){
             unsigned char fillVal;
-            pInput = strtok(NULL, "()\t = \r\n");
+            pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
             if (readBYTE(pInput, &fillVal) < 0){
                 printf("Error invalid fill value.\n");
                 return -1;
@@ -632,9 +632,9 @@ int decode_runcmds(int id){
         }
         
         /* align-4 */
-        else if (strcmp(pInput, "align-4") == 0){
+        else if (strcmp((char *)pInput, "align-4") == 0){
             unsigned char fillVal;
-            pInput = strtok(NULL, "()\t = \r\n");
+            pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
             if (readBYTE(pInput, &fillVal) < 0){
                 printf("Error invalid fill value.\n");
                 return -1;
@@ -654,7 +654,7 @@ int decode_runcmds(int id){
         pPrev = rpNode;
 
         /* Read next token */
-        pInput = strtok(NULL, "()\t = \r\n");
+        pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
     }
 
     /* Create a script node */
@@ -698,24 +698,24 @@ int decode_options(int id){
 	/***********************************************/
 
 	/* JMP Offset */
-	pInput = strtok(NULL, "()\t = \r\n");
-	if (strcmp(pInput, "jmpparam") != 0) {
+	pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+	if (strcmp((char *)pInput, "jmpparam") != 0) {
 		printf("Error, jmpparam expected\n");
 		return -1;
 	}
-	pInput = strtok(NULL, "()\t = \r\n");
+	pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
 	if (readSW(pInput, &jmpParam) < 0){
 		printf("Error invalid subroutine code\n");
 		return -1;
 	}
 
 	/* 2nd Parameter */
-	pInput = strtok(NULL, "()\t = \r\n");
-	if (strcmp(pInput, "param2") != 0) {
+	pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+	if (strcmp((char *)pInput, "param2") != 0) {
 		printf("Error, param2 expected\n");
 		return -1;
 	}
-	pInput = strtok(NULL, "()\t = \r\n");
+	pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
 	if (readSW(pInput, &param2) < 0){
 		printf("Error invalid subroutine code\n");
 		return -1;
@@ -736,8 +736,8 @@ int decode_options(int id){
 	for (x = 0; x < 2; x++){
 
 		if (x == 0){
-			pInput = strtok(NULL, "()\t = \r\n");
-			if (strcmp(pInput, "opt1") != 0) {
+			pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+			if (strcmp((char *)pInput, "opt1") != 0) {
 				printf("Error, opt1 expected\n");
 				return -1;
 			}
@@ -745,15 +745,15 @@ int decode_options(int id){
 		else{
 			rpHead1 = rpHead;
 			rpHead = NULL;
-			pInput = strtok(NULL, "()\t = \r\n");
-			if (strcmp(pInput, "opt2") != 0) {
+			pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+			if (strcmp((char *)pInput, "opt2") != 0) {
 				printf("Error, opt2 expected\n");
 				return -1;
 			}
 		}
 		pPrev = NULL;
-		pInput = strtok(NULL, "()\t = \r\n");
-		while (strcmp(pInput, "opt-end") != 0) {
+		pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+		while (strcmp((char *)pInput, "opt-end") != 0) {
 
 			/* Create a runcmds parameter */
 			rpNode = (runParamType*)malloc(sizeof(runParamType));
@@ -772,28 +772,28 @@ int decode_options(int id){
 			}
 
 			/* print-line */
-			if (strcmp(pInput, "print-line") == 0){
+			if (strcmp((char *)pInput, "print-line") == 0){
 				unsigned char* pText;
 
 				/* Get Text String (UTF-8) */
-				pInput = strtok(NULL, "\"");
+				pInput = (unsigned char*)strtok(NULL, "\"");
 				if (pInput == NULL){
 					printf("Error, bad text input.\n");
 					return -1;
 				}
 				pText = pInput;
-				len = strlen(pText);
+				len = strlen((char *)pText);
 
 				rpNode->type = PRINT_LINE;
-				rpNode->str = (char*)malloc(len + 1);
+				rpNode->str = malloc(len + 1);
 				memset(rpNode->str, 0, len + 1);
 				memcpy(rpNode->str, pText, len);
 			}
 
 			/* control-code */
-			else if (strcmp(pInput, "control-code") == 0){
+			else if (strcmp((char *)pInput, "control-code") == 0){
 				unsigned short ctrlCode;
-				pInput = strtok(NULL, "()\t = \r\n");
+				pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
 				if (readSW(pInput, &ctrlCode) < 0){
 					printf("Error invalid control code.\n");
 					return -1;
@@ -805,9 +805,9 @@ int decode_options(int id){
 			}
 
 			/* align-2 */
-			else if (strcmp(pInput, "align-2") == 0){
+			else if (strcmp((char *)pInput, "align-2") == 0){
 				unsigned char fillVal;
-				pInput = strtok(NULL, "()\t = \r\n");
+				pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
 				if (readBYTE(pInput, &fillVal) < 0){
 					printf("Error invalid fill value.\n");
 					return -1;
@@ -819,9 +819,9 @@ int decode_options(int id){
 			}
 
 			/* align-4 */
-			else if (strcmp(pInput, "align-4") == 0){
+			else if (strcmp((char *)pInput, "align-4") == 0){
 				unsigned char fillVal;
-				pInput = strtok(NULL, "()\t = \r\n");
+				pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
 				if (readBYTE(pInput, &fillVal) < 0){
 					printf("Error invalid fill value.\n");
 					return -1;
@@ -841,7 +841,7 @@ int decode_options(int id){
 			pPrev = rpNode;
 
 			/* Read next token */
-			pInput = strtok(NULL, "()\t = \r\n");
+			pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
 		}
 	}
 
