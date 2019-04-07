@@ -58,7 +58,7 @@ static int numEntries = 0;
 
 /* I/O Globals*/
 static int textDecodeMode = TEXT_DECODE_TWO_BYTES_PER_CHAR;  //Binary Input File Encoding for Text
-static int outputMode = BIG_ENDIAN;  //Script Text File Value Encoding
+static int outputMode = LUNAR_BIG_ENDIAN;  //Script Text File Value Encoding
 static int inputMode = RADIX_HEX;    //Script Text File Value Representation
 static int tableMode = TWO_BYTE_ENC; //Table File Encoding Method
 static unsigned int maxBinFsize = 0; //MAX allowed size of a binary script file
@@ -299,13 +299,13 @@ int getUTF8code_Short(char* utf8Value, unsigned short* utf8Code){
 
 
 void setBinOutputMode(int mode){
-    if (mode == BIG_ENDIAN)
-        outputMode = BIG_ENDIAN;
-    else if (mode == LITTLE_ENDIAN)
-        outputMode = LITTLE_ENDIAN;
+    if (mode == LUNAR_BIG_ENDIAN)
+        outputMode = LUNAR_BIG_ENDIAN;
+    else if (mode == LUNAR_LITTLE_ENDIAN)
+        outputMode = LUNAR_LITTLE_ENDIAN;
     else{
         printf("Invalid Output Mode, defaulting to Big Endian.\n");
-        outputMode = BIG_ENDIAN;
+        outputMode = LUNAR_BIG_ENDIAN;
     }
     return;
 }

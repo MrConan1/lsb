@@ -6,8 +6,8 @@
 /***********/
 
 /* Binary Output Mode */
-#define BIG_ENDIAN    0
-#define LITTLE_ENDIAN 1
+#define LUNAR_BIG_ENDIAN    0
+#define LUNAR_LITTLE_ENDIAN 1
 
 /* Meta Script Read Mode for data values */
 #define RADIX_DEC     0

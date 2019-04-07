@@ -58,7 +58,7 @@ static int writeLW(unsigned int data){
         return -1;
     }
 
-    if (output_endian_type == LITTLE_ENDIAN){
+    if (output_endian_type == LUNAR_LITTLE_ENDIAN){
         *pData = data;
     }
     else{
@@ -100,7 +100,7 @@ static int writeSW(unsigned short data){
         return -1;
     }
 
-    if (output_endian_type == LITTLE_ENDIAN){
+    if (output_endian_type == LUNAR_LITTLE_ENDIAN){
         *pData = data;
     }
     else{
@@ -895,7 +895,7 @@ int writeScript(FILE* outFile){
 
     /* Output Header */
     fprintf(outFile, "(start\r\n");
-    if( getBinOutputMode() == BIG_ENDIAN)
+    if( getBinOutputMode() == LUNAR_BIG_ENDIAN)
         fprintf(outFile, "    (endian=big)\r\n");
     else
         fprintf(outFile, "    (endian=little)\r\n");
@@ -1562,7 +1562,7 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 					/* MVKILL */
 					case 0x0035:
 					{
-						fprintf(outFile, "\tMVKILL\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
+						fprintf(outFile, "\tMVKILL%u\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
 						break;
 					}
 
@@ -2095,7 +2095,7 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 
 				fprintf(outFile, "\t%u", pNode->id);
 
-				fprintf(outFile, "\tTALK", pNode->id);
+				fprintf(outFile, "\tTALK%u", pNode->id);
 
 				while (rpNode != NULL) {
 

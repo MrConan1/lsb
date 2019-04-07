@@ -1946,7 +1946,7 @@ runParamType* getRunParam(int textMode, char* pdata){
 						printf("Error allocing space for run parameter struct.\n");
 						return NULL;
 					}
-					memset(rpNode, 0, sizeof(rpNode));
+					memset(rpNode, 0, sizeof(&rpNode));
 					rpNode->pNext = NULL;
 					rpNode->type = PRINT_LINE;
 					rpNode->str = tmpText;
@@ -1974,7 +1974,7 @@ runParamType* getRunParam(int textMode, char* pdata){
 					printf("Error allocing space for run parameter struct.\n");
 					return NULL;
 				}
-				memset(rpNode, 0, sizeof(rpNode));
+				memset(rpNode, 0, sizeof(&rpNode));
 				rpNode->pNext = NULL;
 				rpNode->str = NULL;
 
@@ -2072,7 +2072,7 @@ runParamType* getRunParam(int textMode, char* pdata){
 							free(ptrText);
 							return NULL;
 						}
-						memset(rpNode, 0, sizeof(rpNode));
+						memset(rpNode, 0, sizeof(&rpNode));
 						rpNode->pNext = NULL;
 						rpNode->type = PRINT_LINE;
 						rpNode->str = malloc(strlen((char *)ptrText) + 1);
@@ -2106,7 +2106,7 @@ runParamType* getRunParam(int textMode, char* pdata){
 						free(ptrText);
 						return NULL;
 					}
-					memset(rpNode, 0, sizeof(rpNode));
+					memset(rpNode, 0, sizeof(&rpNode));
 					rpNode->pNext = NULL;
 					rpNode->str = NULL;
 
@@ -2205,7 +2205,7 @@ runParamType* getRunParam(int textMode, char* pdata){
 						free(ptrText);
 						return NULL;
 					}
-					memset(rpNode, 0, sizeof(rpNode));
+					memset(rpNode, 0, sizeof(&rpNode));
 					rpNode->pNext = NULL;
 					rpNode->type = PRINT_LINE;
 					rpNode->str = malloc(strlen((char *)ptrText) + 1);
@@ -2239,7 +2239,7 @@ runParamType* getRunParam(int textMode, char* pdata){
 					free(ptrText);
 					return NULL;
 				}
-				memset(rpNode, 0, sizeof(rpNode));
+				memset(rpNode, 0, sizeof(&rpNode));
 				rpNode->pNext = NULL;
 				rpNode->str = NULL;
 

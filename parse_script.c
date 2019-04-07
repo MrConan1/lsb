@@ -84,13 +84,14 @@ int encodeScript(FILE* infile, FILE* outfile){
         printf("Error, start endian not found\n");
         return -1;
     }
+
     pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
     if (strcmp((char *)pInput, "big") == 0) {
-        output_endian_type = BIG_ENDIAN;
+        output_endian_type = LUNAR_BIG_ENDIAN;
         printf("Setting Big Endian.\n");
     }
     else if (strcmp((char *)pInput, "little") == 0){
-        output_endian_type = LITTLE_ENDIAN;
+        output_endian_type = LUNAR_LITTLE_ENDIAN;
         printf("Setting Little Endian.\n");
     }
     else{
