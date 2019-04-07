@@ -1937,7 +1937,7 @@ runParamType* getRunParam(int textMode, char* pdata){
 							strcpy(tmp, " ");
 						else
 							getUTF8character(ptrTextStart[x], tmp);
-						strcat(tmpText, tmp);
+						strcat((char *)tmpText, tmp);
 					}
 
 					/* Create a runcmds parameter element */
@@ -2047,7 +2047,7 @@ runParamType* getRunParam(int textMode, char* pdata){
 				unsigned int index = (unsigned int)byte_data;
 				memset(temp, 0, 32);
 				getUTF8character((int)index, temp);
-				strcat(ptrText, temp);
+				strcat((char *)ptrText, temp);
 				pdata++;
 			}
 			else if (byte_data >= 0xF0){
@@ -2058,14 +2058,14 @@ runParamType* getRunParam(int textMode, char* pdata){
 
 				/* Could be a space or Ctrl Code */
 				if (short_data == 0xF90A){
-					strcat(ptrText, " ");
+					strcat((char *)ptrText, " ");
 				}
 				else{
 					/**************************************/
 					/* Write out any prior text           */
 					/* Create a runcmds parameter element */
 					/**************************************/
-					if (strlen(ptrText) > 0){
+					if (strlen((char *)ptrText) > 0){
 						rpNode = (runParamType*)malloc(sizeof(runParamType));
 						if (rpNode == NULL){
 							printf("Error allocing space for run parameter struct.\n");
@@ -2075,14 +2075,14 @@ runParamType* getRunParam(int textMode, char* pdata){
 						memset(rpNode, 0, sizeof(&rpNode));
 						rpNode->pNext = NULL;
 						rpNode->type = PRINT_LINE;
-						rpNode->str = (char*)malloc(strlen(ptrText) + 1);
+						rpNode->str = malloc(strlen((char *)ptrText) + 1);
 						if (rpNode->str == NULL){
 							printf("Error allocing for string.\n");
 							free(ptrText);
 							return NULL;
 						}
-						memset(rpNode->str, 0, strlen(ptrText) + 1);
-						strcpy(rpNode->str, ptrText);
+						memset(rpNode->str, 0, strlen((char *)ptrText) + 1);
+						strcpy((char *)rpNode->str, (char *)ptrText);
 
 						/* Add the node to the list */
 						if (rpHead == NULL){
@@ -2159,7 +2159,7 @@ runParamType* getRunParam(int textMode, char* pdata){
 		int numBytes, y;
 
 		/* Buffer */
-		ptrText = (char*)malloc(1024 * 1024);
+		ptrText = malloc(1024 * 1024);
 		if (ptrText == NULL){
 			printf("Error allocing temp memory\n");
 		}
@@ -2189,7 +2189,7 @@ runParamType* getRunParam(int textMode, char* pdata){
 			}
 
 			if (short_data == 0xF90A){
-				strcat(ptrText, " ");
+				strcat((char *)ptrText, " ");
 				short_data = 0;
 			}
 			else if (short_data != 0x0000){
@@ -2198,7 +2198,7 @@ runParamType* getRunParam(int textMode, char* pdata){
 				/* Write out any prior text           */
 				/* Create a runcmds parameter element */
 				/**************************************/
-				if (strlen(ptrText) > 0){
+				if (strlen((char *)ptrText) > 0){
 					rpNode = (runParamType*)malloc(sizeof(runParamType));
 					if (rpNode == NULL){
 						printf("Error allocing space for run parameter struct.\n");
@@ -2208,14 +2208,14 @@ runParamType* getRunParam(int textMode, char* pdata){
 					memset(rpNode, 0, sizeof(&rpNode));
 					rpNode->pNext = NULL;
 					rpNode->type = PRINT_LINE;
-					rpNode->str = (char*)malloc(strlen(ptrText) + 1);
+					rpNode->str = malloc(strlen((char *)ptrText) + 1);
 					if (rpNode->str == NULL){
 						printf("Error allocing for string.\n");
 						free(ptrText);
 						return NULL;
 					}
-					memset(rpNode->str, 0, strlen(ptrText) + 1);
-					strcpy(rpNode->str, ptrText);
+					memset(rpNode->str, 0, strlen((char *)ptrText) + 1);
+					strcpy((char *)rpNode->str, (char *)ptrText);
 
 					/* Add the node to the list */
 					if (rpHead == NULL){
@@ -2281,7 +2281,7 @@ runParamType* getRunParam(int textMode, char* pdata){
 			}
 			else{
 				/* Text */
-				strcat(ptrText, utf8data);
+				strcat((char *)ptrText, (char *)utf8data);
 			}
 			pdata++;
 		}

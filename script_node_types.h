@@ -59,7 +59,7 @@ struct paramType{
 struct runParamType{
 	unsigned int type;
 	unsigned int value;
-	char* str;
+	unsigned char* str;
 	runParamType* pNext;
 };
 

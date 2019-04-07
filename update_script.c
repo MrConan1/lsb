@@ -75,8 +75,8 @@ int updateScript(FILE* upFile){
     /****************************************************/
     /* Parse the input file to create the binary output */
     /****************************************************/
-    pInput = strtok(pBuffer, "() \t=\r\n");
-    if ((pInput == NULL) || (strcmp(pInput, "start") != 0)) {
+    pInput = (unsigned char*)strtok((char*)pBuffer, "() \t=\r\n");
+    if ((pInput == NULL) || (strcmp((const char *)pInput, "start") != 0)) {
         printf("Error, start not found\n");
         return -1;
     }
@@ -87,7 +87,7 @@ int updateScript(FILE* upFile){
     /* Parse the rest of the file until EOF or "end" is located */
     /************************************************************/
     rval = 0;
-    pInput = strtok(NULL, "()\t = \r\n");
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
     while ((pInput != NULL) && rval == 0){
         int id;
         scriptNode node;
@@ -96,34 +96,34 @@ int updateScript(FILE* upFile){
 		node.pNext = node.pPrev = NULL;
 
         /* insert-before-ID */
-        if (strcmp(pInput, "insert-before-ID") == 0){
+        if (strcmp((const char *)pInput, "insert-before-ID") == 0){
             id = read_ID(pInput);
             readNode(&node);
             rval = addNode(&node, METHOD_INSERT_BEFORE, id);
         }
 
         /* insert-after-ID */
-        else if (strcmp(pInput, "insert-after-ID") == 0){
+        else if (strcmp((const char *)pInput, "insert-after-ID") == 0){
             id = read_ID(pInput);
             readNode(&node);
             rval = addNode(&node, METHOD_INSERT_AFTER, id);
         }
 
         /* remove-ID */
-        else if (strcmp(pInput, "remove-ID") == 0){
+        else if (strcmp((const char *)pInput, "remove-ID") == 0){
             id = read_ID(pInput);
             rval = removeNode(id);
         }
 
         /* overwrite-ID */
-        else if (strcmp(pInput, "overwrite-ID") == 0){
+        else if (strcmp((const char *)pInput, "overwrite-ID") == 0){
             id = read_ID(pInput);
             readNode(&node);
             rval = overwriteNode(id, &node);
         }
 
         /* end */
-        else if (strcmp(pInput, "end") == 0){
+        else if (strcmp((const char *)pInput, "end") == 0){
             printf("Detected END\n");
             break;
         }
@@ -137,7 +137,7 @@ int updateScript(FILE* upFile){
             return rval;
 
         /* Read Next Token */
-        pInput = strtok(NULL, "()\t = \r\n");
+        pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
     }
 
     return 0;
@@ -149,42 +149,42 @@ int updateScript(FILE* upFile){
 int readNode(scriptNode* node){
 
     int rval = 0;
-    pInput = strtok(NULL, "()\t = \r\n");
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
     if ((pInput != NULL) && rval == 0){
         int id;
 
         /* goto */
-        if (strcmp(pInput, "goto") == 0){
+        if (strcmp((const char *)pInput, "goto") == 0){
             id = read_ID(pInput);
             rval = copy_goto(id, node);
         }
 
         /* fill-space */
-        else if (strcmp(pInput, "fill-space") == 0){
+        else if (strcmp((const char *)pInput, "fill-space") == 0){
             id = read_ID(pInput);
             rval = copy_fill(id, node);
         }
 
         /* pointer */
-        else if (strcmp(pInput, "pointer") == 0){
+        else if (strcmp((const char *)pInput, "pointer") == 0){
             id = read_ID(pInput);
             rval = copy_pointer(id, node);
         }
 
         /* execute-subroutine */
-        else if (strcmp(pInput, "execute-subroutine") == 0){
+        else if (strcmp((const char *)pInput, "execute-subroutine") == 0){
             id = read_ID(pInput);
             rval = copy_exesub(id, node);
         }
 
         /* run-commands */
-        else if (strcmp(pInput, "run-commands") == 0){
+        else if (strcmp((const char *)pInput, "run-commands") == 0){
             id = read_ID(pInput);
             rval = copy_runcmds(id, node);
         }
 
 		/* options */
-		else if (strcmp(pInput, "options") == 0){
+		else if (strcmp((const char *)pInput, "options") == 0){
 			id = read_ID(pInput);
 			rval = copy_options(id, node);
 		}
@@ -213,14 +213,14 @@ int copy_goto(int id, scriptNode* node){
     memset(node, 0, sizeof(scriptNode));
 
     /* read location */
-    pInput = strtok(NULL, "()\t = \r\n");
-    if (strcmp(pInput, "location") != 0) {
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (strcmp((const char *)pInput, "location") != 0) {
         printf("Error, location expected\n");
         return -1;
     }
 
     /* read offset */
-    pInput = strtok(NULL, "()\t = \r\n");
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
     if (readLW(pInput, &offset) < 0){
         printf("Error invalid goto offset\n");
         return -1;
@@ -247,36 +247,36 @@ int copy_fill(int id, scriptNode* node){
     memset(node, 0, sizeof(scriptNode));
 
     /* read unit-size */
-    pInput = strtok(NULL, "()\t = \r\n");
-    if (strcmp(pInput, "unit-size") != 0) {
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (strcmp((const char *)pInput, "unit-size") != 0) {
         printf("Error, unit-size expected\n");
         return -1;
     }
-    pInput = strtok(NULL, "()\t = \r\n");
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
     if (readLW(pInput, &unitSize) < 0){
         printf("Error invalid goto offset\n");
         return -1;
     }
 
     /* read fill-value */
-    pInput = strtok(NULL, "()\t = \r\n");
-    if (strcmp(pInput, "fill-value") != 0) {
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (strcmp((const char *)pInput, "fill-value") != 0) {
         printf("Error, fill-value expected\n");
         return -1;
     }
-    pInput = strtok(NULL, "()\t = \r\n");
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
     if (readLW(pInput, &fillValue) < 0){
         printf("Error invalid unit size\n");
         return -1;
     }
 
     /* read unit-count */
-    pInput = strtok(NULL, "()\t = \r\n");
-    if (strcmp(pInput, "unit-count") != 0) {
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (strcmp((const char *)pInput, "unit-count") != 0) {
         printf("Error, unit-count expected\n");
         return -1;
     }
-    pInput = strtok(NULL, "()\t = \r\n");
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
     if (readLW(pInput, &unitCount) < 0){
         printf("Error invalid unit count\n");
         return -1;
@@ -307,41 +307,41 @@ int copy_pointer(int id, scriptNode* node){
     memset(node, 0, sizeof(scriptNode));
 
     /* read byteoffset */
-    pInput = strtok(NULL, "()\t = \r\n");
-    if (strcmp(pInput, "byteoffset") != 0) {
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (strcmp((const char *)pInput, "byteoffset") != 0) {
         printf("Error, byteoffset expected\n");
         return -1;
     }
-    pInput = strtok(NULL, "()\t = \r\n");
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
     if (readLW(pInput, &byteOffset) < 0){
         printf("Error invalid pointer byte offset\n");
         return -1;
     }
 
     /* read size of pointer */
-    pInput = strtok(NULL, "()\t = \r\n");
-    if (strcmp(pInput, "size") != 0) {
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (strcmp((const char *)pInput, "size") != 0) {
         printf("Error, size expected\n");
         return -1;
     }
-    pInput = strtok(NULL, "()\t = \r\n");
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
     if (readLW(pInput, &dataSize) < 0){
         printf("Error invalid pointer data size\n");
         return -1;
     }
 
     /* read value or id to point to */
-    pInput = strtok(NULL, "()\t = \r\n");
-    if (strcmp(pInput, "value") == 0) {
-        pInput = strtok(NULL, "()\t = \r\n");
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (strcmp((const char *)pInput, "value") == 0) {
+        pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
         if (readLW(pInput, &value) < 0){
             printf("Error invalid value\n");
             return -1;
         }
         value_selected = 1;
     }
-    else if (strcmp(pInput, "id-link") == 0) {
-        pInput = strtok(NULL, "()\t = \r\n");
+    else if (strcmp((const char *)pInput, "id-link") == 0) {
+        pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
         if (readLW(pInput, &id_link) < 0){
             printf("Error invalid id\n");
             return -1;
@@ -383,24 +383,24 @@ int copy_exesub(int id, scriptNode* node){
     memset(node, 0, sizeof(scriptNode));
 
     /* Read subroutine value */
-    pInput = strtok(NULL, "()\t = \r\n");
-    if (strcmp(pInput, "subroutine") != 0) {
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (strcmp((const char *)pInput, "subroutine") != 0) {
         printf("Error, subroutine expected\n");
         return -1;
     }
-    pInput = strtok(NULL, "()\t = \r\n");
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
     if (readSW(pInput, &subrtn_code) < 0){
         printf("Error invalid subroutine code\n");
         return -1;
     }
 
     /* read num-parameters */
-    pInput = strtok(NULL, "()\t = \r\n");
-    if (strcmp(pInput, "num-parameters") != 0) {
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (strcmp((const char *)pInput, "num-parameters") != 0) {
         printf("Error, num-parameters expected\n");
         return -1;
     }
-    pInput = strtok(NULL, "()\t = \r\n");
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
     if (readLW(pInput, &numparam) < 0){
         printf("Error invalid number of parameters\n");
         return -1;
@@ -409,12 +409,12 @@ int copy_exesub(int id, scriptNode* node){
     if (numparam > 0){
 
         /* read align-fill-byteval */
-        pInput = strtok(NULL, "()\t = \r\n");
-        if (strcmp(pInput, "align-fill-byteval") != 0) {
+        pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+        if (strcmp((const char *)pInput, "align-fill-byteval") != 0) {
             printf("Error, align-fill-byteval expected\n");
             return -1;
         }
-        pInput = strtok(NULL, "()\t = \r\n");
+        pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
         if (readBYTE(pInput, &fillVal) < 0){
             printf("Error invalid alignment byte fill value\n");
             return -1;
@@ -432,22 +432,22 @@ int copy_exesub(int id, scriptNode* node){
         /**********************/
 
         /* Parameter Type Information */
-        pInput = strtok(NULL, "()\t = \r\n");
-        if (strcmp(pInput, "parameter-types") != 0) {
+        pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+        if (strcmp((const char *)pInput, "parameter-types") != 0) {
             printf("Error, parameter-types expected\n");
             return -1;
         }
         for (x = 0; x < (int)numparam; x++){
-            pInput = strtok(NULL, "()\t = \r\n");
-            if (strcmp(pInput, "1") == 0)
+            pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+            if (strcmp((const char *)pInput, "1") == 0)
                 params[x].type = BYTE_PARAM;
-            else if (strcmp(pInput, "2") == 0)
+            else if (strcmp((const char *)pInput, "2") == 0)
                 params[x].type = SHORT_PARAM;
-            else if (strcmp(pInput, "4") == 0)
+            else if (strcmp((const char *)pInput, "4") == 0)
                 params[x].type = LONG_PARAM;
-            else if (strcmp(pInput, "align-2") == 0)
+            else if (strcmp((const char *)pInput, "align-2") == 0)
                 params[x].type = ALIGN_2_PARAM;
-            else if (strcmp(pInput, "align-4") == 0)
+            else if (strcmp((const char *)pInput, "align-4") == 0)
                 params[x].type = ALIGN_4_PARAM;
             else{
                 printf("Error invalid parameter type read\n");
@@ -456,8 +456,8 @@ int copy_exesub(int id, scriptNode* node){
         }
 
         /* Parameter Values */
-        pInput = strtok(NULL, "()\t = \r\n");
-        if (strcmp(pInput, "parameter-values") != 0) {
+        pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+        if (strcmp((const char *)pInput, "parameter-values") != 0) {
             printf("Error, parameter-values expected\n");
             return -1;
         }
@@ -465,7 +465,7 @@ int copy_exesub(int id, scriptNode* node){
             if ((params[x].type == ALIGN_2_PARAM) || (params[x].type == ALIGN_4_PARAM))
                 continue;
 
-            pInput = strtok(NULL, "()\t = \r\n");
+            pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
             if (readLW(pInput, &params[x].value) < 0){
                 printf("Error invalid parameter value\n");
                 return -1;
@@ -501,8 +501,8 @@ int copy_runcmds(int id, scriptNode* node){
     memset(node, 0, sizeof(scriptNode));
 
     /* read series of commands until the end of them is reached */
-    pInput = strtok(NULL, "()\t = \r\n");
-    while (strcmp(pInput, "commands-end") != 0) {
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    while (strcmp((const char *)pInput, "commands-end") != 0) {
 
         /* Create a runcmds parameter */
         rpNode = (runParamType*)malloc(sizeof(runParamType));
@@ -521,28 +521,28 @@ int copy_runcmds(int id, scriptNode* node){
         }
 
         /* print-line */
-        if (strcmp(pInput, "print-line") == 0){
+        if (strcmp((const char *)pInput, "print-line") == 0){
             unsigned char* pText;
 
             /* Get Text String (UTF-8) */
-            pInput = strtok(NULL, "\"");
+            pInput = (unsigned char*)strtok(NULL, "\"");
             if (pInput == NULL){
                 printf("Error, bad text input.\n");
                 return -1;
             }
             pText = pInput;
-            len = strlen(pText);
+            len = strlen((char *)pText);
 
             rpNode->type = PRINT_LINE;
-            rpNode->str = (char*)malloc(len + 1);
+            rpNode->str = malloc(len + 1);
             memset(rpNode->str, 0, len + 1);
             memcpy(rpNode->str, pText, len);
         }
 
 		/* show-portrait-left */
-		else if (strcmp(pInput, "show-portrait-left") == 0){
+		else if (strcmp((const char *)pInput, "show-portrait-left") == 0){
 			unsigned char portraitCode;
-			pInput = strtok(NULL, "()\t = \r\n");
+			pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
 			if (readBYTE(pInput, &portraitCode) < 0){
 				printf("Error invalid portrait code.\n");
 				return -1;
@@ -554,9 +554,9 @@ int copy_runcmds(int id, scriptNode* node){
 		}
 
 		/* show-portrait-right */
-		else if (strcmp(pInput, "show-portrait-right") == 0){
+		else if (strcmp((const char *)pInput, "show-portrait-right") == 0){
 			unsigned char portraitCode;
-			pInput = strtok(NULL, "()\t = \r\n");
+			pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
 			if (readBYTE(pInput, &portraitCode) < 0){
 				printf("Error invalid portrait code.\n");
 				return -1;
@@ -568,9 +568,9 @@ int copy_runcmds(int id, scriptNode* node){
 		}
 
 		/* time-delay */
-		else if (strcmp(pInput, "time-delay") == 0){
+		else if (strcmp((const char *)pInput, "time-delay") == 0){
 			unsigned char timedelay;
-			pInput = strtok(NULL, "()\t = \r\n");
+			pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
 			if (readBYTE(pInput, &timedelay) < 0){
 				printf("Error invalid time delay.\n");
 				return -1;
@@ -582,9 +582,9 @@ int copy_runcmds(int id, scriptNode* node){
 		}
 
         /* control-code */
-        else if (strcmp(pInput, "control-code") == 0){
+        else if (strcmp((const char *)pInput, "control-code") == 0){
             unsigned short ctrlCode;
-            pInput = strtok(NULL, "()\t = \r\n");
+            pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
             if (readSW(pInput, &ctrlCode) < 0){
                 printf("Error invalid control code.\n");
                 return -1;
@@ -596,9 +596,9 @@ int copy_runcmds(int id, scriptNode* node){
         }
 
         /* align-2 */
-        else if (strcmp(pInput, "align-2") == 0){
+        else if (strcmp((const char *)pInput, "align-2") == 0){
             unsigned char fillVal;
-            pInput = strtok(NULL, "()\t = \r\n");
+            pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
             if (readBYTE(pInput, &fillVal) < 0){
                 printf("Error invalid fill value.\n");
                 return -1;
@@ -610,9 +610,9 @@ int copy_runcmds(int id, scriptNode* node){
         }
 
         /* align-4 */
-        else if (strcmp(pInput, "align-4") == 0){
+        else if (strcmp((const char *)pInput, "align-4") == 0){
             unsigned char fillVal;
-            pInput = strtok(NULL, "()\t = \r\n");
+            pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
             if (readBYTE(pInput, &fillVal) < 0){
                 printf("Error invalid fill value.\n");
                 return -1;
@@ -632,7 +632,7 @@ int copy_runcmds(int id, scriptNode* node){
         pPrev = rpNode;
 
         /* Read next token */
-        pInput = strtok(NULL, "()\t = \r\n");
+        pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
     }
 
     /* Create a script node */
@@ -669,24 +669,24 @@ int copy_options(int id, scriptNode* node){
 	/***********************************************/
 
 	/* JMP Offset */
-	pInput = strtok(NULL, "()\t = \r\n");
-	if (strcmp(pInput, "jmpparam") != 0) {
+	pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+	if (strcmp((const char *)pInput, "jmpparam") != 0) {
 		printf("Error, jmpparam expected\n");
 		return -1;
 	}
-	pInput = strtok(NULL, "()\t = \r\n");
+	pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
 	if (readSW(pInput, &jmpParam) < 0){
 		printf("Error invalid subroutine code\n");
 		return -1;
 	}
 
 	/* 2nd Parameter */
-	pInput = strtok(NULL, "()\t = \r\n");
-	if (strcmp(pInput, "param2") != 0) {
+	pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+	if (strcmp((const char *)pInput, "param2") != 0) {
 		printf("Error, param2 expected\n");
 		return -1;
 	}
-	pInput = strtok(NULL, "()\t = \r\n");
+	pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
 	if (readSW(pInput, &param2) < 0){
 		printf("Error invalid subroutine code\n");
 		return -1;
@@ -707,8 +707,8 @@ int copy_options(int id, scriptNode* node){
 	for (x = 0; x < 2; x++){
 
 		if (x == 0){
-			pInput = strtok(NULL, "()\t = \r\n");
-			if (strcmp(pInput, "opt1") != 0) {
+			pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+			if (strcmp((const char *)pInput, "opt1") != 0) {
 				printf("Error, opt1 expected\n");
 				return -1;
 			}
@@ -716,15 +716,15 @@ int copy_options(int id, scriptNode* node){
 		else{
 			rpHead1 = rpHead;
 			rpHead = NULL;
-			pInput = strtok(NULL, "()\t = \r\n");
-			if (strcmp(pInput, "opt2") != 0) {
+			pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+			if (strcmp((const char *)pInput, "opt2") != 0) {
 				printf("Error, opt2 expected\n");
 				return -1;
 			}
 		}
 		pPrev = NULL;
-		pInput = strtok(NULL, "()\t = \r\n");
-		while (strcmp(pInput, "opt-end") != 0) {
+		pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+		while (strcmp((const char *)pInput, "opt-end") != 0) {
 
 			/* Create a runcmds parameter */
 			rpNode = (runParamType*)malloc(sizeof(runParamType));
@@ -743,28 +743,28 @@ int copy_options(int id, scriptNode* node){
 			}
 
 			/* print-line */
-			if (strcmp(pInput, "print-line") == 0){
+			if (strcmp((const char *)pInput, "print-line") == 0){
 				unsigned char* pText;
 
 				/* Get Text String (UTF-8) */
-				pInput = strtok(NULL, "\"");
+				pInput = (unsigned char*)strtok(NULL, "\"");
 				if (pInput == NULL){
 					printf("Error, bad text input.\n");
 					return -1;
 				}
 				pText = pInput;
-				len = strlen(pText);
+				len = strlen((const char *)pText);
 
 				rpNode->type = PRINT_LINE;
-				rpNode->str = (char*)malloc(len + 1);
+				rpNode->str = malloc(len + 1);
 				memset(rpNode->str, 0, len + 1);
 				memcpy(rpNode->str, pText, len);
 			}
 
 			/* control-code */
-			else if (strcmp(pInput, "control-code") == 0){
+			else if (strcmp((const char *)pInput, "control-code") == 0){
 				unsigned short ctrlCode;
-				pInput = strtok(NULL, "()\t = \r\n");
+				pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
 				if (readSW(pInput, &ctrlCode) < 0){
 					printf("Error invalid control code.\n");
 					return -1;
@@ -776,9 +776,9 @@ int copy_options(int id, scriptNode* node){
 			}
 
 			/* align-2 */
-			else if (strcmp(pInput, "align-2") == 0){
+			else if (strcmp((const char *)pInput, "align-2") == 0){
 				unsigned char fillVal;
-				pInput = strtok(NULL, "()\t = \r\n");
+				pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
 				if (readBYTE(pInput, &fillVal) < 0){
 					printf("Error invalid fill value.\n");
 					return -1;
@@ -790,9 +790,9 @@ int copy_options(int id, scriptNode* node){
 			}
 
 			/* align-4 */
-			else if (strcmp(pInput, "align-4") == 0){
+			else if (strcmp((const char *)pInput, "align-4") == 0){
 				unsigned char fillVal;
-				pInput = strtok(NULL, "()\t = \r\n");
+				pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
 				if (readBYTE(pInput, &fillVal) < 0){
 					printf("Error invalid fill value.\n");
 					return -1;
@@ -812,7 +812,7 @@ int copy_options(int id, scriptNode* node){
 			pPrev = rpNode;
 
 			/* Read next token */
-			pInput = strtok(NULL, "()\t = \r\n");
+			pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
 		}
 	}
 

@@ -367,44 +367,38 @@ int read_ID(unsigned char* pInput){
 
     unsigned int id;
 
-    pInput = strtok(NULL, "()\t = \r\n");
-    if (strcmp(pInput, "id") != 0) {
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (strcmp((char *)pInput, "id") != 0) {
         printf("Error, id not found\n");
         return -1;
     }
-    pInput = strtok(NULL, "()\t = \r\n");
-#if 0
-    if (sscanf(pInput, "%u", &id) != 1){
-        printf("Error reading ID\n");
-        return -1;
-    }
-#else
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+
 	if (inputMode == RADIX_HEX){
-		if (sscanf(pInput, "%X", &id) != 1){
+		if (sscanf((char *)pInput, "%X", &id) != 1){
 			printf("Error reading ID\n");
 			return -1;
 		}
 	}
 	else{
-		if (sscanf(pInput, "%u", &id) != 1){
+		if (sscanf((char *)pInput, "%u", &id) != 1){
 			printf("Error reading ID\n");
 			return -1;
 		}
 	}
-#endif
 
     return (int)id;
 }
 
 int readLW(unsigned char* pInput, unsigned int* data){
     if (inputMode == RADIX_HEX){
-        if (sscanf(pInput, "%X", data) != 1){
+        if (sscanf((char *)pInput, "%X", data) != 1){
             printf("Error reading long\n");
             return -1;
         }
     }
     else{
-        if (sscanf(pInput, "%u", data) != 1){
+        if (sscanf((char *)pInput, "%u", data) != 1){
             printf("Error reading long\n");
             return -1;
         }
@@ -418,14 +412,14 @@ int readSW(unsigned char* pInput, unsigned short* datas){
     unsigned int local;
 
     if (inputMode == RADIX_HEX){
-        if (sscanf(pInput, "%X", &local) != 1){
+        if (sscanf((char *)pInput, "%X", &local) != 1){
             printf("Error reading short\n");
             return -1;
         }
         *datas = local & 0xFFFF;
     }
     else{
-        if (sscanf(pInput, "%hu", datas) != 1){
+        if (sscanf((char *)pInput, "%hu", datas) != 1){
             printf("Error reading short\n");
             return -1;
         }
@@ -439,14 +433,14 @@ int readBYTE(unsigned char* pInput, unsigned char* datab){
     unsigned int local;
 
     if (inputMode == RADIX_HEX){
-        if (sscanf(pInput, "%X", &local) != 1){
+        if (sscanf((char *)pInput, "%X", &local) != 1){
             printf("Error reading byte\n");
             return -1;
         }
         *datab = local & 0xFF;
     }
     else{
-        if (sscanf(pInput, "%c", datab) != 1){
+        if (sscanf((char *)pInput, "%c", datab) != 1){
             printf("Error reading byte\n");
             return -1;
         }
