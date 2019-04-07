@@ -86,11 +86,11 @@ int encodeScript(FILE* infile, FILE* outfile){
     }
     pInput = strtok(NULL, "()\t = \r\n");
     if (strcmp(pInput, "big") == 0) {
-        output_endian_type = BIG_ENDIAN;
+        output_endian_type = LUNAR_BIG_ENDIAN;
         printf("Setting Big Endian.\n");
     }
     else if (strcmp(pInput, "little") == 0){
-        output_endian_type = LITTLE_ENDIAN;
+        output_endian_type = LUNAR_LITTLE_ENDIAN;
         printf("Setting Little Endian.\n");
     }
     else{
