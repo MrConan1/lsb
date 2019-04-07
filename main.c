@@ -145,12 +145,12 @@ int main(int argc, char** argv){
     inFile = outFile = NULL;
     inFile = fopen(inFileName, "rb");
     if (inFile == NULL){
-        printf("Error occurred while opening input script %s for reading\n", inFile);
+        printf("Error occurred while opening input script %s for reading\n", inFileName);
         return -1;
     }
     outFile = fopen(outFileName, "wb");
     if (outFile == NULL){
-        printf("Error occurred while opening output file %s for writing\n", outFile);
+        printf("Error occurred while opening output file %s for writing\n", outFileName);
         fclose(inFile);
         return -1;
     }
@@ -209,7 +209,7 @@ int main(int argc, char** argv){
         upFile = NULL;
         upFile = fopen(upFileName, "rb");
         if (upFile == NULL){
-            printf("Error occurred while opening update file %s for reading\n", upFile);
+            printf("Error occurred while opening update file %s for reading\n", upFileName);
             fclose(outFile);
             destroyNodeList();
             return -1;
