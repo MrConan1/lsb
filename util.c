@@ -144,7 +144,6 @@ int loadUTF8Table(char* fname){
     static char linebuf[300];
     int index, numBytes, x;
     FILE* infile = NULL;
-    char* buf = NULL;
     char* ptr_line = NULL;
     memset(linebuf, 0, 300);
 

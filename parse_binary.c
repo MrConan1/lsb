@@ -20,7 +20,6 @@
 static char* pdata = NULL;
 static char* pdata2 = NULL;
 char* pName = NULL;  //Basic Filename
-static char name[300];
 
 static int G_ID = 1;
 
@@ -48,7 +47,7 @@ int decodeBinaryScript(FILE* inFile, FILE* outFile){
 	unsigned int iFileSizeBytes;
 	int x;
 	unsigned short* pIndexPtrs = NULL;
-	scriptNode* pScriptNode = NULL;
+//	scriptNode* pScriptNode = NULL;
 
 	/* Allocate two 128kB buffers, much bigger than the input file */
 	if (pdata != NULL){
@@ -251,7 +250,6 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 	unsigned short cmd, wdOffset;
 	FILE* inFile;
 	unsigned short* pShort = (unsigned short*)pdata;
-	scriptNode* newNode = NULL;
 
 	/* Update File Pointers */
 	inFile = *ptr_inFile;
