@@ -47,8 +47,8 @@ void printUsage(){
 	printf("Use Decode to take a binary TEXTxxx.DAT file and convert to metadata format.\n");
 	printf("Use Encode to take a script in metadata format and convert to binary.\n");
     printf("Use Update to create modified version of a script in metadata format.\n");
-	printf("    sss will interpret SSSC JP table as the SSS JP table.\n");
-	printf("    Table file must be for SSSC, named \"font_table.txt\", and be located in the exe directory.\n");
+	printf("    sss will interpret SSS-MPEG JP table as the SSS JP table.\n");
+	printf("    Table file must be for SSS-MPEG, named \"font_table.txt\", and be located in the exe directory.\n");
 	printf("\n\n");
     return;
 }
@@ -84,9 +84,8 @@ int main(int argc, char** argv){
 	memset(outFileName, 0, 300);
 	strcpy(inFileName, argv[2]);
 	strcpy(outFileName, argv[3]);
-	strcpy(csvOutFileName, argv[3]);
-	strcat(csvOutFileName, "_dump.csv");
-	strcpy(txtOutFileName, argv[3]);
+	strcpy(csvOutFileName, argv[3]); /* Only used for decode */
+	strcpy(txtOutFileName, argv[3]); /* Only used for decode */
 	strcat(txtOutFileName, "_dump.txt");
 
 	/***********************************/
@@ -102,6 +101,18 @@ int main(int argc, char** argv){
 			printUsage();
 			return -1;
 		}
+
+		/* Build unique CSV output filename to alleviate */
+		/* Excel frustration with duplicate filenames open simultaneously */
+		if (ienc == 2)
+			strcat(csvOutFileName, "_iosJP");
+		else if (ienc == 3)
+			strcat(csvOutFileName, "_iosENG");
+		else if ((argc == 6) && (strcmp(argv[5], "sss") == 0))
+			strcat(csvOutFileName, "_sss");
+		else
+			strcat(csvOutFileName, "_sssm");
+		strcat(csvOutFileName, "_dump.csv");
 	}
     else if ((strcmp(argv[1], "encode") == 0)){
 		/* Check encode parameters */
