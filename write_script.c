@@ -1562,7 +1562,7 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 					/* MVKILL */
 					case 0x0035:
 					{
-						fprintf(outFile, "\tMVKILL%u\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
+						fprintf(outFile, "\tMVKILL %u\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
 						break;
 					}
 
@@ -2095,7 +2095,7 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 
 				fprintf(outFile, "\t%u", pNode->id);
 
-				fprintf(outFile, "\tTALK%u", pNode->id);
+				fprintf(outFile, "\tTALK %u", pNode->id);
 
 				while (rpNode != NULL) {
 
