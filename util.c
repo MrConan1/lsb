@@ -446,7 +446,7 @@ int readBYTE(unsigned char* pInput, unsigned char* datab){
         *datab = local & 0xFF;
     }
     else{
-        if (sscanf(pInput, "%c", &datab) != 1){
+        if (sscanf(pInput, "%c", datab) != 1){
             printf("Error reading byte\n");
             return -1;
         }
