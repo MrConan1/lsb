@@ -16,7 +16,6 @@
 
 /* Globals */
 static unsigned char* pInput = NULL;
-static int G_table_mode = ONE_BYTE_ENC;         /* Copy of Table Conversion Mode */
 static int radix_type = RADIX_HEX;
 
 /* Function Prototypes */
