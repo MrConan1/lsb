@@ -182,7 +182,12 @@ int main(int argc, char** argv){
 	}
 	else if (strcmp(argv[1], "decode") == 0){
 		rval = decodeBinaryScript(inFile, outFile);
-	}
+	} else {
+        printf("Unknown mode: %s\n", argv[1]);
+        fclose(inFile);
+        fclose(outFile);
+        return -1;
+    }
 	fclose(inFile);
 	if (rval == 0){
 		printf("Input File Parsed Successfully.\n");
