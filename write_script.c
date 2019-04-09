@@ -3,15 +3,14 @@
 /*                  (writeBinScript) or the metadata human readable format.  */
 /*                  (writeScript)                                            */
 /*****************************************************************************/
-#pragma warning(disable:4996)
 
 /* Includes */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "util.h"
-#include "script_node_types.h"
 #include "snode_list.h"
+#include "script_node_types.h"
 
 /* Defines */
 
@@ -404,8 +403,8 @@ int writeBinScript(FILE* outFile){
                         numBytes+=3; /* overestimate for simplicity */
                         break;
                     case SHOW_PORTRAIT_LEFT:
-					case SHOW_PORTRAIT_RIGHT:
-					case TIME_DELAY:
+                    case SHOW_PORTRAIT_RIGHT:
+                    case TIME_DELAY:
                         numBytes+=2;
                         break;
                     case PRINT_LINE:
@@ -494,27 +493,27 @@ int writeBinScript(FILE* outFile){
                         }
                         break;
                     
-						/***********************/
-						/* show-portrait-right */
-						/***********************/
-						case SHOW_PORTRAIT_RIGHT:
-						{
-							unsigned short portraitCode;
-							portraitCode = 0xFB00 | ((unsigned short)rpNode->value);
-							writeSW(portraitCode);
-						}
-						break;
+                        /***********************/
+                        /* show-portrait-right */
+                        /***********************/
+                        case SHOW_PORTRAIT_RIGHT:
+                        {
+                            unsigned short portraitCode;
+                            portraitCode = 0xFB00 | ((unsigned short)rpNode->value);
+                            writeSW(portraitCode);
+                        }
+                        break;
 
-						/**************/
-						/* time-delay */
-						/**************/
-						case TIME_DELAY:
-						{
-							unsigned short timedelay;
-							timedelay = 0xF800 | ((unsigned short)rpNode->value);
-							writeSW(timedelay);
-						}
-							break;
+                        /**************/
+                        /* time-delay */
+                        /**************/
+                        case TIME_DELAY:
+                        {
+                            unsigned short timedelay;
+                            timedelay = 0xF800 | ((unsigned short)rpNode->value);
+                            writeSW(timedelay);
+                        }
+                            break;
 
                         /**************/
                         /* print-line */
@@ -591,192 +590,192 @@ int writeBinScript(FILE* outFile){
             break;
 
 
-			/***********/
-			/* options */
-			/***********/
+            /***********/
+            /* options */
+            /***********/
             case NODE_OPTIONS:
-			{
-				runParamType* rpNode = NULL;
-				int numBytes = 0;
+            {
+                runParamType* rpNode = NULL;
+                int numBytes = 0;
 
-				/* Check that operation can be completed */
-				numBytes += 6; /* At least need to output subroutine code & 2 param */
-				
-				for (x = 0; x < 2; x++){
-					if (x == 0)
-						rpNode = pNode->runParams;
-					else
-						rpNode = pNode->runParams2;
-					while (rpNode != NULL) {
+                /* Check that operation can be completed */
+                numBytes += 6; /* At least need to output subroutine code & 2 param */
+                
+                for (x = 0; x < 2; x++){
+                    if (x == 0)
+                        rpNode = pNode->runParams;
+                    else
+                        rpNode = pNode->runParams2;
+                    while (rpNode != NULL) {
 
-						switch (rpNode->type){
+                        switch (rpNode->type){
 
-						case ALIGN_2_PARAM:
-							numBytes++; /* overestimate for simplicity */
-							break;
-						case ALIGN_4_PARAM:
-							numBytes += 3; /* overestimate for simplicity */
-							break;
-						case PRINT_LINE:
-						{
-							int numBytes2, numBytes3;
-							unsigned char* pText = rpNode->str;
-							numBytes2 = numBytes3 = 0;
-							while (*pText != '\0'){
+                        case ALIGN_2_PARAM:
+                            numBytes++; /* overestimate for simplicity */
+                            break;
+                        case ALIGN_4_PARAM:
+                            numBytes += 3; /* overestimate for simplicity */
+                            break;
+                        case PRINT_LINE:
+                        {
+                            int numBytes2, numBytes3;
+                            unsigned char* pText = rpNode->str;
+                            numBytes2 = numBytes3 = 0;
+                            while (*pText != '\0'){
 
-								/* Read in a utf8 character */
-								numBytes3 = numBytesInUtf8Char((unsigned char)*pText);
+                                /* Read in a utf8 character */
+                                numBytes3 = numBytesInUtf8Char((unsigned char)*pText);
 
-								/* Look up associated code */
-								if ((numBytes3 == 1) && (*pText == ' ')){
-									numBytes2 += 2; /* Space */
-								}
-								else{
-									if (G_table_mode == ONE_BYTE_ENC){
-										numBytes2++;
-									}
-									else if (G_table_mode == TWO_BYTE_ENC){
-										numBytes2 += 2;
-									}
-									else{   //Straight UTF-8 Encoding
-										numBytes2 += numBytes3;
-									}
-								}
-								pText += numBytes3;
-							}
-							numBytes += numBytes2;
-						}
-							break;
-						case CTRL_CODE:
-							numBytes += 2;
-							break;
-						default:
-							printf("Error, bad run cmd parameter detected.\n");
-							return -1;
-						}
+                                /* Look up associated code */
+                                if ((numBytes3 == 1) && (*pText == ' ')){
+                                    numBytes2 += 2; /* Space */
+                                }
+                                else{
+                                    if (G_table_mode == ONE_BYTE_ENC){
+                                        numBytes2++;
+                                    }
+                                    else if (G_table_mode == TWO_BYTE_ENC){
+                                        numBytes2 += 2;
+                                    }
+                                    else{   //Straight UTF-8 Encoding
+                                        numBytes2 += numBytes3;
+                                    }
+                                }
+                                pText += numBytes3;
+                            }
+                            numBytes += numBytes2;
+                        }
+                            break;
+                        case CTRL_CODE:
+                            numBytes += 2;
+                            break;
+                        default:
+                            printf("Error, bad run cmd parameter detected.\n");
+                            return -1;
+                        }
 
-						rpNode = rpNode->pNext;
-					}
-				}
-				if ((numBytes + offset) > max_size_bytes){
-					printf("Error, subroutine 0007 would extend beyond max file size.\n");
-					return -1;
-				}
+                        rpNode = rpNode->pNext;
+                    }
+                }
+                if ((numBytes + offset) > max_size_bytes){
+                    printf("Error, subroutine 0007 would extend beyond max file size.\n");
+                    return -1;
+                }
 
-				pNode->fileOffset = offset;  //Book keeping
+                pNode->fileOffset = offset;  //Book keeping
 
-				/* This is all part of subroutine code 0x0007 */
-				writeSW(0x0007);
-				writeSW(pNode->subParams[0].value);
-				writeSW(pNode->subParams[1].value);
+                /* This is all part of subroutine code 0x0007 */
+                writeSW(0x0007);
+                writeSW(pNode->subParams[0].value);
+                writeSW(pNode->subParams[1].value);
 
-				/*****************************/
-				/* Loop Through Both Options */
-				/*****************************/
-				for (x = 0; x < 2; x++){
-					if (x == 0)
-						rpNode = pNode->runParams;
-					else
-						rpNode = pNode->runParams2;
+                /*****************************/
+                /* Loop Through Both Options */
+                /*****************************/
+                for (x = 0; x < 2; x++){
+                    if (x == 0)
+                        rpNode = pNode->runParams;
+                    else
+                        rpNode = pNode->runParams2;
 
-					while (rpNode != NULL) {
+                    while (rpNode != NULL) {
 
-						switch (rpNode->type){
+                        switch (rpNode->type){
 
-							/***********/
-							/* align-2 */
-							/***********/
-							case ALIGN_2_PARAM:
-								if ((offset & 0x1) != 0x0){
-									writeBYTE((unsigned char)rpNode->value);
-								}
-							break;
-
-
-							/***********/
-							/* align-4 */
-							/***********/
-							case ALIGN_4_PARAM:
-								while ((offset & 0x3) != 0x0){
-									writeBYTE((unsigned char)rpNode->value);
-								}
-							break;
+                            /***********/
+                            /* align-2 */
+                            /***********/
+                            case ALIGN_2_PARAM:
+                                if ((offset & 0x1) != 0x0){
+                                    writeBYTE((unsigned char)rpNode->value);
+                                }
+                            break;
 
 
-							/**************/
-							/* print-line */
-							/**************/
-							case PRINT_LINE:
-							{
-								unsigned char* pText = rpNode->str;
-								while (*pText != '\0'){
-									int numBytes;
-									unsigned char code;
-									unsigned short scode;
-									char tmp[5];
-
-									/* Read in a utf8 character */
-									numBytes = numBytesInUtf8Char((unsigned char)*pText);
-									memset(tmp, 0, 5);
-									memcpy(tmp, pText, numBytes);
-
-									/* Look up associated code */
-									if ((numBytes == 1) && (*pText == ' ')){
-										writeSW(0xF90A); /* Space */
-									}
-									else{
-										if (G_table_mode == ONE_BYTE_ENC){
-											if (getUTF8code_Byte(tmp, &code) < 0){
-												printf("Error looking up 1-byte code corresponding with UTF-8 character\n");
-												return -1;
-											}
-
-											/* Write the code to the output file */
-											writeBYTE(code);
-										}
-
-										else if (G_table_mode == TWO_BYTE_ENC){
-											if (getUTF8code_Short(tmp, &scode) < 0){
-												printf("Error looking up 2-byte code corresponding with UTF-8 character\n");
-												return -1;
-											}
-
-											/* Write the code to the output file */
-											writeSW(scode);
-										}
-
-										else{   //Straight UTF-8 Encoding
-											int z;
-
-											/* Write the data to the output file */
-											for (z = 0; z < numBytes; z++){
-												writeBYTE(tmp[z]);
-											}
-										}
-									}
-									pText += numBytes;
-								}
-							}
-							break;
-
-							/****************/
-							/* control-code */
-							/****************/
-							case CTRL_CODE:
-								writeSW((unsigned short)rpNode->value);
-								break;
+                            /***********/
+                            /* align-4 */
+                            /***********/
+                            case ALIGN_4_PARAM:
+                                while ((offset & 0x3) != 0x0){
+                                    writeBYTE((unsigned char)rpNode->value);
+                                }
+                            break;
 
 
-							default:
-								printf("Error, bad run cmd parameter detected.\n");
-								return -1;
-						}
+                            /**************/
+                            /* print-line */
+                            /**************/
+                            case PRINT_LINE:
+                            {
+                                unsigned char* pText = rpNode->str;
+                                while (*pText != '\0'){
+                                    int numBytes;
+                                    unsigned char code;
+                                    unsigned short scode;
+                                    char tmp[5];
 
-						rpNode = rpNode->pNext;
-					}
-				}
-			}	
-			break;
+                                    /* Read in a utf8 character */
+                                    numBytes = numBytesInUtf8Char((unsigned char)*pText);
+                                    memset(tmp, 0, 5);
+                                    memcpy(tmp, pText, numBytes);
+
+                                    /* Look up associated code */
+                                    if ((numBytes == 1) && (*pText == ' ')){
+                                        writeSW(0xF90A); /* Space */
+                                    }
+                                    else{
+                                        if (G_table_mode == ONE_BYTE_ENC){
+                                            if (getUTF8code_Byte(tmp, &code) < 0){
+                                                printf("Error looking up 1-byte code corresponding with UTF-8 character\n");
+                                                return -1;
+                                            }
+
+                                            /* Write the code to the output file */
+                                            writeBYTE(code);
+                                        }
+
+                                        else if (G_table_mode == TWO_BYTE_ENC){
+                                            if (getUTF8code_Short(tmp, &scode) < 0){
+                                                printf("Error looking up 2-byte code corresponding with UTF-8 character\n");
+                                                return -1;
+                                            }
+
+                                            /* Write the code to the output file */
+                                            writeSW(scode);
+                                        }
+
+                                        else{   //Straight UTF-8 Encoding
+                                            int z;
+
+                                            /* Write the data to the output file */
+                                            for (z = 0; z < numBytes; z++){
+                                                writeBYTE(tmp[z]);
+                                            }
+                                        }
+                                    }
+                                    pText += numBytes;
+                                }
+                            }
+                            break;
+
+                            /****************/
+                            /* control-code */
+                            /****************/
+                            case CTRL_CODE:
+                                writeSW((unsigned short)rpNode->value);
+                                break;
+
+
+                            default:
+                                printf("Error, bad run cmd parameter detected.\n");
+                                return -1;
+                        }
+
+                        rpNode = rpNode->pNext;
+                    }
+                }
+            }	
+            break;
 
 
 
@@ -934,7 +933,7 @@ int writeScript(FILE* outFile){
             /********/
             case NODE_FILL_SPACE:
             {
-				fprintf(outFile, "(fill-space id=%s\r\n", formatVal(pNode->id));
+                fprintf(outFile, "(fill-space id=%s\r\n", formatVal(pNode->id));
                 fprintf(outFile, "    (unit-size %s)\r\n", formatVal(pNode->unit_size));
                 fprintf(outFile, "    (fill-value %s)\r\n", formatVal(pNode->fillVal));
                 fprintf(outFile, "    (unit-count %s)\r\n", formatVal(pNode->unit_count));
@@ -948,7 +947,7 @@ int writeScript(FILE* outFile){
             /***********/
             case NODE_POINTER:
             {
-				fprintf(outFile, "(pointer id=%s\r\n", formatVal(pNode->id));
+                fprintf(outFile, "(pointer id=%s\r\n", formatVal(pNode->id));
                 fprintf(outFile, "    (byteoffset %s)\r\n", formatVal(pNode->byteOffset));
                 fprintf(outFile, "    (size %s)\r\n", formatVal(pNode->ptrSize));
                 if (pNode->ptrValueFlag)
@@ -965,7 +964,7 @@ int writeScript(FILE* outFile){
             /*****************************************************/
             case NODE_EXE_SUB:
             {
-				fprintf(outFile, "(execute-subroutine id=%s\r\n", formatVal(pNode->id));
+                fprintf(outFile, "(execute-subroutine id=%s\r\n", formatVal(pNode->id));
                 fprintf(outFile, "    (subroutine %s)\r\n", formatVal(pNode->subroutine_code));
                 fprintf(outFile, "    (num-parameters %s)\r\n", formatVal(pNode->num_parameters));
                 if (pNode->num_parameters > 0){
@@ -1015,7 +1014,7 @@ int writeScript(FILE* outFile){
             {
                 runParamType* rpNode = pNode->runParams;
 
-				fprintf(outFile, "(run-commands id=%s\r\n", formatVal(pNode->id));
+                fprintf(outFile, "(run-commands id=%s\r\n", formatVal(pNode->id));
 
                 while (rpNode != NULL) {
 
@@ -1030,12 +1029,12 @@ int writeScript(FILE* outFile){
                         case SHOW_PORTRAIT_LEFT:
                             fprintf(outFile, "    (show-portrait-left %s)\r\n", formatVal(rpNode->value & 0xFF));
                             break;
-						case SHOW_PORTRAIT_RIGHT:
-							fprintf(outFile, "    (show-portrait-right %s)\r\n", formatVal(rpNode->value & 0xFF));
-							break;
-						case TIME_DELAY:
-							fprintf(outFile, "    (time-delay %s)\r\n", formatVal(rpNode->value & 0xFF));
-							break;
+                        case SHOW_PORTRAIT_RIGHT:
+                            fprintf(outFile, "    (show-portrait-right %s)\r\n", formatVal(rpNode->value & 0xFF));
+                            break;
+                        case TIME_DELAY:
+                            fprintf(outFile, "    (time-delay %s)\r\n", formatVal(rpNode->value & 0xFF));
+                            break;
                         case PRINT_LINE:
                             fprintf(outFile, "    (print-line \"%s\")\r\n", rpNode->str);
                             break;
@@ -1055,57 +1054,57 @@ int writeScript(FILE* outFile){
             break;
 
 
-			/***********/
-			/* Options */
-			/***********/
-			case NODE_OPTIONS:
-			{
-				runParamType* rpNode = NULL;
+            /***********/
+            /* Options */
+            /***********/
+            case NODE_OPTIONS:
+            {
+                runParamType* rpNode = NULL;
 
-				fprintf(outFile, "(options id=%s\r\n", formatVal(pNode->id));
+                fprintf(outFile, "(options id=%s\r\n", formatVal(pNode->id));
 
-				/* Print the 2 required parameters */
-				fprintf(outFile, "    (jmpparam %s)\r\n", formatVal(pNode->subParams[0].value));
-				fprintf(outFile, "    (param2 %s)\r\n", formatVal(pNode->subParams[1].value));
+                /* Print the 2 required parameters */
+                fprintf(outFile, "    (jmpparam %s)\r\n", formatVal(pNode->subParams[0].value));
+                fprintf(outFile, "    (param2 %s)\r\n", formatVal(pNode->subParams[1].value));
 
-				/* Fixed at 2 options */
-				for (x = 0; x < 2; x++){
-					if (x == 0){
-						rpNode = pNode->runParams;
-						fprintf(outFile, "    (opt1)\r\n");
-					}
-					else{
-						rpNode = pNode->runParams2;
-						fprintf(outFile, "    (opt2)\r\n");
-					}
-					while (rpNode != NULL) {
+                /* Fixed at 2 options */
+                for (x = 0; x < 2; x++){
+                    if (x == 0){
+                        rpNode = pNode->runParams;
+                        fprintf(outFile, "    (opt1)\r\n");
+                    }
+                    else{
+                        rpNode = pNode->runParams2;
+                        fprintf(outFile, "    (opt2)\r\n");
+                    }
+                    while (rpNode != NULL) {
 
-						switch (rpNode->type){
+                        switch (rpNode->type){
 
-						case ALIGN_2_PARAM:
-							fprintf(outFile, "    (align-2 %s)\r\n", formatVal(rpNode->value));
-							break;
-						case ALIGN_4_PARAM:
-							fprintf(outFile, "    (align-4 %s)\r\n", formatVal(rpNode->value));
-							break;
-						case PRINT_LINE:
-							fprintf(outFile, "    (print-line \"%s\")\r\n", rpNode->str);
-							break;
-						case CTRL_CODE:
-							fprintf(outFile, "    (control-code %s)\r\n", formatVal(rpNode->value));
-							break;
-						default:
-							printf("Error, bad run cmd parameter detected.\n");
-							return -1;
-						}
+                        case ALIGN_2_PARAM:
+                            fprintf(outFile, "    (align-2 %s)\r\n", formatVal(rpNode->value));
+                            break;
+                        case ALIGN_4_PARAM:
+                            fprintf(outFile, "    (align-4 %s)\r\n", formatVal(rpNode->value));
+                            break;
+                        case PRINT_LINE:
+                            fprintf(outFile, "    (print-line \"%s\")\r\n", rpNode->str);
+                            break;
+                        case CTRL_CODE:
+                            fprintf(outFile, "    (control-code %s)\r\n", formatVal(rpNode->value));
+                            break;
+                        default:
+                            printf("Error, bad run cmd parameter detected.\n");
+                            return -1;
+                        }
 
-						rpNode = rpNode->pNext;
-					}
-					fprintf(outFile, "    (opt-end)\r\n");
-				}
-				fprintf(outFile, ")\r\n");
-			}
-			break;
+                        rpNode = rpNode->pNext;
+                    }
+                    fprintf(outFile, "    (opt-end)\r\n");
+                }
+                fprintf(outFile, ")\r\n");
+            }
+            break;
 
 
             default:
@@ -1137,1115 +1136,1115 @@ int writeScript(FILE* outFile){
 /*****************************************************************************/
 int dumpScript(FILE* outFile, FILE* txtOutFile){
 
-	int x;
-	scriptNode* pNode = NULL;
+    int x;
+    scriptNode* pNode = NULL;
 
-	/* Output Header */
-	fprintf(outFile, "Parent Ptr\tNode ID\tType\tJP Text\tCtrl Codes\r\n");
+    /* Output Header */
+    fprintf(outFile, "Parent Ptr\tNode ID\tType\tJP Text\tCtrl Codes\r\n");
 
-	/* Get a Pointer to the Head of the linked list */
-	pNode = getHeadPtr();
+    /* Get a Pointer to the Head of the linked list */
+    pNode = getHeadPtr();
 
-	/******************************************************************/
-	/* Loop until the binary output corresponding to all list entries */
-	/* has been output to memory.  Then write to disk.                */
-	/******************************************************************/
-	while (pNode != NULL){
+    /******************************************************************/
+    /* Loop until the binary output corresponding to all list entries */
+    /* has been output to memory.  Then write to disk.                */
+    /******************************************************************/
+    while (pNode != NULL){
 
-		switch (pNode->nodeType){
+        switch (pNode->nodeType){
 
-			/********/
-			/* goto */
-			/********/
-			case NODE_GOTO:
-			{
-				;
-			}
-			break;
-
-
-			/********/
-			/* fill */
-			/********/
-			case NODE_FILL_SPACE:
-			{
-				;
-			}
-			break;
+            /********/
+            /* goto */
+            /********/
+            case NODE_GOTO:
+            {
+                ;
+            }
+            break;
 
 
-			/***********/
-			/* pointer */
-			/***********/
-			case NODE_POINTER:
-			{
-				;
-			}
-			break;
+            /********/
+            /* fill */
+            /********/
+            case NODE_FILL_SPACE:
+            {
+                ;
+            }
+            break;
 
 
-			/*****************************************************/
-			/* execute-subroutine                                */
-			/*****************************************************/
-			case NODE_EXE_SUB:
-			{
-				int x;
-
-				if (pNode->pointerID != INVALID_PTR_ID)
-					fprintf(outFile, "%u", pNode->pointerID);
-				fprintf(outFile, "\t%u", pNode->id);
-
-				switch (pNode->subroutine_code){
-
-					/* CHRSET */
-					/* CHRREST */
-					case 0x000E:
-					case 0x000F:
-					{
-						int numparam = pNode->num_parameters;
-
-						if (pNode->subroutine_code == 0x000E)
-							fprintf(outFile, "\tCHRSET ");
-						else
-							fprintf(outFile, "\tCHRREST ");
-
-						for (x = 0; x < numparam; x++){
-							int val1, val2;
-							if (x > 0)
-								fprintf(outFile, ",");
-							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
-							val2 = pNode->subParams[x].value & 0xFF;
-							if (x == (int)(pNode->num_parameters - 1))
-								fprintf(outFile, "%d", val1);
-							else
-								fprintf(outFile, "%d,%d", val1, val2);
-						}
-						fprintf(outFile, "\r\n");
-						break;
-					}
+            /***********/
+            /* pointer */
+            /***********/
+            case NODE_POINTER:
+            {
+                ;
+            }
+            break;
 
 
-					/* MONSET -  1,100,200*/
-					case 0x0013:
-					{
-						fprintf(outFile, "\tMONSET ");
-						for (x = 0; x < (int)(pNode->num_parameters); x++){
-							int val1, val2;
-							fprintf(outFile, ",");
-							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
-							val2 = pNode->subParams[x].value & 0xFF;
-							if( x > 0)
-								fprintf(outFile, ":");
-							if (x == (int)(pNode->num_parameters - 1))
-								;
-							else
-								fprintf(outFile, "%d,%d", val1, val2);
-						}
-						fprintf(outFile, "\r\n");
-						break;
-					}
+            /*****************************************************/
+            /* execute-subroutine                                */
+            /*****************************************************/
+            case NODE_EXE_SUB:
+            {
+                int x;
+
+                if (pNode->pointerID != INVALID_PTR_ID)
+                    fprintf(outFile, "%u", pNode->pointerID);
+                fprintf(outFile, "\t%u", pNode->id);
+
+                switch (pNode->subroutine_code){
+
+                    /* CHRSET */
+                    /* CHRREST */
+                    case 0x000E:
+                    case 0x000F:
+                    {
+                        int numparam = pNode->num_parameters;
+
+                        if (pNode->subroutine_code == 0x000E)
+                            fprintf(outFile, "\tCHRSET ");
+                        else
+                            fprintf(outFile, "\tCHRREST ");
+
+                        for (x = 0; x < numparam; x++){
+                            int val1, val2;
+                            if (x > 0)
+                                fprintf(outFile, ",");
+                            val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+                            val2 = pNode->subParams[x].value & 0xFF;
+                            if (x == (int)(pNode->num_parameters - 1))
+                                fprintf(outFile, "%d", val1);
+                            else
+                                fprintf(outFile, "%d,%d", val1, val2);
+                        }
+                        fprintf(outFile, "\r\n");
+                        break;
+                    }
+
+
+                    /* MONSET -  1,100,200*/
+                    case 0x0013:
+                    {
+                        fprintf(outFile, "\tMONSET ");
+                        for (x = 0; x < (int)(pNode->num_parameters); x++){
+                            int val1, val2;
+                            fprintf(outFile, ",");
+                            val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+                            val2 = pNode->subParams[x].value & 0xFF;
+                            if( x > 0)
+                                fprintf(outFile, ":");
+                            if (x == (int)(pNode->num_parameters - 1))
+                                ;
+                            else
+                                fprintf(outFile, "%d,%d", val1, val2);
+                        }
+                        fprintf(outFile, "\r\n");
+                        break;
+                    }
 
 
 #if 1
-					/* DEBUG_0x0014? - 7 */
-					case 0x0014:
-					{
-						fprintf(outFile, "\tDEBUG_0x0014? ");
-						for (x = 0; x < (int)(pNode->num_parameters); x++){
-							int val1, val2;
-							fprintf(outFile, ",");
-							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
-							val2 = pNode->subParams[x].value & 0xFF;
-							if (x == (int)(pNode->num_parameters - 1))
-								fprintf(outFile, "%d", val1);
-							else
-								fprintf(outFile, "%d,%d", val1, val2);
-						}
-						fprintf(outFile, "\r\n");
-						break;
-					}
+                    /* DEBUG_0x0014? - 7 */
+                    case 0x0014:
+                    {
+                        fprintf(outFile, "\tDEBUG_0x0014? ");
+                        for (x = 0; x < (int)(pNode->num_parameters); x++){
+                            int val1, val2;
+                            fprintf(outFile, ",");
+                            val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+                            val2 = pNode->subParams[x].value & 0xFF;
+                            if (x == (int)(pNode->num_parameters - 1))
+                                fprintf(outFile, "%d", val1);
+                            else
+                                fprintf(outFile, "%d,%d", val1, val2);
+                        }
+                        fprintf(outFile, "\r\n");
+                        break;
+                    }
 
 #endif
 #if 1
-					/* OPENSET -  1,7,8,20*/
-					case 0x0018:
-					{
-						fprintf(outFile, "\tOPENSET ");
-						for (x = 0; x < (int)(pNode->num_parameters); x++){
-							int val1, val2;
-							if(x > 0)
- 								fprintf(outFile, ",");
-							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
-							val2 = pNode->subParams[x].value & 0xFF;
-							if (x == (int)(pNode->num_parameters - 1))
-								fprintf(outFile, "%d", val1);
-							else
-								fprintf(outFile, "%d,%d", val1, val2);
-						}
-						fprintf(outFile, "\r\n");
-						break;
-					}
+                    /* OPENSET -  1,7,8,20*/
+                    case 0x0018:
+                    {
+                        fprintf(outFile, "\tOPENSET ");
+                        for (x = 0; x < (int)(pNode->num_parameters); x++){
+                            int val1, val2;
+                            if(x > 0)
+                                fprintf(outFile, ",");
+                            val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+                            val2 = pNode->subParams[x].value & 0xFF;
+                            if (x == (int)(pNode->num_parameters - 1))
+                                fprintf(outFile, "%d", val1);
+                            else
+                                fprintf(outFile, "%d,%d", val1, val2);
+                        }
+                        fprintf(outFile, "\r\n");
+                        break;
+                    }
 
 #endif
 
-					/* OPENRESET */
-					case 0x0019:
-					{
-						fprintf(outFile, "\tOPENRESET %d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
-						break;
-					}
+                    /* OPENRESET */
+                    case 0x0019:
+                    {
+                        fprintf(outFile, "\tOPENRESET %d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
+                        break;
+                    }
 
 #if 1
-					/* BOXSET -  1,2,4,11*/
-					case 0x001A:
-					{
-						fprintf(outFile, "\tBOXSET ");
-						for (x = 0; x < (int)(pNode->num_parameters-1); x++){
-							int val1, val2;
-							if(x > 0)
-								fprintf(outFile, ",");
-							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
-							val2 = pNode->subParams[x].value & 0xFF;
-							fprintf(outFile, "%d,%d", val1, val2);
-						}
-						fprintf(outFile, "\r\n");
-						break;
-					}
+                    /* BOXSET -  1,2,4,11*/
+                    case 0x001A:
+                    {
+                        fprintf(outFile, "\tBOXSET ");
+                        for (x = 0; x < (int)(pNode->num_parameters-1); x++){
+                            int val1, val2;
+                            if(x > 0)
+                                fprintf(outFile, ",");
+                            val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+                            val2 = pNode->subParams[x].value & 0xFF;
+                            fprintf(outFile, "%d,%d", val1, val2);
+                        }
+                        fprintf(outFile, "\r\n");
+                        break;
+                    }
 
 #endif
 
 #if 1
-					/* SETMONEY */
-					case 0x001C:
-					{
-						fprintf(outFile, "\tSETMONEY %d\r\n", pNode->subParams[2].value);
-						break;
-					}
+                    /* SETMONEY */
+                    case 0x001C:
+                    {
+                        fprintf(outFile, "\tSETMONEY %d\r\n", pNode->subParams[2].value);
+                        break;
+                    }
 #endif						
 
-					/* TAKEMONEY */
-					case 0x001D:
-					{
-						fprintf(outFile, "\tTAKEMONEY %d\r\n", 
-							pNode->subParams[2].value);
-						break;
-					}
+                    /* TAKEMONEY */
+                    case 0x001D:
+                    {
+                        fprintf(outFile, "\tTAKEMONEY %d\r\n", 
+                            pNode->subParams[2].value);
+                        break;
+                    }
 
-					/* CHKMONEY */
-					case 0x001E:
-					{
-						fprintf(outFile, "\tCHKMONEY %d:%d\r\n", 
-							pNode->subParams[0].value, pNode->subParams[2].value);
-						break;
-					}
+                    /* CHKMONEY */
+                    case 0x001E:
+                    {
+                        fprintf(outFile, "\tCHKMONEY %d:%d\r\n", 
+                            pNode->subParams[0].value, pNode->subParams[2].value);
+                        break;
+                    }
 
-					/* SETITEM */
-					case 0x001F:
-					{
-						fprintf(outFile, "\tSETITEM %d,%d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8, pNode->subParams[0].value & 0xFF);
-						break;
-					}
+                    /* SETITEM */
+                    case 0x001F:
+                    {
+                        fprintf(outFile, "\tSETITEM %d,%d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8, pNode->subParams[0].value & 0xFF);
+                        break;
+                    }
 
 #if 1
-					/* TAKEITEM */
-					case 0x0020:
-					{
-						fprintf(outFile, "\tTAKEITEM %d,%d\r\n",
-							(pNode->subParams[0].value & 0xFF00) >> 8, pNode->subParams[0].value & 0xFF);
-						break;
-					}
+                    /* TAKEITEM */
+                    case 0x0020:
+                    {
+                        fprintf(outFile, "\tTAKEITEM %d,%d\r\n",
+                            (pNode->subParams[0].value & 0xFF00) >> 8, pNode->subParams[0].value & 0xFF);
+                        break;
+                    }
 #endif
 
-					/* CHKITEM */
-					case 0x0021:
-					{
-						fprintf(outFile, "\tCHKITEM %d:%d,%d\r\n", 
-							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
-						break;
-					}
+                    /* CHKITEM */
+                    case 0x0021:
+                    {
+                        fprintf(outFile, "\tCHKITEM %d:%d,%d\r\n", 
+                            pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
+                        break;
+                    }
 
 #if 1
-					/* SETPARAM */
-					case 0x0022:
-					{
-						fprintf(outFile, "\tSETPARAM %d,%d,%d\r\n",
-							(pNode->subParams[0].value & 0xFF00) >> 8, pNode->subParams[0].value & 0xFF, (pNode->subParams[1].value & 0xFF00) >> 8);
-						break;
-					}
+                    /* SETPARAM */
+                    case 0x0022:
+                    {
+                        fprintf(outFile, "\tSETPARAM %d,%d,%d\r\n",
+                            (pNode->subParams[0].value & 0xFF00) >> 8, pNode->subParams[0].value & 0xFF, (pNode->subParams[1].value & 0xFF00) >> 8);
+                        break;
+                    }
 #endif
 
-					/* WITHIN */
-					case 0x0023:
-					{
-						fprintf(outFile, "\tWITHIN %d,%d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8, pNode->subParams[0].value & 0xFF);
-						break;
-					}
+                    /* WITHIN */
+                    case 0x0023:
+                    {
+                        fprintf(outFile, "\tWITHIN %d,%d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8, pNode->subParams[0].value & 0xFF);
+                        break;
+                    }
 
 
 #if 1
-						/* WITHOUT - 0,1,2,4,5,6,7*/
-					case 0x0024:
-					{
-						fprintf(outFile, "\tWITHOUT %d,%d\r\n",
-							pNode->subParams[0].value & 0xFF,(pNode->subParams[0].value & 0xFF00) >> 8);
-						break;
-					}
-#endif
-
-
-					/* KILL */
-					case 0x0025:
-					{
-						fprintf(outFile, "\tKILL ");
-						int numparam = pNode->num_parameters;
-						for (x = 0; x < numparam; x++){
-							int val1, val2;
-							if (x > 0)
-								fprintf(outFile, ",");
-							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
-							val2 = pNode->subParams[x].value & 0xFF;
-							if (x == (int)(pNode->num_parameters - 1))
-								fprintf(outFile, "%d", val1);
-							else
-								fprintf(outFile, "%d,%d", val1, val2);
-						}
-						fprintf(outFile, "\r\n");
-						break;
-					}
-
-					/* WARP */
-					case 0x0027:
-					{
-						fprintf(outFile, "\tWARP %d,%d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8, pNode->subParams[0].value & 0xFF);
-						break;
-					}
-
-					/* OPEN */
-					case 0x0028:
-					{
-						fprintf(outFile, "\tOPEN %d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
-						break;
-					}
-
-					/* FADEOUT */
-					case 0x0029:
-					{
-						fprintf(outFile, "\tFADEOUT %d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
-						break;
-					}
-
-					/* FADEIN */
-					case 0x002A:
-					{
-						fprintf(outFile, "\tFADEIN %d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
-						break;
-					}
-
-
-#if 1
-					/* FIGHT */
-					case 0x002B:
-					{
-						fprintf(outFile, "\tFIGHT %d:%d,%d,%d\r\n",
-							pNode->subParams[0].value, 
-							(pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF,
-							(pNode->subParams[2].value & 0xFF00) >> 8);
-						break;
-					}
+                        /* WITHOUT - 0,1,2,4,5,6,7*/
+                    case 0x0024:
+                    {
+                        fprintf(outFile, "\tWITHOUT %d,%d\r\n",
+                            pNode->subParams[0].value & 0xFF,(pNode->subParams[0].value & 0xFF00) >> 8);
+                        break;
+                    }
 #endif
 
 
-					/* SHAKE */
-					case 0x002C:
-					{
-						fprintf(outFile, "\tSHAKE %d",
-							(pNode->subParams[0].value & 0xFF00) >> 8);
-						for (x = 1; x < (int)(pNode->num_parameters); x++){
-							int val1, val2;
-							fprintf(outFile, ",");
-							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
-							val2 = pNode->subParams[x].value & 0xFF;
-							if (x == (int)(pNode->num_parameters-1))
-								fprintf(outFile, "%d", val1);
-							else
-								fprintf(outFile, "%d,%d", val1, val2);
-						}
-						fprintf(outFile, "\r\n");
-						break;
-					}
+                    /* KILL */
+                    case 0x0025:
+                    {
+                        fprintf(outFile, "\tKILL ");
+                        int numparam = pNode->num_parameters;
+                        for (x = 0; x < numparam; x++){
+                            int val1, val2;
+                            if (x > 0)
+                                fprintf(outFile, ",");
+                            val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+                            val2 = pNode->subParams[x].value & 0xFF;
+                            if (x == (int)(pNode->num_parameters - 1))
+                                fprintf(outFile, "%d", val1);
+                            else
+                                fprintf(outFile, "%d,%d", val1, val2);
+                        }
+                        fprintf(outFile, "\r\n");
+                        break;
+                    }
 
-					/* EVENT */
-					case 0x002D:
-					{
-						fprintf(outFile, "\tEVENT ");
-						int numparam = pNode->num_parameters;
-						for (x = 0; x < numparam; x++){
-							int val1, val2;
-							if (x > 0)
-								fprintf(outFile, ",");
-							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
-							val2 = pNode->subParams[x].value & 0xFF;
-							if (x == (int)(pNode->num_parameters - 1))
-								fprintf(outFile, "%d", val1);
-							else
-								fprintf(outFile, "%d,%d", val1, val2);
-						}
-						fprintf(outFile, "\r\n");
-						break;
-					}
+                    /* WARP */
+                    case 0x0027:
+                    {
+                        fprintf(outFile, "\tWARP %d,%d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8, pNode->subParams[0].value & 0xFF);
+                        break;
+                    }
+
+                    /* OPEN */
+                    case 0x0028:
+                    {
+                        fprintf(outFile, "\tOPEN %d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
+                        break;
+                    }
+
+                    /* FADEOUT */
+                    case 0x0029:
+                    {
+                        fprintf(outFile, "\tFADEOUT %d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
+                        break;
+                    }
+
+                    /* FADEIN */
+                    case 0x002A:
+                    {
+                        fprintf(outFile, "\tFADEIN %d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
+                        break;
+                    }
+
 
 #if 1
-					/* SHOP 0,2,3,5  */
-					case 0x002E:
-					{
-						fprintf(outFile, "\tSHOP %d\r\n",
-							pNode->subParams[0].value >> 8);
-						break;
-					}
+                    /* FIGHT */
+                    case 0x002B:
+                    {
+                        fprintf(outFile, "\tFIGHT %d:%d,%d,%d\r\n",
+                            pNode->subParams[0].value, 
+                            (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF,
+                            (pNode->subParams[2].value & 0xFF00) >> 8);
+                        break;
+                    }
 #endif
 
-					/* FIGURE */
-					case 0x002F:
-					{
-						fprintf(outFile, "\tFIGURE\r\n");
-						break;
-					}
 
-					/* PLAY */
-					case 0x0030:
-					{
-						fprintf(outFile, "\tPLAY %d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
-						break;
-					}
+                    /* SHAKE */
+                    case 0x002C:
+                    {
+                        fprintf(outFile, "\tSHAKE %d",
+                            (pNode->subParams[0].value & 0xFF00) >> 8);
+                        for (x = 1; x < (int)(pNode->num_parameters); x++){
+                            int val1, val2;
+                            fprintf(outFile, ",");
+                            val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+                            val2 = pNode->subParams[x].value & 0xFF;
+                            if (x == (int)(pNode->num_parameters-1))
+                                fprintf(outFile, "%d", val1);
+                            else
+                                fprintf(outFile, "%d,%d", val1, val2);
+                        }
+                        fprintf(outFile, "\r\n");
+                        break;
+                    }
 
-					/* SE */
-					case 0x0031:
-					{
-						fprintf(outFile, "\tSE:%d:\r\n", pNode->subParams[0].value);
-						break;
-					}
-
-					/* MVSTART */
-					case 0x0032:
-					{
-						fprintf(outFile, "\tMVSTART\r\n");
-						break;
-					}
-
-					/* MVEND */
-					case 0x0033:
-					{
-						fprintf(outFile, "\tMVEND\r\n");
-						break;
-					}
-
-					/* MVSET */
-					case 0x0034:
-					{
-						fprintf(outFile, "\tMVSET %d:%d", (pNode->subParams[0].value & 0xFF00) >> 8, pNode->subParams[0].value & 0xFF);
-						if (((pNode->subParams[0].value & 0xFF00) >> 8) >= 0xB){
-							for (x = 1; x < (int)(pNode->num_parameters); x++){
-								int val1, val2;
-								fprintf(outFile, ",");
-								val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
-								val2 = pNode->subParams[x].value & 0xFF;
-								if (x == (int)(pNode->num_parameters - 1))
-									fprintf(outFile, "%d", val1);
-								else
-									fprintf(outFile, "%d,%d", val1, val2);
-							}
-						}
-						fprintf(outFile, "\r\n");
-						break;
-					}
-
-					/* MVKILL */
-					case 0x0035:
-					{
-						fprintf(outFile, "\tMVKILL %u\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
-						break;
-					}
+                    /* EVENT */
+                    case 0x002D:
+                    {
+                        fprintf(outFile, "\tEVENT ");
+                        int numparam = pNode->num_parameters;
+                        for (x = 0; x < numparam; x++){
+                            int val1, val2;
+                            if (x > 0)
+                                fprintf(outFile, ",");
+                            val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+                            val2 = pNode->subParams[x].value & 0xFF;
+                            if (x == (int)(pNode->num_parameters - 1))
+                                fprintf(outFile, "%d", val1);
+                            else
+                                fprintf(outFile, "%d,%d", val1, val2);
+                        }
+                        fprintf(outFile, "\r\n");
+                        break;
+                    }
 
 #if 1
-					/* DEBUG_0x0036? -  200*/
-					case 0x0036:
-					{
-						fprintf(outFile, "\tDEBUG_0x0036? ");
-						for (x = 0; x < (int)(pNode->num_parameters); x++){
-							int val1, val2;
-							fprintf(outFile, ",");
-							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
-							val2 = pNode->subParams[x].value & 0xFF;
-							if (x == (int)(pNode->num_parameters - 1))
-								fprintf(outFile, "%d", val1);
-							else
-								fprintf(outFile, "%d,%d", val1, val2);
-						}
-						fprintf(outFile, "\r\n");
-						break;
-					}
-
+                    /* SHOP 0,2,3,5  */
+                    case 0x002E:
+                    {
+                        fprintf(outFile, "\tSHOP %d\r\n",
+                            pNode->subParams[0].value >> 8);
+                        break;
+                    }
 #endif
 
-					/* MVDATA */
-					case 0x0038:
-					{
-						fprintf(outFile, "\tMVDATA ");
-						for (x = 0; x < (int)(pNode->num_parameters); x++){
-							int val1, val2;
-							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
-							val2 = pNode->subParams[x].value & 0xFF;
-							fprintf(outFile, "%d,%d", val1, val2);
-						}
-						fprintf(outFile, "\r\n");
-						break;
-					}
+                    /* FIGURE */
+                    case 0x002F:
+                    {
+                        fprintf(outFile, "\tFIGURE\r\n");
+                        break;
+                    }
 
-					/* MVPARTYON */
-					case 0x0039:
-					{
-						fprintf(outFile, "\tMVPARTYON\r\n");
-						break;
-					}
+                    /* PLAY */
+                    case 0x0030:
+                    {
+                        fprintf(outFile, "\tPLAY %d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
+                        break;
+                    }
 
-					/* MVPARTYOFF */
-					case 0x003A:
-					{
-						fprintf(outFile, "\tMVPARTYOFF\r\n");
-						break;
-					}
+                    /* SE */
+                    case 0x0031:
+                    {
+                        fprintf(outFile, "\tSE:%d:\r\n", pNode->subParams[0].value);
+                        break;
+                    }
 
-#if 1
-					/* MVSTOPON */
-					case 0x003B:
-					{
-						fprintf(outFile, "\tM_STOP_ON\r\n");
-						break;
-					}
-#endif
+                    /* MVSTART */
+                    case 0x0032:
+                    {
+                        fprintf(outFile, "\tMVSTART\r\n");
+                        break;
+                    }
 
-					/* MVSTOPOFF */
-					case 0x003C:
-					{
-						fprintf(outFile, "\tMVSTOPOFF\r\n");
-						break;
-					}
+                    /* MVEND */
+                    case 0x0033:
+                    {
+                        fprintf(outFile, "\tMVEND\r\n");
+                        break;
+                    }
 
-					/* MVSYNC */
-					case 0x003D:
-					{
-						fprintf(outFile, "\tMVSYNC\r\n");
-						break;
-					}
+                    /* MVSET */
+                    case 0x0034:
+                    {
+                        fprintf(outFile, "\tMVSET %d:%d", (pNode->subParams[0].value & 0xFF00) >> 8, pNode->subParams[0].value & 0xFF);
+                        if (((pNode->subParams[0].value & 0xFF00) >> 8) >= 0xB){
+                            for (x = 1; x < (int)(pNode->num_parameters); x++){
+                                int val1, val2;
+                                fprintf(outFile, ",");
+                                val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+                                val2 = pNode->subParams[x].value & 0xFF;
+                                if (x == (int)(pNode->num_parameters - 1))
+                                    fprintf(outFile, "%d", val1);
+                                else
+                                    fprintf(outFile, "%d,%d", val1, val2);
+                            }
+                        }
+                        fprintf(outFile, "\r\n");
+                        break;
+                    }
 
-					/* FACELOAD */
-					case 0x003E:
-					{
-						fprintf(outFile, "\tFACELOAD ");
-						int numparam = pNode->num_parameters;
-						for (x = 0; x < numparam; x++){
-							int val1, val2;
-							if (x > 0)
-								fprintf(outFile, ",");
-							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
-							val2 = pNode->subParams[x].value & 0xFF;
-							if (x == (int)(pNode->num_parameters - 1))
-								fprintf(outFile, "%d", val1);
-							else
-								fprintf(outFile, "%d,%d", val1, val2);
-						}
-						fprintf(outFile, "\r\n");
-						break;
-					}
+                    /* MVKILL */
+                    case 0x0035:
+                    {
+                        fprintf(outFile, "\tMVKILL %u\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
+                        break;
+                    }
 
 #if 1
-					/* MVSCROLLON */
-					case 0x003F:
-					{
-						fprintf(outFile, "\tMVSCROLLON\r\n");
-						break;
-					}
-#endif
-
-					/* MVSCROLLOFF */
-					case 0x0040:
-					{
-						fprintf(outFile, "\tMVSCROLLFF\r\n");
-						break;
-					}
-
-
-					/* CHRON */
-					case 0x0041:
-					{
-						fprintf(outFile, "\tCHRON %d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
-						break;
-					}
-
-
-#if 1
-					/* CHANGE */
-					case 0x0043:
-					{
-						fprintf(outFile, "\tCHANGE %d\r\n",
-							pNode->subParams[0].value >> 8);
-						break;
-					}
-#endif
-
-#if 1
-					/* WIPEOUT */
-					case 0x0044:
-					{
-						fprintf(outFile, "\tWIPEOUT %d\r\n",
-							(pNode->subParams[0].value & 0xFF00) >> 8);
-						break;
-					}
-#endif
-
-					/* WIPEIN */
-					case 0x0045:
-					{
-						fprintf(outFile, "\tWIPEIN %d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
-						break;
-					}
-
-					/* OFFSET */
-					case 0x0046:
-					{
-						fprintf(outFile, "\tOFFSET ");
-						int numparam = pNode->num_parameters;
-						for (x = 0; x < numparam; x++){
-							int val1, val2;
-							if (x > 0)
-								fprintf(outFile, ",");
-							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
-							val2 = pNode->subParams[x].value & 0xFF;
-							if (x == (int)(pNode->num_parameters - 1))
-								fprintf(outFile, "%d", val1);
-							else
-								fprintf(outFile, "%d,%d", val1, val2);
-						}
-						fprintf(outFile, "\r\n");
-						break;
-					}
-
-					/* COLMIX */
-					case 0x0047:
-					{
-						fprintf(outFile, "\tCOLMIX ");
-						int numparam = pNode->num_parameters;
-						for (x = 0; x < numparam; x++){
-							int val1, val2;
-							if (x > 0)
-								fprintf(outFile, ",");
-							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
-							val2 = pNode->subParams[x].value & 0xFF;
-							fprintf(outFile, "%d,%d", val1, val2);
-						}
-						fprintf(outFile, "\r\n");
-						break;
-					}
-
-#if 1
-					/* ATRSET */
-					case 0x0048:
-					{
-						fprintf(outFile, "\tATRSET %d\r\n",
-							(pNode->subParams[0].value & 0xFF00) >> 8);
-						break;
-					}
-#endif
-
-#if 1
-					/* PLACESET */
-					case 0x0049:
-					{
-						fprintf(outFile, "\tPLACESET %d\r\n",
-							(pNode->subParams[0].value & 0xFF00) >> 8);
-						break;
-					}
-#endif
-
-#if 1
-					/* MVEFFON */
-					case 0x004C:
-					{
-						fprintf(outFile, "\tMVEFFON\r\n");
-						break;
-					}
-#endif
-#if 1
-					/* MVEFFOFF */
-					case 0x004D:
-					{
-						fprintf(outFile, "\tMVEFFOFF\r\n");
-						break;
-					}
-#endif
-
-#if 1
-					/* FADESET */
-					case 0x004E:
-					{
-						fprintf(outFile, "\tFADESET ");
-						for (x = 0; x < (int)(pNode->num_parameters); x++){
-							int val1, val2;
-							fprintf(outFile, ",");
-							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
-							val2 = pNode->subParams[x].value & 0xFF;
-							if (x == (int)(pNode->num_parameters - 1))
-								fprintf(outFile, "%d", val1);
-							else
-								fprintf(outFile, "%d,%d", val1, val2);
-						}
-						fprintf(outFile, "\r\n");
-						break;
-					}
+                    /* DEBUG_0x0036? -  200*/
+                    case 0x0036:
+                    {
+                        fprintf(outFile, "\tDEBUG_0x0036? ");
+                        for (x = 0; x < (int)(pNode->num_parameters); x++){
+                            int val1, val2;
+                            fprintf(outFile, ",");
+                            val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+                            val2 = pNode->subParams[x].value & 0xFF;
+                            if (x == (int)(pNode->num_parameters - 1))
+                                fprintf(outFile, "%d", val1);
+                            else
+                                fprintf(outFile, "%d,%d", val1, val2);
+                        }
+                        fprintf(outFile, "\r\n");
+                        break;
+                    }
 
 #endif
 
+                    /* MVDATA */
+                    case 0x0038:
+                    {
+                        fprintf(outFile, "\tMVDATA ");
+                        for (x = 0; x < (int)(pNode->num_parameters); x++){
+                            int val1, val2;
+                            val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+                            val2 = pNode->subParams[x].value & 0xFF;
+                            fprintf(outFile, "%d,%d", val1, val2);
+                        }
+                        fprintf(outFile, "\r\n");
+                        break;
+                    }
+
+                    /* MVPARTYON */
+                    case 0x0039:
+                    {
+                        fprintf(outFile, "\tMVPARTYON\r\n");
+                        break;
+                    }
+
+                    /* MVPARTYOFF */
+                    case 0x003A:
+                    {
+                        fprintf(outFile, "\tMVPARTYOFF\r\n");
+                        break;
+                    }
+
 #if 1
-					/* FADEKILL */
-					case 0x004F:
-					{
-						fprintf(outFile, "\tFADEKILL ");
-						for (x = 0; x < (int)(pNode->num_parameters); x++){
-							int val1, val2;
-							fprintf(outFile, ",");
-							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
-							val2 = pNode->subParams[x].value & 0xFF;
-							if (x == (int)(pNode->num_parameters - 1))
-								fprintf(outFile, "%d", val1);
-							else
-								fprintf(outFile, "%d,%d", val1, val2);
-						}
-						fprintf(outFile, "\r\n");
-						break;
-					}
+                    /* MVSTOPON */
+                    case 0x003B:
+                    {
+                        fprintf(outFile, "\tM_STOP_ON\r\n");
+                        break;
+                    }
+#endif
+
+                    /* MVSTOPOFF */
+                    case 0x003C:
+                    {
+                        fprintf(outFile, "\tMVSTOPOFF\r\n");
+                        break;
+                    }
+
+                    /* MVSYNC */
+                    case 0x003D:
+                    {
+                        fprintf(outFile, "\tMVSYNC\r\n");
+                        break;
+                    }
+
+                    /* FACELOAD */
+                    case 0x003E:
+                    {
+                        fprintf(outFile, "\tFACELOAD ");
+                        int numparam = pNode->num_parameters;
+                        for (x = 0; x < numparam; x++){
+                            int val1, val2;
+                            if (x > 0)
+                                fprintf(outFile, ",");
+                            val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+                            val2 = pNode->subParams[x].value & 0xFF;
+                            if (x == (int)(pNode->num_parameters - 1))
+                                fprintf(outFile, "%d", val1);
+                            else
+                                fprintf(outFile, "%d,%d", val1, val2);
+                        }
+                        fprintf(outFile, "\r\n");
+                        break;
+                    }
+
+#if 1
+                    /* MVSCROLLON */
+                    case 0x003F:
+                    {
+                        fprintf(outFile, "\tMVSCROLLON\r\n");
+                        break;
+                    }
+#endif
+
+                    /* MVSCROLLOFF */
+                    case 0x0040:
+                    {
+                        fprintf(outFile, "\tMVSCROLLFF\r\n");
+                        break;
+                    }
+
+
+                    /* CHRON */
+                    case 0x0041:
+                    {
+                        fprintf(outFile, "\tCHRON %d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
+                        break;
+                    }
+
+
+#if 1
+                    /* CHANGE */
+                    case 0x0043:
+                    {
+                        fprintf(outFile, "\tCHANGE %d\r\n",
+                            pNode->subParams[0].value >> 8);
+                        break;
+                    }
+#endif
+
+#if 1
+                    /* WIPEOUT */
+                    case 0x0044:
+                    {
+                        fprintf(outFile, "\tWIPEOUT %d\r\n",
+                            (pNode->subParams[0].value & 0xFF00) >> 8);
+                        break;
+                    }
+#endif
+
+                    /* WIPEIN */
+                    case 0x0045:
+                    {
+                        fprintf(outFile, "\tWIPEIN %d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
+                        break;
+                    }
+
+                    /* OFFSET */
+                    case 0x0046:
+                    {
+                        fprintf(outFile, "\tOFFSET ");
+                        int numparam = pNode->num_parameters;
+                        for (x = 0; x < numparam; x++){
+                            int val1, val2;
+                            if (x > 0)
+                                fprintf(outFile, ",");
+                            val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+                            val2 = pNode->subParams[x].value & 0xFF;
+                            if (x == (int)(pNode->num_parameters - 1))
+                                fprintf(outFile, "%d", val1);
+                            else
+                                fprintf(outFile, "%d,%d", val1, val2);
+                        }
+                        fprintf(outFile, "\r\n");
+                        break;
+                    }
+
+                    /* COLMIX */
+                    case 0x0047:
+                    {
+                        fprintf(outFile, "\tCOLMIX ");
+                        int numparam = pNode->num_parameters;
+                        for (x = 0; x < numparam; x++){
+                            int val1, val2;
+                            if (x > 0)
+                                fprintf(outFile, ",");
+                            val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+                            val2 = pNode->subParams[x].value & 0xFF;
+                            fprintf(outFile, "%d,%d", val1, val2);
+                        }
+                        fprintf(outFile, "\r\n");
+                        break;
+                    }
+
+#if 1
+                    /* ATRSET */
+                    case 0x0048:
+                    {
+                        fprintf(outFile, "\tATRSET %d\r\n",
+                            (pNode->subParams[0].value & 0xFF00) >> 8);
+                        break;
+                    }
+#endif
+
+#if 1
+                    /* PLACESET */
+                    case 0x0049:
+                    {
+                        fprintf(outFile, "\tPLACESET %d\r\n",
+                            (pNode->subParams[0].value & 0xFF00) >> 8);
+                        break;
+                    }
+#endif
+
+#if 1
+                    /* MVEFFON */
+                    case 0x004C:
+                    {
+                        fprintf(outFile, "\tMVEFFON\r\n");
+                        break;
+                    }
+#endif
+#if 1
+                    /* MVEFFOFF */
+                    case 0x004D:
+                    {
+                        fprintf(outFile, "\tMVEFFOFF\r\n");
+                        break;
+                    }
+#endif
+
+#if 1
+                    /* FADESET */
+                    case 0x004E:
+                    {
+                        fprintf(outFile, "\tFADESET ");
+                        for (x = 0; x < (int)(pNode->num_parameters); x++){
+                            int val1, val2;
+                            fprintf(outFile, ",");
+                            val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+                            val2 = pNode->subParams[x].value & 0xFF;
+                            if (x == (int)(pNode->num_parameters - 1))
+                                fprintf(outFile, "%d", val1);
+                            else
+                                fprintf(outFile, "%d,%d", val1, val2);
+                        }
+                        fprintf(outFile, "\r\n");
+                        break;
+                    }
 
 #endif
 
 #if 1
-					/* CHRFADE */
-					case 0x0050:
-					{
-						fprintf(outFile, "\tCHRFADE %d:",(pNode->subParams[0].value & 0xFF00) >> 8);
-						for (x = 1; x < (int)(pNode->num_parameters); x++){
-							int val1, val2;
-							fprintf(outFile, ",");
-							val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
-							val2 = pNode->subParams[x-1].value & 0xFF;
-							if (x == (int)(pNode->num_parameters - 1))
-								fprintf(outFile, "%d", val2);
-							else
-								fprintf(outFile, "%d,%d", val2, val1);
-						}
-						fprintf(outFile, "\r\n");
-						break;
-					}
+                    /* FADEKILL */
+                    case 0x004F:
+                    {
+                        fprintf(outFile, "\tFADEKILL ");
+                        for (x = 0; x < (int)(pNode->num_parameters); x++){
+                            int val1, val2;
+                            fprintf(outFile, ",");
+                            val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+                            val2 = pNode->subParams[x].value & 0xFF;
+                            if (x == (int)(pNode->num_parameters - 1))
+                                fprintf(outFile, "%d", val1);
+                            else
+                                fprintf(outFile, "%d,%d", val1, val2);
+                        }
+                        fprintf(outFile, "\r\n");
+                        break;
+                    }
+
 #endif
 
 #if 1
-					/* FADESYNC */
-					case 0x0051:
-					{
-						fprintf(outFile, "\tFADESYNC\r\n");
-						break;
-					}
-#endif
-					/* VOICELOAD */
-					case 0x0052:
-					{
-						fprintf(outFile, "\tVOICELOAD %d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
-						break;
-					}
-
-					/* VOICE */
-					case 0x0053:
-					{
-						fprintf(outFile, "\tVOICE\r\n");
-						break;
-					}
-
-					/* VOICESYNC */
-					case 0x0054:
-					{
-						fprintf(outFile, "\tVOICESYNC\r\n");
-						break;
-					}
-
-					/* FEEDSET */
-					case 0x0055:
-					{
-						fprintf(outFile, "\tFEEDSET\r\n");
-						break;
-					}
-
-#if 1
-					/* CONFUSION */
-					case 0x0056:
-					{
-						fprintf(outFile, "\tCONFUSION %d\r\n",
-							pNode->subParams[0].value);
-						break;
-					}
+                    /* CHRFADE */
+                    case 0x0050:
+                    {
+                        fprintf(outFile, "\tCHRFADE %d:",(pNode->subParams[0].value & 0xFF00) >> 8);
+                        for (x = 1; x < (int)(pNode->num_parameters); x++){
+                            int val1, val2;
+                            fprintf(outFile, ",");
+                            val1 = (pNode->subParams[x].value & 0xFF00) >> 8;
+                            val2 = pNode->subParams[x-1].value & 0xFF;
+                            if (x == (int)(pNode->num_parameters - 1))
+                                fprintf(outFile, "%d", val2);
+                            else
+                                fprintf(outFile, "%d,%d", val2, val1);
+                        }
+                        fprintf(outFile, "\r\n");
+                        break;
+                    }
 #endif
 
 #if 1
-					/* LEVEL */
-					case 0x0057:
-					{
-						fprintf(outFile, "\tLEVEL %d,%d\r\n",
-							(pNode->subParams[0].value & 0xFF00) >> 8, pNode->subParams[0].value & 0xFF);
-						break;
-					}
+                    /* FADESYNC */
+                    case 0x0051:
+                    {
+                        fprintf(outFile, "\tFADESYNC\r\n");
+                        break;
+                    }
+#endif
+                    /* VOICELOAD */
+                    case 0x0052:
+                    {
+                        fprintf(outFile, "\tVOICELOAD %d\r\n", (pNode->subParams[0].value & 0xFF00) >> 8);
+                        break;
+                    }
+
+                    /* VOICE */
+                    case 0x0053:
+                    {
+                        fprintf(outFile, "\tVOICE\r\n");
+                        break;
+                    }
+
+                    /* VOICESYNC */
+                    case 0x0054:
+                    {
+                        fprintf(outFile, "\tVOICESYNC\r\n");
+                        break;
+                    }
+
+                    /* FEEDSET */
+                    case 0x0055:
+                    {
+                        fprintf(outFile, "\tFEEDSET\r\n");
+                        break;
+                    }
+
+#if 1
+                    /* CONFUSION */
+                    case 0x0056:
+                    {
+                        fprintf(outFile, "\tCONFUSION %d\r\n",
+                            pNode->subParams[0].value);
+                        break;
+                    }
 #endif
 
 #if 1
-					/* DRAIN */
-					case 0x0058:
-					{
-						fprintf(outFile, "\tDRAIN\r\n");
-						break;
-					}
+                    /* LEVEL */
+                    case 0x0057:
+                    {
+                        fprintf(outFile, "\tLEVEL %d,%d\r\n",
+                            (pNode->subParams[0].value & 0xFF00) >> 8, pNode->subParams[0].value & 0xFF);
+                        break;
+                    }
 #endif
 
 #if 1
-					/* MAGICSET */
-					case 0x0059:
-					{
-						fprintf(outFile, "\tMAGICSET %d,%d\r\n",
-							(pNode->subParams[0].value & 0xFF00) >> 8, (pNode->subParams[0].value & 0xFF));
-						break;
-					}
+                    /* DRAIN */
+                    case 0x0058:
+                    {
+                        fprintf(outFile, "\tDRAIN\r\n");
+                        break;
+                    }
 #endif
-
-					/* VOLUME */
-					case 0x005A:
-					{
-						fprintf(outFile, "\tVOLUME %d,%d\r\n", 
-							(pNode->subParams[0].value & 0xFF00) >> 8, (pNode->subParams[0].value & 0xFF));
-						break;
-					}
 
 #if 1
-					/* ALLRESET */
-					case 0x005B:
-					{
-						fprintf(outFile, "\tALLRESET\r\n");
-						break;
-					}
-#endif
-#if 1
-					/* DEBUG_0x005C? */
-					case 0x005C:
-					{
-						fprintf(outFile, "\tDEBUG_0x005C? %d:%d,%d\r\n",
-							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
-						break;
-					}
-#endif
-#if 1
-					/* DEBUG_0x005D? */
-					case 0x005D:
-					{
-						fprintf(outFile, "\tDEBUG_0x005D? %d:%d,%d\r\n",
-							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
-						break;
-					}
+                    /* MAGICSET */
+                    case 0x0059:
+                    {
+                        fprintf(outFile, "\tMAGICSET %d,%d\r\n",
+                            (pNode->subParams[0].value & 0xFF00) >> 8, (pNode->subParams[0].value & 0xFF));
+                        break;
+                    }
 #endif
 
-					/* TBD - iOS - 42 */
-					case 0x005E:
-					{
-						fprintf(outFile, "\tiOS Subroutine 5E\r\n");
-						break;
-					}
+                    /* VOLUME */
+                    case 0x005A:
+                    {
+                        fprintf(outFile, "\tVOLUME %d,%d\r\n", 
+                            (pNode->subParams[0].value & 0xFF00) >> 8, (pNode->subParams[0].value & 0xFF));
+                        break;
+                    }
 
 #if 1
-					/* TBD2 - iOS  13,17 */
-					case 0x005F:
-					{
-						fprintf(outFile, "\tiOS Subroutine 5F\r\n");
-						break;
-					}
+                    /* ALLRESET */
+                    case 0x005B:
+                    {
+                        fprintf(outFile, "\tALLRESET\r\n");
+                        break;
+                    }
+#endif
+#if 1
+                    /* DEBUG_0x005C? */
+                    case 0x005C:
+                    {
+                        fprintf(outFile, "\tDEBUG_0x005C? %d:%d,%d\r\n",
+                            pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
+                        break;
+                    }
+#endif
+#if 1
+                    /* DEBUG_0x005D? */
+                    case 0x005D:
+                    {
+                        fprintf(outFile, "\tDEBUG_0x005D? %d:%d,%d\r\n",
+                            pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
+                        break;
+                    }
+#endif
+
+                    /* TBD - iOS - 42 */
+                    case 0x005E:
+                    {
+                        fprintf(outFile, "\tiOS Subroutine 5E\r\n");
+                        break;
+                    }
+
+#if 1
+                    /* TBD2 - iOS  13,17 */
+                    case 0x005F:
+                    {
+                        fprintf(outFile, "\tiOS Subroutine 5F\r\n");
+                        break;
+                    }
 #endif
 
 
-					/* TBD2 iOS 14, 17, 18, 25, 30 */
-					case 0x0060:
-					{
-						fprintf(outFile, "\tiOS Subroutine 60\r\n");
-						break;
-					}
+                    /* TBD2 iOS 14, 17, 18, 25, 30 */
+                    case 0x0060:
+                    {
+                        fprintf(outFile, "\tiOS Subroutine 60\r\n");
+                        break;
+                    }
 
 
 
 
 
-					/* RETURNS */
-					case 0x0005:
-					case 0x0026:
-					{
-						if (pNode->subroutine_code == 0x0005)
-							fprintf(outFile, "\tRETURN\r\n");
-						else{
-							fprintf(outFile, "\tEXIT %d,%d,%d\r\n",
-								pNode->subParams[1].value >> 8, pNode->subParams[1].value & 0xFF,
-								pNode->subParams[0].value);
-						}
-						break;
-					}
+                    /* RETURNS */
+                    case 0x0005:
+                    case 0x0026:
+                    {
+                        if (pNode->subroutine_code == 0x0005)
+                            fprintf(outFile, "\tRETURN\r\n");
+                        else{
+                            fprintf(outFile, "\tEXIT %d,%d,%d\r\n",
+                                pNode->subParams[1].value >> 8, pNode->subParams[1].value & 0xFF,
+                                pNode->subParams[0].value);
+                        }
+                        break;
+                    }
 
-					/* UNCONDITIONAL JUMP */
-					case 0x0003:
-					case 0x0004:
-					{
-						if (pNode->subroutine_code == 0x0003)
-							fprintf(outFile, "\tJUMP ");
-						else
-							fprintf(outFile, "\tCALL ");
-						fprintf(outFile, "%d\r\n",pNode->subParams[0].value);
-						break;
-					}
+                    /* UNCONDITIONAL JUMP */
+                    case 0x0003:
+                    case 0x0004:
+                    {
+                        if (pNode->subroutine_code == 0x0003)
+                            fprintf(outFile, "\tJUMP ");
+                        else
+                            fprintf(outFile, "\tCALL ");
+                        fprintf(outFile, "%d\r\n",pNode->subParams[0].value);
+                        break;
+                    }
 
-					/* BIT ROUTINES */
-					case 0x0008:
-					case 0x0009:
-					case 0x000A:
-					{
-						if (pNode->subroutine_code == 0x0009)
-							fprintf(outFile, "\tSET ");
-						else if (pNode->subroutine_code == 0x000A)
-							fprintf(outFile, "\tRESET ");
-						else
-							fprintf(outFile, "\tRND ");
+                    /* BIT ROUTINES */
+                    case 0x0008:
+                    case 0x0009:
+                    case 0x000A:
+                    {
+                        if (pNode->subroutine_code == 0x0009)
+                            fprintf(outFile, "\tSET ");
+                        else if (pNode->subroutine_code == 0x000A)
+                            fprintf(outFile, "\tRESET ");
+                        else
+                            fprintf(outFile, "\tRND ");
 
-						for (x = 0; x < (int)(pNode->num_parameters-1); x++){
-							if (x >= 1)
-								fprintf(outFile, ",");
-							fprintf(outFile, "%d", pNode->subParams[x].value);
-						}
-						fprintf(outFile, "\r\n");
-						break;
-					}
+                        for (x = 0; x < (int)(pNode->num_parameters-1); x++){
+                            if (x >= 1)
+                                fprintf(outFile, ",");
+                            fprintf(outFile, "%d", pNode->subParams[x].value);
+                        }
+                        fprintf(outFile, "\r\n");
+                        break;
+                    }
 
-					/* CONDITIONAL JUMP */
-					case 0x000B: /* AND */
-					case 0x000C: /* NOT */
-					case 0x000D: /* OR  */
-					case 0x0010: /* CHRAND */
-					case 0x0011: /* ?? - 21 */
-					{
-						if (pNode->subroutine_code == 0x000B)
-							fprintf(outFile, "\tAND %d:", pNode->subParams[0].value);
-						else if (pNode->subroutine_code == 0x000C)
-							fprintf(outFile, "\tNOT %d:", pNode->subParams[0].value);
-						else if (pNode->subroutine_code == 0x000D)
-							fprintf(outFile, "\tOR %d:", pNode->subParams[0].value);
-						else if (pNode->subroutine_code == 0x0010)
-							fprintf(outFile, "\tCHRAND %d:", pNode->subParams[0].value);
-						else
-							fprintf(outFile, "\tUNKNOWN_%X %d:", pNode->subroutine_code, pNode->subParams[0].value);
+                    /* CONDITIONAL JUMP */
+                    case 0x000B: /* AND */
+                    case 0x000C: /* NOT */
+                    case 0x000D: /* OR  */
+                    case 0x0010: /* CHRAND */
+                    case 0x0011: /* ?? - 21 */
+                    {
+                        if (pNode->subroutine_code == 0x000B)
+                            fprintf(outFile, "\tAND %d:", pNode->subParams[0].value);
+                        else if (pNode->subroutine_code == 0x000C)
+                            fprintf(outFile, "\tNOT %d:", pNode->subParams[0].value);
+                        else if (pNode->subroutine_code == 0x000D)
+                            fprintf(outFile, "\tOR %d:", pNode->subParams[0].value);
+                        else if (pNode->subroutine_code == 0x0010)
+                            fprintf(outFile, "\tCHRAND %d:", pNode->subParams[0].value);
+                        else
+                            fprintf(outFile, "\tUNKNOWN_%X %d:", pNode->subroutine_code, pNode->subParams[0].value);
 
-						for (x = 1; x < (int)(pNode->num_parameters-1); x++){
-							if (x >= 2)
-								fprintf(outFile, ",");
-							fprintf(outFile, "%d", pNode->subParams[x].value);
-						}
-						fprintf(outFile, "\r\n");
-						break;
-					}
+                        for (x = 1; x < (int)(pNode->num_parameters-1); x++){
+                            if (x >= 2)
+                                fprintf(outFile, ",");
+                            fprintf(outFile, "%d", pNode->subParams[x].value);
+                        }
+                        fprintf(outFile, "\r\n");
+                        break;
+                    }
 
-					/* MONNOT */
-					case 0x0016:
-					{
-						fprintf(outFile, "\tMONNOT %d:%d,%d\r\n",
-							pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
-						break;
-					}
+                    /* MONNOT */
+                    case 0x0016:
+                    {
+                        fprintf(outFile, "\tMONNOT %d:%d,%d\r\n",
+                            pNode->subParams[0].value, (pNode->subParams[1].value & 0xFF00) >> 8, pNode->subParams[1].value & 0xFF);
+                        break;
+                    }
 
-					case 0x0042: /* JUMPPACK */
-					{
-						fprintf(outFile, "\tJUMPPACK %d:%d", (pNode->subParams[1].value>>8) & 0xFF,pNode->subParams[0].value);
-						fprintf(outFile, "\r\n");
-						break;
-					}
-
-
-					default:
-						; /* Do Nothing */
-				}
-			}
-			break;
+                    case 0x0042: /* JUMPPACK */
+                    {
+                        fprintf(outFile, "\tJUMPPACK %d:%d", (pNode->subParams[1].value>>8) & 0xFF,pNode->subParams[0].value);
+                        fprintf(outFile, "\r\n");
+                        break;
+                    }
 
 
-			/****************/
-			/* run-commands */
-			/****************/
-			case NODE_RUN_CMDS:
-			{
-				int ctrlMode = 0;
-				int textDetected = 0;
-				runParamType* rpNode = pNode->runParams;
-
-				if (pNode->pointerID != INVALID_PTR_ID)
-					fprintf(outFile, "%u", pNode->pointerID);
-
-				fprintf(outFile, "\t%u", pNode->id);
-
-				fprintf(outFile, "\tTALK %u", pNode->id);
-
-				while (rpNode != NULL) {
-
-					switch (rpNode->type){
-
-					case ALIGN_2_PARAM:
-						break;
-					case ALIGN_4_PARAM:
-						break;
-					case SHOW_PORTRAIT_LEFT:
-					case SHOW_PORTRAIT_RIGHT:
-						if (ctrlMode == 1){
-							ctrlMode = 0;
-							fprintf(outFile, "\r\n\t\t");
-						}
-						if (rpNode->type == SHOW_PORTRAIT_LEFT)
-							fprintf(outFile, "\t>%d\t", rpNode->value);
-						else 
-							fprintf(outFile, "\t<%d\t", rpNode->value);
-						ctrlMode = 1;
-						break;
-					case PRINT_LINE:
-						if (ctrlMode == 1){
-							ctrlMode = 0;
-							fprintf(outFile, "\r\n\t\t");
-						}
-
-						fprintf(outFile, "\t%s\t", rpNode->str);
-						ctrlMode = 1;
-
-						//Text Dump
-						if (textDetected == 0){
-							textDetected = 1;
-							fprintf(txtOutFile, "\"");
-						}
-						fprintf(txtOutFile, "%s", rpNode->str);
-						break;
-					case TIME_DELAY:
-					case CTRL_CODE:
-						if (ctrlMode == 0){
-							ctrlMode = 1;
-							fprintf(outFile, "\t\t");
-						}
-						else{
-							fprintf(outFile, "(control-code %s%s) ", formatVal(rpNode->value), ctrlCodeLkup((unsigned short)rpNode->value));
-						}
-
-						//Text Dump
-						if (rpNode->value == 0xFF02){
-							if (textDetected == 0){
-								textDetected = 1;
-								fprintf(txtOutFile, "\"");
-							}
-							fprintf(txtOutFile, "\n");
-						}
-						else if ((textDetected == 1) && (rpNode->value == 0xFFFF)){
-							fprintf(txtOutFile, "\"\n");
-						}
-
-						break;
-					default:
-						printf("Error, bad run cmd parameter detected.\n");
-						return -1;
-					}
-					rpNode = rpNode->pNext;
-				}
-				fprintf(outFile, "\r\n");
-			}
-
-			break;
+                    default:
+                        ; /* Do Nothing */
+                }
+            }
+            break;
 
 
-			/***********/
-			/* Options */
-			/***********/
-			case NODE_OPTIONS:
-			{
-				int ctrlMode = 0;
-				runParamType* rpNode = NULL;
+            /****************/
+            /* run-commands */
+            /****************/
+            case NODE_RUN_CMDS:
+            {
+                int ctrlMode = 0;
+                int textDetected = 0;
+                runParamType* rpNode = pNode->runParams;
 
-				if (pNode->pointerID != INVALID_PTR_ID)
-					fprintf(outFile, "%u", pNode->pointerID);
+                if (pNode->pointerID != INVALID_PTR_ID)
+                    fprintf(outFile, "%u", pNode->pointerID);
 
-				fprintf(outFile, "\t%u", pNode->id);
+                fprintf(outFile, "\t%u", pNode->id);
 
-				/* Fixed at 2 options */
-				for (x = 0; x < 2; x++){
-					if (x == 0){
-						rpNode = pNode->runParams;
-						fprintf(outFile, "\tOpt1");
-					}
-					else{
-						rpNode = pNode->runParams2;
-						fprintf(outFile, "\r\n\t\tOpt2 : %d",pNode->subParams[0].value);
-					}
-					ctrlMode = 0;
-					while (rpNode != NULL) {
+                fprintf(outFile, "\tTALK %u", pNode->id);
 
-						switch (rpNode->type){
+                while (rpNode != NULL) {
 
-						case ALIGN_2_PARAM:
-							break;
-						case ALIGN_4_PARAM:
-							break;
-						case PRINT_LINE:
+                    switch (rpNode->type){
 
-							if (ctrlMode == 1){
-								ctrlMode = 0;
-								fprintf(outFile, "\r\n\t\t");
-							}
+                    case ALIGN_2_PARAM:
+                        break;
+                    case ALIGN_4_PARAM:
+                        break;
+                    case SHOW_PORTRAIT_LEFT:
+                    case SHOW_PORTRAIT_RIGHT:
+                        if (ctrlMode == 1){
+                            ctrlMode = 0;
+                            fprintf(outFile, "\r\n\t\t");
+                        }
+                        if (rpNode->type == SHOW_PORTRAIT_LEFT)
+                            fprintf(outFile, "\t>%d\t", rpNode->value);
+                        else 
+                            fprintf(outFile, "\t<%d\t", rpNode->value);
+                        ctrlMode = 1;
+                        break;
+                    case PRINT_LINE:
+                        if (ctrlMode == 1){
+                            ctrlMode = 0;
+                            fprintf(outFile, "\r\n\t\t");
+                        }
 
-							fprintf(outFile, "\t%s\t", rpNode->str);
-							ctrlMode = 1;
-							break;
-						case CTRL_CODE:
+                        fprintf(outFile, "\t%s\t", rpNode->str);
+                        ctrlMode = 1;
 
-							if (ctrlMode == 0){
-								ctrlMode = 1;
-								fprintf(outFile, "\t\t");
-							}
-							else{
-								fprintf(outFile, "(control-code %s%s) ", formatVal(rpNode->value), ctrlCodeLkup((unsigned short)rpNode->value));
-							}
+                        //Text Dump
+                        if (textDetected == 0){
+                            textDetected = 1;
+                            fprintf(txtOutFile, "\"");
+                        }
+                        fprintf(txtOutFile, "%s", rpNode->str);
+                        break;
+                    case TIME_DELAY:
+                    case CTRL_CODE:
+                        if (ctrlMode == 0){
+                            ctrlMode = 1;
+                            fprintf(outFile, "\t\t");
+                        }
+                        else{
+                            fprintf(outFile, "(control-code %s%s) ", formatVal(rpNode->value), ctrlCodeLkup((unsigned short)rpNode->value));
+                        }
 
-							break;
-						default:
-							printf("Error, bad run cmd parameter detected.\n");
-							return -1;
-						}
+                        //Text Dump
+                        if (rpNode->value == 0xFF02){
+                            if (textDetected == 0){
+                                textDetected = 1;
+                                fprintf(txtOutFile, "\"");
+                            }
+                            fprintf(txtOutFile, "\n");
+                        }
+                        else if ((textDetected == 1) && (rpNode->value == 0xFFFF)){
+                            fprintf(txtOutFile, "\"\n");
+                        }
 
-						rpNode = rpNode->pNext;
-					}
-				}
-				fprintf(outFile, "\r\n");
-			}
+                        break;
+                    default:
+                        printf("Error, bad run cmd parameter detected.\n");
+                        return -1;
+                    }
+                    rpNode = rpNode->pNext;
+                }
+                fprintf(outFile, "\r\n");
+            }
 
-			break;
+            break;
 
 
-		default:
-		{
-			printf("ERROR, unrecognized node.  HALTING output.\n");
-			return -1;
-		}
-			break;
-		}
-		pNode = pNode->pNext;
-	}
+            /***********/
+            /* Options */
+            /***********/
+            case NODE_OPTIONS:
+            {
+                int ctrlMode = 0;
+                runParamType* rpNode = NULL;
 
-	return 0;
+                if (pNode->pointerID != INVALID_PTR_ID)
+                    fprintf(outFile, "%u", pNode->pointerID);
+
+                fprintf(outFile, "\t%u", pNode->id);
+
+                /* Fixed at 2 options */
+                for (x = 0; x < 2; x++){
+                    if (x == 0){
+                        rpNode = pNode->runParams;
+                        fprintf(outFile, "\tOpt1");
+                    }
+                    else{
+                        rpNode = pNode->runParams2;
+                        fprintf(outFile, "\r\n\t\tOpt2 : %d",pNode->subParams[0].value);
+                    }
+                    ctrlMode = 0;
+                    while (rpNode != NULL) {
+
+                        switch (rpNode->type){
+
+                        case ALIGN_2_PARAM:
+                            break;
+                        case ALIGN_4_PARAM:
+                            break;
+                        case PRINT_LINE:
+
+                            if (ctrlMode == 1){
+                                ctrlMode = 0;
+                                fprintf(outFile, "\r\n\t\t");
+                            }
+
+                            fprintf(outFile, "\t%s\t", rpNode->str);
+                            ctrlMode = 1;
+                            break;
+                        case CTRL_CODE:
+
+                            if (ctrlMode == 0){
+                                ctrlMode = 1;
+                                fprintf(outFile, "\t\t");
+                            }
+                            else{
+                                fprintf(outFile, "(control-code %s%s) ", formatVal(rpNode->value), ctrlCodeLkup((unsigned short)rpNode->value));
+                            }
+
+                            break;
+                        default:
+                            printf("Error, bad run cmd parameter detected.\n");
+                            return -1;
+                        }
+
+                        rpNode = rpNode->pNext;
+                    }
+                }
+                fprintf(outFile, "\r\n");
+            }
+
+            break;
+
+
+        default:
+        {
+            printf("ERROR, unrecognized node.  HALTING output.\n");
+            return -1;
+        }
+            break;
+        }
+        pNode = pNode->pNext;
+    }
+
+    return 0;
 }
 
 
@@ -2258,44 +2257,44 @@ FF04 \n<EndText>\n
 */
 char* ctrlCodeLkup(unsigned short ctrlCode){
 
-	static char ttxt[300];
+    static char ttxt[300];
 
-	switch (ctrlCode){
-		case 0xFF00:
-			strcpy(ttxt," <WaitForButton>");
-			break;
-		case 0xFF01:
-			strcpy(ttxt, " <ResetTextBox>");
-			break;
-		case 0xFF02:
-			strcpy(ttxt, " <Newline>");
-			break;
-		case 0xFF03:
-			strcpy(ttxt, " <CloseTextBox>");
-			break;
-		case 0xFFFF:
-			strcpy(ttxt, " <EndText>");
-			break;
-		default:
-			strcpy(ttxt, "\0");
-			break;
-	}
+    switch (ctrlCode){
+        case 0xFF00:
+            strcpy(ttxt," <WaitForButton>");
+            break;
+        case 0xFF01:
+            strcpy(ttxt, " <ResetTextBox>");
+            break;
+        case 0xFF02:
+            strcpy(ttxt, " <Newline>");
+            break;
+        case 0xFF03:
+            strcpy(ttxt, " <CloseTextBox>");
+            break;
+        case 0xFFFF:
+            strcpy(ttxt, " <EndText>");
+            break;
+        default:
+            strcpy(ttxt, "\0");
+            break;
+    }
 
-	/* Space Check */
-	if ((ctrlCode & 0xFF00) == 0xF900){
-		int spacelen;
-		spacelen = ctrlCode & 0x00FF;
-		sprintf(ttxt, " <Space-%d>", spacelen);
-	}
+    /* Space Check */
+    if ((ctrlCode & 0xFF00) == 0xF900){
+        int spacelen;
+        spacelen = ctrlCode & 0x00FF;
+        sprintf(ttxt, " <Space-%d>", spacelen);
+    }
 
-	/* Delay Check */
-	if ((ctrlCode & 0xFF00) == 0xF800){
-		int delaylen;
-		delaylen = ctrlCode & 0x00FF;
-		sprintf(ttxt, " <Delay-%d>", delaylen);
-	}
+    /* Delay Check */
+    if ((ctrlCode & 0xFF00) == 0xF800){
+        int delaylen;
+        delaylen = ctrlCode & 0x00FF;
+        sprintf(ttxt, " <Delay-%d>", delaylen);
+    }
 
-	return ttxt;
+    return ttxt;
 }
 
 
@@ -2310,207 +2309,207 @@ char* ctrlCodeLkup(unsigned short ctrlCode){
 /*****************************************************************************/
 int dumpScript(FILE* outFile){
 
-	int x;
-	scriptNode* pNode = NULL;
+    int x;
+    scriptNode* pNode = NULL;
 
-	/* Output Header */
-	fprintf(outFile, "Node ID\tType\tJP Text\r\n");
+    /* Output Header */
+    fprintf(outFile, "Node ID\tType\tJP Text\r\n");
 
-	/* Get a Pointer to the Head of the linked list */
-	pNode = getHeadPtr();
+    /* Get a Pointer to the Head of the linked list */
+    pNode = getHeadPtr();
 
-	/******************************************************************/
-	/* Loop until the binary output corresponding to all list entries */
-	/* has been output to memory.  Then write to disk.                */
-	/******************************************************************/
-	while (pNode != NULL){
+    /******************************************************************/
+    /* Loop until the binary output corresponding to all list entries */
+    /* has been output to memory.  Then write to disk.                */
+    /******************************************************************/
+    while (pNode != NULL){
 
-		switch (pNode->nodeType){
+        switch (pNode->nodeType){
 
-			/********/
-			/* goto */
-			/********/
-		case NODE_GOTO:
-		{
-			;
-		}
-			break;
-
-
-			/********/
-			/* fill */
-			/********/
-		case NODE_FILL_SPACE:
-		{
-			;
-		}
-			break;
+            /********/
+            /* goto */
+            /********/
+        case NODE_GOTO:
+        {
+            ;
+        }
+            break;
 
 
-			/***********/
-			/* pointer */
-			/***********/
-		case NODE_POINTER:
-		{
-			;
-		}
-			break;
+            /********/
+            /* fill */
+            /********/
+        case NODE_FILL_SPACE:
+        {
+            ;
+        }
+            break;
 
 
-			/*****************************************************/
-			/* execute-subroutine                                */
-			/*****************************************************/
-		case NODE_EXE_SUB:
-		{
-			;
-		}
-			break;
+            /***********/
+            /* pointer */
+            /***********/
+        case NODE_POINTER:
+        {
+            ;
+        }
+            break;
 
 
-			/****************/
-			/* run-commands */
-			/****************/
-		case NODE_RUN_CMDS:
-		{
-			int count = 0;
-			runParamType* rpNode = pNode->runParams;
-
-			fprintf(outFile, "%u", pNode->id);
-
-			fprintf(outFile, "\tDialog", pNode->id);
-
-			while (rpNode != NULL) {
-
-				switch (rpNode->type){
-
-				case ALIGN_2_PARAM:
-					break;
-				case ALIGN_4_PARAM:
-					break;
-				case SHOW_PORTRAIT_LEFT:
-				case SHOW_PORTRAIT_RIGHT:
-					if (count == 0){
-						count++;
-					}
-					else{
-						fprintf(outFile, "\t");
-					}
-					if (rpNode->type == SHOW_PORTRAIT_LEFT)
-						fprintf(outFile, "\t (portrait-left %s)\r\n", formatVal(rpNode->value));
-					else
-						fprintf(outFile, "\t (portrait-right %s)\r\n", formatVal(rpNode->value));
-					break;
-				case TIME_DELAY:
-					if (count == 0){
-						count++;
-					}
-					else{
-						fprintf(outFile, "\t");
-					}
-					fprintf(outFile, "\t (delay-time %s)\r\n", formatVal(rpNode->value));
-					break;
-				case PRINT_LINE:
-					if (count == 0){
-						count++;
-					}
-					else{
-						fprintf(outFile, "\t");
-					}
-					fprintf(outFile, "\t%s\r\n", rpNode->str);
-					break;
-				case CTRL_CODE:
-					if (count == 0){
-						count++;
-					}
-					else{
-						fprintf(outFile, "\t");
-					}
-
-					fprintf(outFile, "\t (control-code %s%s)\r\n", formatVal(rpNode->value), ctrlCodeLkup((unsigned short)rpNode->value));
-					break;
-				default:
-					printf("Error, bad run cmd parameter detected.\n");
-					return -1;
-				}
-
-				rpNode = rpNode->pNext;
-			}
-		}
-			break;
+            /*****************************************************/
+            /* execute-subroutine                                */
+            /*****************************************************/
+        case NODE_EXE_SUB:
+        {
+            ;
+        }
+            break;
 
 
-			/***********/
-			/* Options */
-			/***********/
-		case NODE_OPTIONS:
-		{
-			int count = 0;
-			runParamType* rpNode = NULL;
+            /****************/
+            /* run-commands */
+            /****************/
+        case NODE_RUN_CMDS:
+        {
+            int count = 0;
+            runParamType* rpNode = pNode->runParams;
 
-			fprintf(outFile, "%u", pNode->id);
+            fprintf(outFile, "%u", pNode->id);
+
+            fprintf(outFile, "\tDialog", pNode->id);
+
+            while (rpNode != NULL) {
+
+                switch (rpNode->type){
+
+                case ALIGN_2_PARAM:
+                    break;
+                case ALIGN_4_PARAM:
+                    break;
+                case SHOW_PORTRAIT_LEFT:
+                case SHOW_PORTRAIT_RIGHT:
+                    if (count == 0){
+                        count++;
+                    }
+                    else{
+                        fprintf(outFile, "\t");
+                    }
+                    if (rpNode->type == SHOW_PORTRAIT_LEFT)
+                        fprintf(outFile, "\t (portrait-left %s)\r\n", formatVal(rpNode->value));
+                    else
+                        fprintf(outFile, "\t (portrait-right %s)\r\n", formatVal(rpNode->value));
+                    break;
+                case TIME_DELAY:
+                    if (count == 0){
+                        count++;
+                    }
+                    else{
+                        fprintf(outFile, "\t");
+                    }
+                    fprintf(outFile, "\t (delay-time %s)\r\n", formatVal(rpNode->value));
+                    break;
+                case PRINT_LINE:
+                    if (count == 0){
+                        count++;
+                    }
+                    else{
+                        fprintf(outFile, "\t");
+                    }
+                    fprintf(outFile, "\t%s\r\n", rpNode->str);
+                    break;
+                case CTRL_CODE:
+                    if (count == 0){
+                        count++;
+                    }
+                    else{
+                        fprintf(outFile, "\t");
+                    }
+
+                    fprintf(outFile, "\t (control-code %s%s)\r\n", formatVal(rpNode->value), ctrlCodeLkup((unsigned short)rpNode->value));
+                    break;
+                default:
+                    printf("Error, bad run cmd parameter detected.\n");
+                    return -1;
+                }
+
+                rpNode = rpNode->pNext;
+            }
+        }
+            break;
 
 
-			/* Fixed at 2 options */
-			for (x = 0; x < 2; x++){
-				if (x == 0){
-					rpNode = pNode->runParams;
-					fprintf(outFile, "\tOpt1");
-				}
-				else{
-					rpNode = pNode->runParams2;
-					fprintf(outFile, "\tOpt2");
-				}
-				count = 0;
-				while (rpNode != NULL) {
+            /***********/
+            /* Options */
+            /***********/
+        case NODE_OPTIONS:
+        {
+            int count = 0;
+            runParamType* rpNode = NULL;
 
-					switch (rpNode->type){
-
-					case ALIGN_2_PARAM:
-						break;
-					case ALIGN_4_PARAM:
-						break;
-					case PRINT_LINE:
-						if (count == 0){
-							count++;
-						}
-						else{
-							fprintf(outFile, "\t");
-						}
-
-						fprintf(outFile, "\t%s\r\n", rpNode->str);
-						break;
-					case CTRL_CODE:
-						if (count == 0){
-							count++;
-						}
-						else{
-							fprintf(outFile, "\t");
-						}
-
-						fprintf(outFile, "\t (control-code %s%s)\r\n", formatVal(rpNode->value), ctrlCodeLkup((unsigned short)rpNode->value));
-						break;
-					default:
-						printf("Error, bad run cmd parameter detected.\n");
-						return -1;
-					}
-
-					rpNode = rpNode->pNext;
-				}
-			}
-		}
-			break;
+            fprintf(outFile, "%u", pNode->id);
 
 
-		default:
-		{
-			printf("ERROR, unrecognized node.  HALTING output.\n");
-			return -1;
-		}
-			break;
-		}
-		pNode = pNode->pNext;
-	}
+            /* Fixed at 2 options */
+            for (x = 0; x < 2; x++){
+                if (x == 0){
+                    rpNode = pNode->runParams;
+                    fprintf(outFile, "\tOpt1");
+                }
+                else{
+                    rpNode = pNode->runParams2;
+                    fprintf(outFile, "\tOpt2");
+                }
+                count = 0;
+                while (rpNode != NULL) {
 
-	return 0;
+                    switch (rpNode->type){
+
+                    case ALIGN_2_PARAM:
+                        break;
+                    case ALIGN_4_PARAM:
+                        break;
+                    case PRINT_LINE:
+                        if (count == 0){
+                            count++;
+                        }
+                        else{
+                            fprintf(outFile, "\t");
+                        }
+
+                        fprintf(outFile, "\t%s\r\n", rpNode->str);
+                        break;
+                    case CTRL_CODE:
+                        if (count == 0){
+                            count++;
+                        }
+                        else{
+                            fprintf(outFile, "\t");
+                        }
+
+                        fprintf(outFile, "\t (control-code %s%s)\r\n", formatVal(rpNode->value), ctrlCodeLkup((unsigned short)rpNode->value));
+                        break;
+                    default:
+                        printf("Error, bad run cmd parameter detected.\n");
+                        return -1;
+                    }
+
+                    rpNode = rpNode->pNext;
+                }
+            }
+        }
+            break;
+
+
+        default:
+        {
+            printf("ERROR, unrecognized node.  HALTING output.\n");
+            return -1;
+        }
+            break;
+        }
+        pNode = pNode->pNext;
+    }
+
+    return 0;
 }
 #endif

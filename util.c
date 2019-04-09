@@ -96,16 +96,16 @@ void swap16(void* pWd){
 /* Endian swap 32-bit data  */
 /****************************/
 void swap32(void* pWd){
-	char* ptr;
-	char temp[4];
-	ptr = pWd;
-	temp[3] = ptr[0];
-	temp[2] = ptr[1];
-	temp[1] = ptr[2];
-	temp[0] = ptr[3];
-	memcpy(ptr, temp, 4);
+    char* ptr;
+    char temp[4];
+    ptr = pWd;
+    temp[3] = ptr[0];
+    temp[2] = ptr[1];
+    temp[1] = ptr[2];
+    temp[0] = ptr[3];
+    memcpy(ptr, temp, 4);
 
-	return;
+    return;
 }
 
 
@@ -373,18 +373,18 @@ int read_ID(unsigned char* pInput){
     }
     pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
 
-	if (inputMode == RADIX_HEX){
-		if (sscanf((char *)pInput, "%X", &id) != 1){
-			printf("Error reading ID\n");
-			return -1;
-		}
-	}
-	else{
-		if (sscanf((char *)pInput, "%u", &id) != 1){
-			printf("Error reading ID\n");
-			return -1;
-		}
-	}
+    if (inputMode == RADIX_HEX){
+        if (sscanf((char *)pInput, "%X", &id) != 1){
+            printf("Error reading ID\n");
+            return -1;
+        }
+    }
+    else{
+        if (sscanf((char *)pInput, "%u", &id) != 1){
+            printf("Error reading ID\n");
+            return -1;
+        }
+    }
 
     return (int)id;
 }
@@ -456,7 +456,7 @@ int readBYTE(unsigned char* pInput, unsigned char* datab){
 /* Either 1-byte encoding, or 2-byte           */
 /***********************************************/
 int getTextDecodeMethod(){
-	return textDecodeMode;
+    return textDecodeMode;
 }
 
 
@@ -467,12 +467,12 @@ int getTextDecodeMethod(){
 /* Either 1-byte encoding, or 2-byte        */
 /********************************************/
 void setTextDecodeMethod(int method){
-	if (method == 3){
-		method = 2;
-		G_IOS_ENG = 1;
-	}
+    if (method == 3){
+        method = 2;
+        G_IOS_ENG = 1;
+    }
 
 
-	textDecodeMode = method;
-	return;
+    textDecodeMode = method;
+    return;
 }

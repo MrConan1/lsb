@@ -7,7 +7,7 @@
 /*                   rewritten to a file in the same human readable metadata */
 /*                   format.                                                 */
 /*****************************************************************************/
-#pragma warning(disable:4996)
+
 
 /* Includes */
 #include <stdio.h>
@@ -91,9 +91,9 @@ int updateScript(FILE* upFile){
     while ((pInput != NULL) && rval == 0){
         int id;
         scriptNode node;
-		node.runParams = node.runParams2 = NULL;
-		node.subParams = NULL;
-		node.pNext = node.pPrev = NULL;
+        node.runParams = node.runParams2 = NULL;
+        node.subParams = NULL;
+        node.pNext = node.pPrev = NULL;
 
         /* insert-before-ID */
         if (strcmp((const char *)pInput, "insert-before-ID") == 0){
@@ -183,11 +183,11 @@ int readNode(scriptNode* node){
             rval = copy_runcmds(id, node);
         }
 
-		/* options */
-		else if (strcmp((const char *)pInput, "options") == 0){
-			id = read_ID(pInput);
-			rval = copy_options(id, node);
-		}
+        /* options */
+        else if (strcmp((const char *)pInput, "options") == 0){
+            id = read_ID(pInput);
+            rval = copy_options(id, node);
+        }
 
         else{
             printf("Invalid Command Detected.\n");
@@ -539,47 +539,47 @@ int copy_runcmds(int id, scriptNode* node){
             memcpy(rpNode->str, pText, len);
         }
 
-		/* show-portrait-left */
-		else if (strcmp((const char *)pInput, "show-portrait-left") == 0){
-			unsigned char portraitCode;
-			pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
-			if (readBYTE(pInput, &portraitCode) < 0){
-				printf("Error invalid portrait code.\n");
-				return -1;
-			}
+        /* show-portrait-left */
+        else if (strcmp((const char *)pInput, "show-portrait-left") == 0){
+            unsigned char portraitCode;
+            pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+            if (readBYTE(pInput, &portraitCode) < 0){
+                printf("Error invalid portrait code.\n");
+                return -1;
+            }
 
-			/* Create a runcmds parameter */
-			rpNode->type = SHOW_PORTRAIT_LEFT;
-			rpNode->value = portraitCode;
-		}
+            /* Create a runcmds parameter */
+            rpNode->type = SHOW_PORTRAIT_LEFT;
+            rpNode->value = portraitCode;
+        }
 
-		/* show-portrait-right */
-		else if (strcmp((const char *)pInput, "show-portrait-right") == 0){
-			unsigned char portraitCode;
-			pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
-			if (readBYTE(pInput, &portraitCode) < 0){
-				printf("Error invalid portrait code.\n");
-				return -1;
-			}
+        /* show-portrait-right */
+        else if (strcmp((const char *)pInput, "show-portrait-right") == 0){
+            unsigned char portraitCode;
+            pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+            if (readBYTE(pInput, &portraitCode) < 0){
+                printf("Error invalid portrait code.\n");
+                return -1;
+            }
 
-			/* Create a runcmds parameter */
-			rpNode->type = SHOW_PORTRAIT_RIGHT;
-			rpNode->value = portraitCode;
-		}
+            /* Create a runcmds parameter */
+            rpNode->type = SHOW_PORTRAIT_RIGHT;
+            rpNode->value = portraitCode;
+        }
 
-		/* time-delay */
-		else if (strcmp((const char *)pInput, "time-delay") == 0){
-			unsigned char timedelay;
-			pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
-			if (readBYTE(pInput, &timedelay) < 0){
-				printf("Error invalid time delay.\n");
-				return -1;
-			}
+        /* time-delay */
+        else if (strcmp((const char *)pInput, "time-delay") == 0){
+            unsigned char timedelay;
+            pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+            if (readBYTE(pInput, &timedelay) < 0){
+                printf("Error invalid time delay.\n");
+                return -1;
+            }
 
-			/* Create a runcmds parameter */
-			rpNode->type = TIME_DELAY;
-			rpNode->value = timedelay;
-		}
+            /* Create a runcmds parameter */
+            rpNode->type = TIME_DELAY;
+            rpNode->value = timedelay;
+        }
 
         /* control-code */
         else if (strcmp((const char *)pInput, "control-code") == 0){
@@ -638,7 +638,7 @@ int copy_runcmds(int id, scriptNode* node){
     /* Create a script node */
     node->nodeType = NODE_RUN_CMDS;
     node->id = id;
-	node->subroutine_code = 0x0002;
+    node->subroutine_code = 0x0002;
     node->runParams = rpHead;
     node->subParams = NULL;
 
@@ -653,178 +653,178 @@ int copy_runcmds(int id, scriptNode* node){
 /*************************/
 int copy_options(int id, scriptNode* node){
 
-	int x;
-	unsigned short jmpParam, param2;
-	paramType* params = NULL;
-	runParamType* rpNode;
-	runParamType* rpHead = NULL;
-	runParamType* rpHead1 = NULL;
-	runParamType* pPrev = NULL;
-	int len = 0;
+    int x;
+    unsigned short jmpParam, param2;
+    paramType* params = NULL;
+    runParamType* rpNode;
+    runParamType* rpHead = NULL;
+    runParamType* rpHead1 = NULL;
+    runParamType* pPrev = NULL;
+    int len = 0;
 
-	memset(node, 0, sizeof(scriptNode));
+    memset(node, 0, sizeof(scriptNode));
 
-	/***********************************************/
-	/* Read in the two fixed subroutine parameters */
-	/***********************************************/
+    /***********************************************/
+    /* Read in the two fixed subroutine parameters */
+    /***********************************************/
 
-	/* JMP Offset */
-	pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
-	if (strcmp((const char *)pInput, "jmpparam") != 0) {
-		printf("Error, jmpparam expected\n");
-		return -1;
-	}
-	pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
-	if (readSW(pInput, &jmpParam) < 0){
-		printf("Error invalid subroutine code\n");
-		return -1;
-	}
+    /* JMP Offset */
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (strcmp((const char *)pInput, "jmpparam") != 0) {
+        printf("Error, jmpparam expected\n");
+        return -1;
+    }
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (readSW(pInput, &jmpParam) < 0){
+        printf("Error invalid subroutine code\n");
+        return -1;
+    }
 
-	/* 2nd Parameter */
-	pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
-	if (strcmp((const char *)pInput, "param2") != 0) {
-		printf("Error, param2 expected\n");
-		return -1;
-	}
-	pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
-	if (readSW(pInput, &param2) < 0){
-		printf("Error invalid subroutine code\n");
-		return -1;
-	}
+    /* 2nd Parameter */
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (strcmp((const char *)pInput, "param2") != 0) {
+        printf("Error, param2 expected\n");
+        return -1;
+    }
+    pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+    if (readSW(pInput, &param2) < 0){
+        printf("Error invalid subroutine code\n");
+        return -1;
+    }
 
-	/* Allocate Subroutine Parameters and copy */
-	params = (paramType*)malloc(2 * sizeof(paramType));
-	if (params == NULL){
-		printf("Error allocing memory for parameters\n");
-		return -1;
-	}
-	params[0].type = SHORT_PARAM;
-	params[0].value = jmpParam;
-	params[1].type = SHORT_PARAM;
-	params[1].value = param2;
+    /* Allocate Subroutine Parameters and copy */
+    params = (paramType*)malloc(2 * sizeof(paramType));
+    if (params == NULL){
+        printf("Error allocing memory for parameters\n");
+        return -1;
+    }
+    params[0].type = SHORT_PARAM;
+    params[0].value = jmpParam;
+    params[1].type = SHORT_PARAM;
+    params[1].value = param2;
 
-	/* read in the options until the end of them is reached */
-	for (x = 0; x < 2; x++){
+    /* read in the options until the end of them is reached */
+    for (x = 0; x < 2; x++){
 
-		if (x == 0){
-			pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
-			if (strcmp((const char *)pInput, "opt1") != 0) {
-				printf("Error, opt1 expected\n");
-				return -1;
-			}
-		}
-		else{
-			rpHead1 = rpHead;
-			rpHead = NULL;
-			pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
-			if (strcmp((const char *)pInput, "opt2") != 0) {
-				printf("Error, opt2 expected\n");
-				return -1;
-			}
-		}
-		pPrev = NULL;
-		pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
-		while (strcmp((const char *)pInput, "opt-end") != 0) {
+        if (x == 0){
+            pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+            if (strcmp((const char *)pInput, "opt1") != 0) {
+                printf("Error, opt1 expected\n");
+                return -1;
+            }
+        }
+        else{
+            rpHead1 = rpHead;
+            rpHead = NULL;
+            pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+            if (strcmp((const char *)pInput, "opt2") != 0) {
+                printf("Error, opt2 expected\n");
+                return -1;
+            }
+        }
+        pPrev = NULL;
+        pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+        while (strcmp((const char *)pInput, "opt-end") != 0) {
 
-			/* Create a runcmds parameter */
-			rpNode = (runParamType*)malloc(sizeof(runParamType));
-			if (rpNode == NULL){
-				printf("Error allocing space for run parameter struct.\n");
-				return -1;
-			}
-			rpNode->str = NULL;
-			rpNode->pNext = NULL;
+            /* Create a runcmds parameter */
+            rpNode = (runParamType*)malloc(sizeof(runParamType));
+            if (rpNode == NULL){
+                printf("Error allocing space for run parameter struct.\n");
+                return -1;
+            }
+            rpNode->str = NULL;
+            rpNode->pNext = NULL;
 
-			/* Book keeping */
-			if (rpHead == NULL)
-				rpHead = rpNode;
-			if (pPrev != NULL){
-				pPrev->pNext = rpNode;
-			}
+            /* Book keeping */
+            if (rpHead == NULL)
+                rpHead = rpNode;
+            if (pPrev != NULL){
+                pPrev->pNext = rpNode;
+            }
 
-			/* print-line */
-			if (strcmp((const char *)pInput, "print-line") == 0){
-				unsigned char* pText;
+            /* print-line */
+            if (strcmp((const char *)pInput, "print-line") == 0){
+                unsigned char* pText;
 
-				/* Get Text String (UTF-8) */
-				pInput = (unsigned char*)strtok(NULL, "\"");
-				if (pInput == NULL){
-					printf("Error, bad text input.\n");
-					return -1;
-				}
-				pText = pInput;
-				len = strlen((const char *)pText);
+                /* Get Text String (UTF-8) */
+                pInput = (unsigned char*)strtok(NULL, "\"");
+                if (pInput == NULL){
+                    printf("Error, bad text input.\n");
+                    return -1;
+                }
+                pText = pInput;
+                len = strlen((const char *)pText);
 
-				rpNode->type = PRINT_LINE;
-				rpNode->str = malloc(len + 1);
-				memset(rpNode->str, 0, len + 1);
-				memcpy(rpNode->str, pText, len);
-			}
+                rpNode->type = PRINT_LINE;
+                rpNode->str = malloc(len + 1);
+                memset(rpNode->str, 0, len + 1);
+                memcpy(rpNode->str, pText, len);
+            }
 
-			/* control-code */
-			else if (strcmp((const char *)pInput, "control-code") == 0){
-				unsigned short ctrlCode;
-				pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
-				if (readSW(pInput, &ctrlCode) < 0){
-					printf("Error invalid control code.\n");
-					return -1;
-				}
+            /* control-code */
+            else if (strcmp((const char *)pInput, "control-code") == 0){
+                unsigned short ctrlCode;
+                pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+                if (readSW(pInput, &ctrlCode) < 0){
+                    printf("Error invalid control code.\n");
+                    return -1;
+                }
 
-				/* Create a runcmds parameter */
-				rpNode->type = CTRL_CODE;
-				rpNode->value = ctrlCode;
-			}
+                /* Create a runcmds parameter */
+                rpNode->type = CTRL_CODE;
+                rpNode->value = ctrlCode;
+            }
 
-			/* align-2 */
-			else if (strcmp((const char *)pInput, "align-2") == 0){
-				unsigned char fillVal;
-				pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
-				if (readBYTE(pInput, &fillVal) < 0){
-					printf("Error invalid fill value.\n");
-					return -1;
-				}
+            /* align-2 */
+            else if (strcmp((const char *)pInput, "align-2") == 0){
+                unsigned char fillVal;
+                pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+                if (readBYTE(pInput, &fillVal) < 0){
+                    printf("Error invalid fill value.\n");
+                    return -1;
+                }
 
-				/* Create a runcmds parameter */
-				rpNode->type = ALIGN_2_PARAM;
-				rpNode->value = fillVal;
-			}
+                /* Create a runcmds parameter */
+                rpNode->type = ALIGN_2_PARAM;
+                rpNode->value = fillVal;
+            }
 
-			/* align-4 */
-			else if (strcmp((const char *)pInput, "align-4") == 0){
-				unsigned char fillVal;
-				pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
-				if (readBYTE(pInput, &fillVal) < 0){
-					printf("Error invalid fill value.\n");
-					return -1;
-				}
+            /* align-4 */
+            else if (strcmp((const char *)pInput, "align-4") == 0){
+                unsigned char fillVal;
+                pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+                if (readBYTE(pInput, &fillVal) < 0){
+                    printf("Error invalid fill value.\n");
+                    return -1;
+                }
 
-				/* Create a runcmds parameter */
-				rpNode->type = ALIGN_4_PARAM;
-				rpNode->value = fillVal;
-			}
+                /* Create a runcmds parameter */
+                rpNode->type = ALIGN_4_PARAM;
+                rpNode->value = fillVal;
+            }
 
-			/* Unknown */
-			else{
-				printf("Error unknown command %s detected in run-commands\n", pInput);
-				return -1;
-			}
+            /* Unknown */
+            else{
+                printf("Error unknown command %s detected in run-commands\n", pInput);
+                return -1;
+            }
 
-			pPrev = rpNode;
+            pPrev = rpNode;
 
-			/* Read next token */
-			pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
-		}
-	}
+            /* Read next token */
+            pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
+        }
+    }
 
-	/* Create a script node */
-	node->nodeType = NODE_OPTIONS;
-	node->id = id;
-	node->subroutine_code = 0x0007;
-	node->alignfillVal = 0xFF;
-	node->num_parameters = 2;
-	node->runParams = rpHead1;
-	node->runParams2 = rpHead;
-	node->subParams = params;
+    /* Create a script node */
+    node->nodeType = NODE_OPTIONS;
+    node->id = id;
+    node->subroutine_code = 0x0007;
+    node->alignfillVal = 0xFF;
+    node->num_parameters = 2;
+    node->runParams = rpHead1;
+    node->runParams2 = rpHead;
+    node->subParams = params;
 
-	return 0;
+    return 0;
 }

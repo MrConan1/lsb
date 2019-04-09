@@ -52,15 +52,15 @@ typedef struct runParamType runParamType;
 
 /* Parameter Types */
 struct paramType{
-	unsigned int type;
-	unsigned int value;
+    unsigned int type;
+    unsigned int value;
 };
 
 struct runParamType{
-	unsigned int type;
-	unsigned int value;
-	unsigned char* str;
-	runParamType* pNext;
+    unsigned int type;
+    unsigned int value;
+    unsigned char* str;
+    runParamType* pNext;
 };
 
 
@@ -70,37 +70,37 @@ struct scriptNode
     unsigned int id;
     int nodeType;
 
-	//Pointer Values 
-	unsigned short byteOffset; // (Goto shares byteOffset)
-	unsigned int ptrSize;      // 2 or 4 bytes
-	unsigned int ptrValueFlag; // When true, use ptrValue, otherwise ID
-	unsigned int ptrValue;  
-	unsigned int ptrID;
+    //Pointer Values 
+    unsigned short byteOffset; // (Goto shares byteOffset)
+    unsigned int ptrSize;      // 2 or 4 bytes
+    unsigned int ptrValueFlag; // When true, use ptrValue, otherwise ID
+    unsigned int ptrValue;  
+    unsigned int ptrID;
 
-	//fill-space Parameters
-	unsigned int unit_size;
-	unsigned int fillVal;
-	unsigned int unit_count;
+    //fill-space Parameters
+    unsigned int unit_size;
+    unsigned int fillVal;
+    unsigned int unit_count;
 
-	//Execute-Subroutine Parameters
-	unsigned int subroutine_code;
-	unsigned int num_parameters;
-	unsigned char alignfillVal;
-	paramType* subParams;
+    //Execute-Subroutine Parameters
+    unsigned int subroutine_code;
+    unsigned int num_parameters;
+    unsigned char alignfillVal;
+    paramType* subParams;
 
-	//Run-Commands Parameters
-	runParamType* runParams;
-	runParamType* runParams2;
+    //Run-Commands Parameters
+    runParamType* runParams;
+    runParamType* runParams2;
 
-	//When reading in binary file, stores original file offset of data
-	//When writing out to binary file, location where written to
-	unsigned int fileOffset;
+    //When reading in binary file, stores original file offset of data
+    //When writing out to binary file, location where written to
+    unsigned int fileOffset;
 
-	//Book-keeping for script dumps only
-	unsigned int pointerID;       // Pointer ID that brought the script to this node. (FFFFFFFF if unreachable)
-	unsigned int nextPointerID;   // Node ID of next non-linear script element (if it exists, FFFFFFFF otherwise)
+    //Book-keeping for script dumps only
+    unsigned int pointerID;       // Pointer ID that brought the script to this node. (FFFFFFFF if unreachable)
+    unsigned int nextPointerID;   // Node ID of next non-linear script element (if it exists, FFFFFFFF otherwise)
 
-	//Linked List Pointers
+    //Linked List Pointers
     scriptNode* pNext;
     scriptNode* pPrev;
 };

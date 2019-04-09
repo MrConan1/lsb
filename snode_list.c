@@ -1,7 +1,7 @@
 /**********************************************************************/
-/* hit_map.c - Functions to keep track of read file locations.        */
+/* snode_list.c - Functions to for script node linked list.           */
 /**********************************************************************/
-#pragma warning(disable:4996)
+
 
 /************/
 /* Includes */
@@ -9,8 +9,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "script_node_types.h"
 #include "snode_list.h"
+#include "script_node_types.h"
+
 
 
 /***********************/
@@ -82,14 +83,14 @@ int destroyNodeList()
                 ptrRun = ptrRunNext;
             }
         }
-		if (pCurrent->runParams2 != NULL){
-			ptrRun = pCurrent->runParams2;
-			while (ptrRun != NULL){
-				ptrRunNext = ptrRun->pNext;
-				free(ptrRun);
-				ptrRun = ptrRunNext;
-			}
-		}
+        if (pCurrent->runParams2 != NULL){
+            ptrRun = pCurrent->runParams2;
+            while (ptrRun != NULL){
+                ptrRunNext = ptrRun->pNext;
+                free(ptrRun);
+                ptrRun = ptrRunNext;
+            }
+        }
 
         pItem = pItem->pNext;
         free(pCurrent);
@@ -119,9 +120,9 @@ int createScriptNode(scriptNode** node){
     pNode->pNext = pNode->pPrev = NULL;
     pNode->subParams = NULL;
     pNode->runParams = NULL;
-	pNode->runParams2 = NULL;
-	pNode->pointerID = INVALID_PTR_ID;
-	pNode->nextPointerID = INVALID_PTR_ID;
+    pNode->runParams2 = NULL;
+    pNode->pointerID = INVALID_PTR_ID;
+    pNode->nextPointerID = INVALID_PTR_ID;
     return 0;
 }
 
@@ -224,14 +225,14 @@ int removeNode(int id){
                     ptrRun = ptrRunNext;
                 }
             }
-			if (pCurrent->runParams2 != NULL){
-				ptrRun = pCurrent->runParams2;
-				while (ptrRun != NULL){
-					ptrRunNext = ptrRun->pNext;
-					free(ptrRun);
-					ptrRun = ptrRunNext;
-				}
-			}
+            if (pCurrent->runParams2 != NULL){
+                ptrRun = pCurrent->runParams2;
+                while (ptrRun != NULL){
+                    ptrRunNext = ptrRun->pNext;
+                    free(ptrRun);
+                    ptrRun = ptrRunNext;
+                }
+            }
 
             free(pCurrent);
             return 0;
@@ -304,15 +305,15 @@ scriptNode* getListItemByID(unsigned int id){
 /*******************************************************************/
 scriptNode* getListItemByOffset(unsigned int offset){
 
-	scriptNode *pCurrent = pHead;
-	while (pCurrent != NULL){
-		/* Check for the id */
-		if (pCurrent->fileOffset == offset){
-			return pCurrent;
-		}
-		pCurrent = pCurrent->pNext;
-	}
+    scriptNode *pCurrent = pHead;
+    while (pCurrent != NULL){
+        /* Check for the id */
+        if (pCurrent->fileOffset == offset){
+            return pCurrent;
+        }
+        pCurrent = pCurrent->pNext;
+    }
 
-	printf("Error, node not found with offset 0x%X.\n",offset);
-	return NULL;
+    printf("Error, node not found with offset 0x%X.\n",offset);
+    return NULL;
 }
