@@ -1318,7 +1318,7 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 					/* SETMONEY */
 					case 0x001C:
 					{
-						fprintf(outFile, "\tSETMONEY %d\r\n", pNode->subParams[1].value);
+						fprintf(outFile, "\tSETMONEY %d\r\n", pNode->subParams[2].value);
 						break;
 					}
 #endif						
@@ -1327,7 +1327,7 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 					case 0x001D:
 					{
 						fprintf(outFile, "\tTAKEMONEY %d\r\n", 
-							pNode->subParams[1].value);
+							pNode->subParams[2].value);
 						break;
 					}
 
@@ -1335,7 +1335,7 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
 					case 0x001E:
 					{
 						fprintf(outFile, "\tCHKMONEY %d:%d\r\n", 
-							pNode->subParams[0].value, pNode->subParams[1].value);
+							pNode->subParams[0].value, pNode->subParams[2].value);
 						break;
 					}
 
