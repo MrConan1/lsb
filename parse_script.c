@@ -1,7 +1,7 @@
 /*****************************************************************************/
 /* parse_script.c : Code to parse metadata script for lunar SSS              */
 /*****************************************************************************/
-#ifdef MSC_VER
+#ifdef _MSC_VER
 #pragma warning(disable:4996)
 #endif
 
