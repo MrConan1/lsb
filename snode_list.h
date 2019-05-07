@@ -1,7 +1,7 @@
 /**********************************************************************/
 /* snode_list.h - Linked list to store script meta data information.  */
 /**********************************************************************/
-#ifdef MSC_VER
+#ifdef _MSC_VER
 #pragma warning(disable:4996)
 #endif
 #ifndef SNODE_LIST_H
