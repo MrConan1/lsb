@@ -11,6 +11,7 @@
 #include "util.h"
 #include "snode_list.h"
 #include "script_node_types.h"
+#include "bpe_compression.h"
 
 /* Defines */
 
@@ -423,7 +424,8 @@ int writeBinScript(FILE* outFile){
                             }
                             else{
                                 if (G_table_mode == ONE_BYTE_ENC){
-                                    numBytes2++;
+                                    //Fix estimation later or ignore assuming there will be enough space
+                                    //numBytes2++;
                                 }
                                 else if (G_table_mode == TWO_BYTE_ENC){
                                     numBytes2 += 2;
@@ -521,6 +523,24 @@ int writeBinScript(FILE* outFile){
                         case PRINT_LINE:
                         {
                             unsigned char* pText = rpNode->str;
+
+                            /* BPE EDIT HERE */
+                            if (G_table_mode == ONE_BYTE_ENC){
+                                int x;
+                                unsigned int comprSizeBytes;
+                                utf8Text_to_8bit_binary(pText, &comprSizeBytes);
+                                compressBPE(pText, &comprSizeBytes);
+                                for(x = 0; x < (int)comprSizeBytes; x++){
+                                    /* Write the code to the output file */
+                                    if (*pText == ' '){
+                                        writeSW(0xF90A); /* Space */
+                                    }
+                                    else
+                                        writeBYTE(pText[x]);
+                                }
+                                break;
+                            }
+
                             while (*pText != '\0'){
                                 int numBytes;
                                 unsigned char code;
@@ -632,7 +652,8 @@ int writeBinScript(FILE* outFile){
                                 }
                                 else{
                                     if (G_table_mode == ONE_BYTE_ENC){
-                                        numBytes2++;
+                                        //Fix estimation later or ignore assuming there will be enough space
+                                        //numBytes2++;
                                     }
                                     else if (G_table_mode == TWO_BYTE_ENC){
                                         numBytes2 += 2;
@@ -708,6 +729,24 @@ int writeBinScript(FILE* outFile){
                             case PRINT_LINE:
                             {
                                 unsigned char* pText = rpNode->str;
+
+                                /* BPE EDIT HERE */
+                                if (G_table_mode == ONE_BYTE_ENC){
+                                    int x;
+                                    unsigned int comprSizeBytes;
+                                    utf8Text_to_8bit_binary(pText, &comprSizeBytes);
+                                    compressBPE(pText, &comprSizeBytes);
+                                    for(x = 0; x < (int)comprSizeBytes; x++){
+                                        /* Write the code to the output file */
+                                        if (*pText == ' '){
+                                            writeSW(0xF90A); /* Space */
+                                        }
+                                        else
+                                            writeBYTE(pText[x]);
+                                    }
+                                    break;
+                                }
+
                                 while (*pText != '\0'){
                                     int numBytes;
                                     unsigned char code;

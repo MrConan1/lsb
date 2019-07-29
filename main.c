@@ -24,10 +24,11 @@
 #include "update_script.h"
 #include "snode_list.h"
 #include "write_script.h"
+#include "bpe_compression.h"
 
 
 #define VER_MAJ    1
-#define VER_MIN    02
+#define VER_MIN    03
 
 /******************************************************************************/
 /* printUsage() - Display command line usage of this program.                 */
@@ -37,18 +38,21 @@ void printUsage(){
     printf("Usage:\n=========\n");
     printf("lsb.exe decode InputFname OutputFname ienc [sss]\n");
     printf("    ienc = 0 for 2-Byte decoding of text\n");
-    printf("    ienc = 1 for 1-Byte decoding of text hack\n");
+    printf("    ienc = 1 for BPE decoding of text\n");
     printf("    ienc = 2 for utf8 (iOS) decoding of text\n");
     printf("    ienc = 3 for utf8 (Eng iOS) decoding of text\n");
     printf("lsb.exe encode InputFname OutputFname oenc [sss]\n");
     printf("    oenc = 0 for 2-Byte output encoded text\n");
-    printf("    oenc = 1 for 1-Byte output encoded text hack\n");
+    printf("    oenc = 1 for BPE output encoded text\n");
     printf("lsb.exe update InputFname OutputFname UpdateFname\n");
     printf("Use Decode to take a binary TEXTxxx.DAT file and convert to metadata format.\n");
     printf("Use Encode to take a script in metadata format and convert to binary.\n");
     printf("Use Update to create modified version of a script in metadata format.\n");
-    printf("    sss will interpret SSS-MPEG JP table as the SSS JP table.\n");
-    printf("    Table file must be for SSS-MPEG, named \"font_table.txt\", and be located in the exe directory.\n");
+    printf("Additional Notes:\n");
+    printf("    sss flag will interpret SSS-MPEG JP table as the SSS JP table.\n");
+    printf("    2-Byte Table file must be for SSS-MPEG, named \"font_table.txt\".\n");
+    printf("    BPE Decoding & Encoding require a binary file named \"bpe.table\"\n");
+    printf("        and a table file named \"8bit_table.txt\".\n");
     printf("\n\n");
     return;
 }
@@ -66,7 +70,7 @@ int main(int argc, char** argv){
     static char csvOutFileName[300];
     static char txtOutFileName[300];
     int rval, ienc, oenc;
-	rval = -1;
+    rval = ienc = oenc = -1;
 
     printf("Lunar Script Builder v%d.%02d\n", VER_MAJ, VER_MIN);
 
@@ -142,14 +146,24 @@ int main(int argc, char** argv){
     }
 
     
-    /********************************************/
-    /* Load in the Table File for Decoding Text */
-    /********************************************/
+    /***************************************************/
+    /* Load in the Table File for Decoding 2-Byte Text */
+    /***************************************************/
     if (loadUTF8Table("font_table.txt") < 0){
         printf("Error loading UTF8 Table for Text Decoding.\n");
         return -1;
     }
 
+
+    /*****************************************************/
+    /* Load in the Table Files for BPE Decoding/Encoding */
+    /*****************************************************/
+    if((ienc == 1) || (oenc == 1)){
+        if (loadBPETable("8bit_table.txt","bpe.table") < 0){
+            printf("Error loading BPE Tables for Text Encoding/Decoding.\n");
+            return -1;
+        }
+    }
 
     /*******************************/
     /* Open the input/output files */

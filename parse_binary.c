@@ -9,6 +9,7 @@
 #include "script_node_types.h"
 #include "snode_list.h"
 #include "util.h"
+#include "bpe_compression.h"
 
 /* Defines */
 #define DBUF_SIZE      (128*1024)     /* 128kB */
@@ -1944,7 +1945,7 @@ runParamType* getRunParam(int textMode, char* pdata){
                         printf("Error allocing space for run parameter struct.\n");
                         return NULL;
                     }
-                    memset(rpNode, 0, sizeof(&rpNode));
+                    memset(rpNode, 0, sizeof(runParamType));
                     rpNode->pNext = NULL;
                     rpNode->type = PRINT_LINE;
                     rpNode->str = tmpText;
@@ -1972,7 +1973,7 @@ runParamType* getRunParam(int textMode, char* pdata){
                     printf("Error allocing space for run parameter struct.\n");
                     return NULL;
                 }
-                memset(rpNode, 0, sizeof(&rpNode));
+                memset(rpNode, 0, sizeof(runParamType));
                 rpNode->pNext = NULL;
                 rpNode->str = NULL;
 
@@ -2024,9 +2025,10 @@ runParamType* getRunParam(int textMode, char* pdata){
 
     case TEXT_DECODE_ONE_BYTE_PER_CHAR:
     {
+        int z;
         unsigned char byte_data, byte_data2;
         unsigned short short_data;
-        char* ptrText;
+        char* ptrText, *ptrStart;
 
         /* Buffer */
         ptrText = (char*)malloc(1024 * 1024);
@@ -2034,18 +2036,17 @@ runParamType* getRunParam(int textMode, char* pdata){
             printf("Error allocing temp memory\n");
             return NULL;
         }
-        memset(ptrText, 0, 1024 * 1024);
+        z = 0;
+        ptrStart = NULL;
 
         while (1){
-            char temp[32];
             byte_data = ((unsigned char)*pdata) & 0xFF;
 
             if (byte_data < 0xF0){
                 /* 1-Byte Text */
-                unsigned int index = (unsigned int)byte_data;
-                memset(temp, 0, 32);
-                getUTF8character((int)index, temp);
-                strcat((char *)ptrText, temp);
+                if(ptrStart == NULL)
+                    ptrStart = pdata;
+                z++;
                 pdata++;
             }
             else if (byte_data >= 0xF0){
@@ -2054,76 +2055,35 @@ runParamType* getRunParam(int textMode, char* pdata){
                 byte_data2 = (((unsigned char)*pdata) & 0xFF);
                 short_data = byte_data | byte_data2;
 
-                /* Could be a space or Ctrl Code */
-                if (short_data == 0xF90A){
-                    strcat((char *)ptrText, " ");
-                }
-                else{
-                    /**************************************/
-                    /* Write out any prior text           */
-                    /* Create a runcmds parameter element */
-                    /**************************************/
-                    if (strlen((char *)ptrText) > 0){
-                        rpNode = (runParamType*)malloc(sizeof(runParamType));
-                        if (rpNode == NULL){
-                            printf("Error allocing space for run parameter struct.\n");
-                            free(ptrText);
-                            return NULL;
-                        }
-                        memset(rpNode, 0, sizeof(&rpNode));
-                        rpNode->pNext = NULL;
-                        rpNode->type = PRINT_LINE;
-                        rpNode->str = malloc(strlen((char *)ptrText) + 1);
-                        if (rpNode->str == NULL){
-                            printf("Error allocing for string.\n");
-                            free(ptrText);
-                            return NULL;
-                        }
-                        memset(rpNode->str, 0, strlen((char *)ptrText) + 1);
-                        strcpy((char *)rpNode->str, (char *)ptrText);
+                /*************/
+                /* Ctrl Code */
+                /*************/
 
-                        /* Add the node to the list */
-                        if (rpHead == NULL){
-                            rpHead = rpCurrent = rpNode;
-                        }
-                        else{
-                            rpCurrent->pNext = rpNode;
-                            rpCurrent = rpNode;
-                        }
-                    }
-
-                    /*********************************/
-                    /* Create a Control Code element */
-                    /* OR SHOW_PORTRAIT              */
-                    /*********************************/
-
-                    /* Create a runcmds parameter element */
+                /**************************************/
+                /* Write out any prior text           */
+                /* Create a runcmds parameter element */
+                /**************************************/
+                if (z > 0){
+                    unsigned int decmpSize = 0;
                     rpNode = (runParamType*)malloc(sizeof(runParamType));
                     if (rpNode == NULL){
                         printf("Error allocing space for run parameter struct.\n");
                         free(ptrText);
                         return NULL;
                     }
-                    memset(rpNode, 0, sizeof(&rpNode));
+                    memset(rpNode, 0, sizeof(runParamType));  //KANE -- fix
                     rpNode->pNext = NULL;
-                    rpNode->str = NULL;
-
-                    if ((short_data & 0xFF00) == 0xFA00){
-                        rpNode->type = SHOW_PORTRAIT_LEFT;
-                        rpNode->value = (short_data & 0x00FF);
+                    rpNode->type = PRINT_LINE;
+                    memset(ptrText, 0, 1024 * 1024);
+                    decompressBPE(ptrText, ptrStart, &decmpSize);
+                    rpNode->str = malloc(decmpSize + 1);
+                    if (rpNode->str == NULL){
+                        printf("Error allocing for string.\n");
+                        free(ptrText);
+                        return NULL;
                     }
-                    else if ((short_data & 0xFF00) == 0xFB00){
-                        rpNode->type = SHOW_PORTRAIT_RIGHT;
-                        rpNode->value = (short_data & 0x00FF);
-                    }
-                    else if ((short_data & 0xFF00) == 0xF800){
-                        rpNode->type = TIME_DELAY;
-                        rpNode->value = (short_data & 0x00FF);
-                    }
-                    else{
-                        rpNode->type = CTRL_CODE;
-                        rpNode->value = short_data;
-                    }
+                    memset(rpNode->str, 0, decmpSize + 1);
+                    strcpy((char *)rpNode->str, (char *)ptrText);
 
                     /* Add the node to the list */
                     if (rpHead == NULL){
@@ -2134,17 +2094,62 @@ runParamType* getRunParam(int textMode, char* pdata){
                         rpCurrent = rpNode;
                     }
 
-                    /*****************************/
-                    /* END OF TEXT BLOCK LOCATED */
-                    /*****************************/
-                    if (short_data == 0xFFFF){
-                        free(ptrText);
-                        break;
-                    }
-                    ptrText[0] = '\0';
+                    /* Reset start of text section */
+                    ptrStart = NULL;
+                    z = 0;
                 }
-                pdata++;
+
+                /*********************************/
+                /* Create a Control Code element */
+                /* OR SHOW_PORTRAIT              */
+                /*********************************/
+
+                /* Create a runcmds parameter element */
+                rpNode = (runParamType*)malloc(sizeof(runParamType));
+                if (rpNode == NULL){
+                    printf("Error allocing space for run parameter struct.\n");
+                    free(ptrText);
+                    return NULL;
+                }
+                memset(rpNode, 0, sizeof(runParamType));
+                rpNode->pNext = NULL;
+                rpNode->str = NULL;
+
+                if ((short_data & 0xFF00) == 0xFA00){
+                    rpNode->type = SHOW_PORTRAIT_LEFT;
+                    rpNode->value = (short_data & 0x00FF);
+                }
+                else if ((short_data & 0xFF00) == 0xFB00){
+                    rpNode->type = SHOW_PORTRAIT_RIGHT;
+                    rpNode->value = (short_data & 0x00FF);
+                }
+                else if ((short_data & 0xFF00) == 0xF800){
+                    rpNode->type = TIME_DELAY;
+                    rpNode->value = (short_data & 0x00FF);
+                }
+                else{
+                    rpNode->type = CTRL_CODE;
+                    rpNode->value = short_data;
+                }
+
+                /* Add the node to the list */
+                if (rpHead == NULL){
+                    rpHead = rpCurrent = rpNode;
+                }
+                else{
+                    rpCurrent->pNext = rpNode;
+                    rpCurrent = rpNode;
+                }
+
+                /*****************************/
+                /* END OF TEXT BLOCK LOCATED */
+                /*****************************/
+                if (short_data == 0xFFFF){
+                    free(ptrText);
+                    break;
+                }
             }
+            pdata++;
         }
         break;
     }
@@ -2203,7 +2208,7 @@ runParamType* getRunParam(int textMode, char* pdata){
                         free(ptrText);
                         return NULL;
                     }
-                    memset(rpNode, 0, sizeof(&rpNode));
+                    memset(rpNode, 0, sizeof(runParamType));
                     rpNode->pNext = NULL;
                     rpNode->type = PRINT_LINE;
                     rpNode->str = malloc(strlen((char *)ptrText) + 1);
@@ -2237,7 +2242,7 @@ runParamType* getRunParam(int textMode, char* pdata){
                     free(ptrText);
                     return NULL;
                 }
-                memset(rpNode, 0, sizeof(&rpNode));
+                memset(rpNode, 0, sizeof(runParamType));
                 rpNode->pNext = NULL;
                 rpNode->str = NULL;
 
