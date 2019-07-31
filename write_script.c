@@ -1075,7 +1075,7 @@ int writeScript(FILE* outFile){
                             fprintf(outFile, "    (time-delay %s)\r\n", formatVal(rpNode->value & 0xFF));
                             break;
                         case PRINT_LINE:
-                            fprintf(outFile, "    (print-line \"%s\")\r\n", rpNode->str);
+                            fprintf(outFile, "    (print-line `%s`)\r\n", rpNode->str);
                             break;
                         case CTRL_CODE:
                             fprintf(outFile, "    (control-code %s)\r\n", formatVal(rpNode->value));
@@ -1127,7 +1127,7 @@ int writeScript(FILE* outFile){
                             fprintf(outFile, "    (align-4 %s)\r\n", formatVal(rpNode->value));
                             break;
                         case PRINT_LINE:
-                            fprintf(outFile, "    (print-line \"%s\")\r\n", rpNode->str);
+                            fprintf(outFile, "    (print-line `%s`)\r\n", rpNode->str);
                             break;
                         case CTRL_CODE:
                             fprintf(outFile, "    (control-code %s)\r\n", formatVal(rpNode->value));

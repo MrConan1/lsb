@@ -549,8 +549,8 @@ int decode_runcmds(int id){
             unsigned char* pText;
 
             /* Get Text String (UTF-8) */
-            pInput = (unsigned char*)strtok(NULL, "\"");
-            if (pInput == NULL){
+            pInput = (unsigned char*)strtok(NULL, "`"); // Used quotes before, which led to a BUG if there is a quote in the middle of a sentence.
+            if (pInput == NULL){                        // Changed to use ` as a delimiter (because who uses those things)...
                 printf("Error, bad text input.\n");
                 return -1;
             }
@@ -778,8 +778,8 @@ int decode_options(int id){
                 unsigned char* pText;
 
                 /* Get Text String (UTF-8) */
-                pInput = (unsigned char*)strtok(NULL, "\"");
-                if (pInput == NULL){
+				pInput = (unsigned char*)strtok(NULL, "`"); // Used quotes before, which led to a BUG if there is a quote in the middle of a sentence.
+				if (pInput == NULL){                        // Changed to use ` as a delimiter (because who uses those things)...
                     printf("Error, bad text input.\n");
                     return -1;
                 }
