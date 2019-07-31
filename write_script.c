@@ -2167,7 +2167,7 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
                         //Text Dump
                         if (textDetected == 0){
                             textDetected = 1;
-                            fprintf(txtOutFile, "\"");
+                            fprintf(txtOutFile, "`");
                         }
                         fprintf(txtOutFile, "%s", rpNode->str);
                         break;
@@ -2185,12 +2185,12 @@ int dumpScript(FILE* outFile, FILE* txtOutFile){
                         if (rpNode->value == 0xFF02){
                             if (textDetected == 0){
                                 textDetected = 1;
-                                fprintf(txtOutFile, "\"");
+                                fprintf(txtOutFile, "`");
                             }
                             fprintf(txtOutFile, "\n");
                         }
                         else if ((textDetected == 1) && (rpNode->value == 0xFFFF)){
-                            fprintf(txtOutFile, "\"\n");
+                            fprintf(txtOutFile, "`\n");
                         }
 
                         break;
