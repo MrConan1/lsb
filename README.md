@@ -18,7 +18,7 @@ sss designates that the table being used is that for sssc and will be automatica
 Test Progress: 
 * 2-Byte Mode & iOS Decoding to output files complete. 
 * 2-Byte Mode Encoding to binary for SSS & SSS-MPEG verified. 
-* 1-byte decoding / re-encoding requires compression functionality be written. 
+* 1-byte decoding / re-encoding requires compression functionality be written. (Ongoing)
 * Update functionality tested to some extent. 
 
   
