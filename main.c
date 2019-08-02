@@ -159,7 +159,7 @@ int main(int argc, char** argv){
     /* Load in the Table Files for BPE Decoding/Encoding */
     /*****************************************************/
     if((ienc == 1) || (oenc == 1)){
-        if (loadBPETable("8bit_table.txt","bpe.table") < 0){
+        if (loadBPETable("bpe.table","8bit_table.txt") < 0){
             printf("Error loading BPE Tables for Text Encoding/Decoding.\n");
             return -1;
         }
