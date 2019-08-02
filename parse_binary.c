@@ -296,7 +296,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
             return -1;
         }
         swap16(&cmd);
-#if 0
+#if 1
         printf("CMD = 0x%X  Offset= 0x%X (0x%X short)\n", (unsigned int)cmd, offset, offset / 2);
 #endif
         /****************************************************/
@@ -2053,7 +2053,7 @@ runParamType* getRunParam(int textMode, char* pdata){
                 /* 2-byte Code or Space */
                 pdata++;
                 byte_data2 = (((unsigned char)*pdata) & 0xFF);
-                short_data = byte_data | byte_data2;
+                short_data = (byte_data << 8) | byte_data2;
 
                 /*************/
                 /* Ctrl Code */

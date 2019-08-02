@@ -98,15 +98,13 @@ int loadUtf8MappingForBPETable(char* bpeUtf8MappingTable){
 
         /* Index Bounds Check */
         if(index >= NUM_CH_CODES){
-            printf("Error, bpe utf8 encoding cannot support an index location of %d!\n",index);
-            printf("Static array fixed to locations 0-%d\n",NUM_CH_CODES-1);
-            return -1;
+			break; /* All values are encoded past this point */
         }
 
         /* Dont bother to copy UTF-8 Value if entry is not being used */
         /* Or if it is being used but is a BPE encoding instead of a character */
         if((ch_codes[index].inuse == 0) || 
-           ((ch_codes[index].inuse == 1) && (ch_codes[index].encoded == 0)) )
+           ((ch_codes[index].inuse == 1) && (ch_codes[index].encoded == 1)) )
             continue;
 
         /* Init the array for the index */
@@ -144,9 +142,9 @@ int loadUtf8MappingForBPETable(char* bpeUtf8MappingTable){
 
     /* Fill in Fixed Entries */
     ch_codes[10].utf8value[0] = 0x0A; //Enter
-    ch_codes[10].utf8value[1] = 0x00; //Enter
+	ch_codes[10].utf8value[1] = 0x00; //Enter
     ch_codes[32].utf8value[0] = 0x20; //Space
-    ch_codes[32].utf8value[0] = 0x00; //Space
+    ch_codes[32].utf8value[1] = 0x00; //Space
 
     fclose(infile);
 
@@ -297,10 +295,13 @@ int utf8Text_to_8bit_binary(char* pText, unsigned int* binSizeBytes){
 
     /* Parse through the input text, converting each UTF8 Code to an 8-bit Value */
     /* Abort if an 8-bit mapping is found to not exist.  This is an error.       */
-    while(ptrInput != '\0'){
+    while(*ptrInput != '\0'){
         int numBytes;
+		char tmpUtf8[5];
+		memset(tmpUtf8, 0, 5);
         numBytes = numBytesInUtf8Char((unsigned char)*ptrInput);
-        if(utf8_to_bpe(ptrInput, ptrOutput) != 0){
+		strncpy(tmpUtf8, ptrInput, numBytes);
+        if(utf8_to_bpe(tmpUtf8, ptrOutput) != 0){
             printf("Error, failed to look up 8-bit code for UTF8 Code\n");
             return -1;
         }
@@ -412,11 +413,11 @@ void compressBPE(unsigned char* src, unsigned int* nBytes){
                 (*nBytes)--;
                 src[(*nBytes)] = 0xFF;
                 srch_offset = 0;
-            }
+				x = 0;  /* Keep iterating until nothing can be further compressed */
+			}
             else{
                 srch_offset++;
             }
-            x = 0;  /* Keep iterating until nothing can be further compressed */
         }
     }
 
