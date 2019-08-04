@@ -296,7 +296,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
             return -1;
         }
         swap16(&cmd);
-#if 1
+#if 0
         printf("CMD = 0x%X  Offset= 0x%X (0x%X short)\n", (unsigned int)cmd, offset, offset / 2);
 #endif
         /****************************************************/
@@ -2007,6 +2007,33 @@ runParamType* getRunParam(int textMode, char* pdata){
                 /* END OF TEXT BLOCK LOCATED */
                 /*****************************/
                 if (*ptrS == 0xFFFF){
+
+					/**************************/
+					/* Force 2-Byte Alignment */
+					/**************************/
+
+					/* Create a runcmds parameter element */
+					rpNode = (runParamType*)malloc(sizeof(runParamType));
+					if (rpNode == NULL){
+						printf("Error allocing space for run parameter struct.\n");
+						return NULL;
+					}
+					memset(rpNode, 0, sizeof(runParamType));
+					rpNode->pNext = NULL;
+					rpNode->str = NULL;
+					rpNode->type = ALIGN_2_PARAM;
+					rpNode->value = 0xFF;
+
+					/* Add the node to the list */
+					if (rpHead == NULL){
+						rpHead = rpCurrent = rpNode;
+					}
+					else{
+						rpCurrent->pNext = rpNode;
+						rpCurrent = rpNode;
+					}
+
+
                     break;
                 }
             }
@@ -2146,6 +2173,32 @@ runParamType* getRunParam(int textMode, char* pdata){
                 /*****************************/
                 if (short_data == 0xFFFF){
                     free(ptrText);
+					
+					/**************************/
+					/* Force 2-Byte Alignment */
+					/**************************/
+					
+					/* Create a runcmds parameter element */
+					rpNode = (runParamType*)malloc(sizeof(runParamType));
+					if (rpNode == NULL){
+						printf("Error allocing space for run parameter struct.\n");
+						return NULL;
+					}
+					memset(rpNode, 0, sizeof(runParamType));
+					rpNode->pNext = NULL;
+					rpNode->str = NULL;
+					rpNode->type = ALIGN_2_PARAM;
+					rpNode->value = 0xFF;
+					
+					/* Add the node to the list */
+					if (rpHead == NULL){
+						rpHead = rpCurrent = rpNode;
+					}
+					else{
+						rpCurrent->pNext = rpNode;
+						rpCurrent = rpNode;
+					}
+					
                     break;
                 }
             }
@@ -2277,6 +2330,32 @@ runParamType* getRunParam(int textMode, char* pdata){
                 /*****************************/
                 if (short_data == 0xFFFF){
                     free(ptrText);
+
+					/**************************/
+					/* Force 2-Byte Alignment */
+					/**************************/
+
+					/* Create a runcmds parameter element */
+					rpNode = (runParamType*)malloc(sizeof(runParamType));
+					if (rpNode == NULL){
+						printf("Error allocing space for run parameter struct.\n");
+						return NULL;
+					}
+					memset(rpNode, 0, sizeof(runParamType));
+					rpNode->pNext = NULL;
+					rpNode->str = NULL;
+					rpNode->type = ALIGN_2_PARAM;
+					rpNode->value = 0xFF;
+
+					/* Add the node to the list */
+					if (rpHead == NULL){
+						rpHead = rpCurrent = rpNode;
+					}
+					else{
+						rpCurrent->pNext = rpNode;
+						rpCurrent = rpNode;
+					}
+
                     break;
                 }
                 short_data = 0;
