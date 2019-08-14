@@ -2081,6 +2081,7 @@ runParamType* getRunParam(int textMode, char* pdata){
                 pdata++;
                 byte_data2 = (((unsigned char)*pdata) & 0xFF);
                 short_data = (byte_data << 8) | byte_data2;
+				pdata++;
 
                 /*************/
                 /* Ctrl Code */
@@ -2202,7 +2203,7 @@ runParamType* getRunParam(int textMode, char* pdata){
                     break;
                 }
             }
-            pdata++;
+           // pdata++;
         }
         break;
     }
