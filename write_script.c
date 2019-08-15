@@ -528,7 +528,7 @@ int writeBinScript(FILE* outFile){
                             if (G_table_mode == ONE_BYTE_ENC){
                                 int x;
                                 unsigned int comprSizeBytes;
-                                utf8Text_to_8bit_binary(pText, &comprSizeBytes);
+                                utf8Text_to_8bit_binary((char*)pText, &comprSizeBytes);
                                 compressBPE(pText, &comprSizeBytes);
                                 for(x = 0; x < (int)comprSizeBytes; x++){
                                     /* Write the code to the output file */
@@ -734,7 +734,7 @@ int writeBinScript(FILE* outFile){
                                 if (G_table_mode == ONE_BYTE_ENC){
                                     int x;
                                     unsigned int comprSizeBytes;
-                                    utf8Text_to_8bit_binary(pText, &comprSizeBytes);
+                                    utf8Text_to_8bit_binary((char*)pText, &comprSizeBytes);
                                     compressBPE(pText, &comprSizeBytes);
                                     for(x = 0; x < (int)comprSizeBytes; x++){
                                         /* Write the code to the output file */

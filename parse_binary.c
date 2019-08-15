@@ -2103,7 +2103,7 @@ runParamType* getRunParam(int textMode, char* pdata){
                     rpNode->pNext = NULL;
                     rpNode->type = PRINT_LINE;
                     memset(ptrText, 0, 1024 * 1024);
-                    decompressBPE(ptrText, ptrStart, &decmpSize);
+                    decompressBPE((unsigned char*)ptrText, (unsigned char*)ptrStart, &decmpSize);
                     rpNode->str = malloc(decmpSize + 1);
                     if (rpNode->str == NULL){
                         printf("Error allocing for string.\n");

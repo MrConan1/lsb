@@ -240,7 +240,7 @@ int utf8_to_bpe(char* utf8_in, unsigned char* rval){
     for(x = 0; x < NUM_CH_CODES; x++){
         if((ch_codes[x].inuse == 1) && (ch_codes[x].encoded == 0)){
             /* Check to see if encoding for this value should take place */
-            if(strcmp(ch_codes[x].utf8value, utf8_in) == 0){
+            if(strcmp((char*)ch_codes[x].utf8value, (char*)utf8_in) == 0){
                 *rval = ch_codes[x].encvalue[1];
                 return 0;
             }
@@ -267,7 +267,7 @@ int bpe_to_utf8(unsigned char bpe_in, unsigned char* utf8_out){
         if((ch_codes[x].inuse == 1) && (ch_codes[x].encoded == 0)){
             /* Check to see if encoding for this value should take place */
             if(ch_codes[x].encvalue[1] == bpe_in){
-                strcpy(utf8_out, ch_codes[x].utf8value);
+                strcpy((char*)utf8_out, (char*)ch_codes[x].utf8value);
                 return 0;
             }
         }
@@ -301,7 +301,7 @@ int utf8Text_to_8bit_binary(char* pText, unsigned int* binSizeBytes){
 		memset(tmpUtf8, 0, 5);
         numBytes = numBytesInUtf8Char((unsigned char)*ptrInput);
 		strncpy(tmpUtf8, ptrInput, numBytes);
-        if(utf8_to_bpe(tmpUtf8, ptrOutput) != 0){
+        if(utf8_to_bpe(tmpUtf8, (unsigned char*)ptrOutput) != 0){
             printf("Error, failed to look up 8-bit code for UTF8 Code\n");
             return -1;
         }
@@ -360,12 +360,12 @@ int _8bit_binary_to_utf8Text(unsigned char* bdata, unsigned int binSizeBytes, ch
     }
 
     /* Copy Data from Scratch Space */
-    *pText = (unsigned char*)malloc(strlen(pTemp) + 1);
+    *pText = (char*)malloc(strlen((char*)pTemp) + 1);
     if(pText == NULL){
         printf("Error allocating space in _8bit_binary_to_utf8Text\n");
         return -1;
     }
-    strcpy(*pText,pTemp);
+    strcpy(*pText,(char*)pTemp);
     free(pTemp);
 
     return 0;
