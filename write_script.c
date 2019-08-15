@@ -532,10 +532,10 @@ int writeBinScript(FILE* outFile){
                                 compressBPE(pText, &comprSizeBytes);
                                 for(x = 0; x < (int)comprSizeBytes; x++){
                                     /* Write the code to the output file */
-                                    if (*pText == ' '){
-                                        writeSW(0xF90A); /* Space */
-                                    }
-                                    else
+//                                    if (*pText == ' '){
+//                                        writeSW(0xF90A); /* Space */
+//                                    }
+//                                    else
                                         writeBYTE(pText[x]);
                                 }
                                 break;
