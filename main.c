@@ -28,7 +28,7 @@
 
 
 #define VER_MAJ    1
-#define VER_MIN    03
+#define VER_MIN    04
 
 /******************************************************************************/
 /* printUsage() - Display command line usage of this program.                 */

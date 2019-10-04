@@ -24,6 +24,7 @@
 /* Function Prototypes */
 /***********************/
 void setSSSEncode();
+int getSSSEncode();
 void swap16(void* pWd);
 void swap32(void* pWd);
 int numBytesInUtf8Char(unsigned char val);
@@ -73,6 +74,9 @@ int G_IOS_ENG = 0; //Flag to signify IOS ENG Input
 /***********************************************************************/
 void setSSSEncode(){
     enable_SSS_mode = 1;
+}
+int getSSSEncode(){
+	return enable_SSS_mode;
 }
 
 

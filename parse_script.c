@@ -392,11 +392,12 @@ int decode_pointer(int id){
 int decode_exesub(int id){
     
     scriptNode* newNode;
-    int x;
+    int x, skip_add;
     unsigned short subrtn_code;
     unsigned int numparam;
     unsigned char fillVal;
     paramType* params = NULL;
+	skip_add = 0;
 
     /* Read subroutine value */
     pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");
@@ -506,7 +507,26 @@ int decode_exesub(int id){
     newNode->runParams = NULL;
 
     /* Add the script node to the list */
-    addNode(newNode, METHOD_NORMAL,0);
+	/* If encoding to ENG Saturn SSS or SSSC, ignore iOS CMDs */
+	/* If encoding to ENG Saturn SSS, also ignore SSSC CMDs   */
+	skip_add = 0;
+	if ((getTableOutputMode() == ONE_BYTE_ENC) && 
+		((newNode->subroutine_code == 0x005E) || (newNode->subroutine_code == 0x005F) ||
+		(newNode->subroutine_code == 0x0060) || (newNode->subroutine_code == 0xFF00) ||
+		(newNode->subroutine_code == 0xFF03) || (newNode->subroutine_code == 0xFFFF)) )
+	{
+		skip_add = 1;
+		printf("\tSkipping iOS subroutine code 0x%X\n", newNode->subroutine_code);
+	}
+	if (((getTableOutputMode() == ONE_BYTE_ENC) && getSSSEncode()) &&
+		(newNode->subroutine_code == 0x005D))
+	{
+		skip_add = 1;
+		printf("\tSkipping SSSC subroutine code 0x%X\n", newNode->subroutine_code);
+	}
+
+	if (!skip_add)
+		addNode(newNode, METHOD_NORMAL, 0);
     free(newNode);
 
     return 0;

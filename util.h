@@ -9,6 +9,7 @@
 
 /* Function Prototypes */
 void setSSSEncode();
+int getSSSEncode();
 void swap16(void* pWd);
 void swap32(void* pWd);
 int numBytesInUtf8Char(unsigned char val);
