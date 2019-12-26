@@ -533,7 +533,7 @@ int writeBinScript(FILE* outFile){
                                 for(x = 0; x < (int)comprSizeBytes; x++){
                                     /* Write the code to the output file */
 //                                    if (*pText == ' '){
-//                                        writeSW(0xF90A); /* Space */
+//                                        writeSW(0xF905); /* Space */
 //                                    }
 //                                    else
                                         writeBYTE(pText[x]);
@@ -554,7 +554,7 @@ int writeBinScript(FILE* outFile){
 
                                 /* Look up associated code */
                                 if ((numBytes == 1) && (*pText == ' ')){
-                                    writeSW(0xF90A); /* Space */
+                                    writeSW(0xF905); /* Space */
                                 }
                                 else{
                                     if (G_table_mode == ONE_BYTE_ENC){
@@ -735,15 +735,30 @@ int writeBinScript(FILE* outFile){
                                     int x;
                                     unsigned int comprSizeBytes;
                                     utf8Text_to_8bit_binary((char*)pText, &comprSizeBytes);
+
+									/*************************************************/
+									/* Dont bother compression Options, not worth it */
+									/*************************************************/
+#if 0
                                     compressBPE(pText, &comprSizeBytes);
                                     for(x = 0; x < (int)comprSizeBytes; x++){
                                         /* Write the code to the output file */
                                         if (*pText == ' '){
-                                            writeSW(0xF90A); /* Space */
+                                            writeSW(0xF905); /* Space */
                                         }
                                         else
                                             writeBYTE(pText[x]);
                                     }
+#else
+									for(x = 0; x < (int)comprSizeBytes; x++){
+                                        /* Write the code to the output file */
+                                        if (pText[x] == ' '){
+                                            writeSW(0xF905);
+                                        }
+                                        else
+                                            writeSW((unsigned short)(pText[x]));
+                                    }
+#endif									
                                     break;
                                 }
 
@@ -760,7 +775,7 @@ int writeBinScript(FILE* outFile){
 
                                     /* Look up associated code */
                                     if ((numBytes == 1) && (*pText == ' ')){
-                                        writeSW(0xF90A); /* Space */
+                                        writeSW(0xF905); /* Space */
                                     }
                                     else{
                                         if (G_table_mode == ONE_BYTE_ENC){
