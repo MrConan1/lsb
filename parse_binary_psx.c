@@ -1,5 +1,8 @@
 /*****************************************************************************/
-/* parse_binary.c : Code to parse lunar SSS and maintain script linkage      */
+/* parse_binary_psx.c : Code to parse lunar SSS and maintain script linkage  */
+/*                      PSX English Edition - Created using Supper's notes,  */
+/*                      comparing with Saturn version, and taking some       */
+/*                      guesses.  (I didn't feel like staring at PSX ASM).   */
 /*****************************************************************************/
 
 /* Includes */
@@ -10,52 +13,51 @@
 #include "snode_list.h"
 #include "util.h"
 #include "bpe_compression.h"
+#include "psx_decode.h"
+#include "parse_binary.h"
+
 
 /* Defines */
-#define DBUF_SIZE      (128*1024)     /* 128kB */
-#define PTR_ARRAY_SIZE (2*1024)       /* 0x800 bytes, or 1024 16-bit LWs */
+#define PSX_DBUF_SIZE      (128*1024)     /* 128kB */
+#define PSX_PTR_ARRAY_SIZE (2*1024)       /* 0x800 bytes, or 1024 16-bit LWs */
 
-#define UGLY_ENG_IOS_HACKS
+#define PSX_UGLY_ENG_IOS_HACKS
 
 /* Globals */
 static char* pdata = NULL;
 static char* pdata2 = NULL;
-char* pName = NULL;  //Basic Filename
+
 
 static int G_ID = 1;
 
 
 /* Function Prototypes */
-int decodeBinaryScript(FILE* inFile, FILE* outFile);
-int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag);
-int encodeScript(FILE* inFile, FILE* outFile);
-runParamType* getRunParam(int textMode, char* pdata);
+int decodeBinaryScript_PSX(FILE* inFile, FILE* outFile);
+int parseCmdSeq_PSX(int offset, FILE** ptr_inFile, int singleRunFlag);
 
-extern int G_IOS_ENG;
+
 
 
 /*****************************************************************************/
-/* Function: decodeBinaryScript                                              */
+/* Function: decodeBinaryScript_PSX                                          */
 /* Purpose: Parses the script starting at offset 0x0800.                     */
 /*          Then considers the top level pointers.                           */
 /* Inputs:  Pointers to input/output files.                                  */
 /* Outputs: 0 on Pass, -1 on Fail.                                           */
 /*****************************************************************************/
-int decodeBinaryScript(FILE* inFile, FILE* outFile){
+int decodeBinaryScript_PSX(FILE* inFile, FILE* outFile){
 
     unsigned short ptrVal;
-//	unsigned int ptrID;
     unsigned int iFileSizeBytes;
     int x;
     unsigned short* pIndexPtrs = NULL;
-//	scriptNode* pScriptNode = NULL;
 
     /* Allocate two 128kB buffers, much bigger than the input file */
     if (pdata != NULL){
         free(pdata);
         pdata = NULL;
     }
-    pdata = (char*)malloc(DBUF_SIZE);
+    pdata = (char*)malloc(PSX_DBUF_SIZE);
     if (pdata == NULL){
         printf("Error allocating space for file data buffer.\n");
         return -1;
@@ -65,7 +67,7 @@ int decodeBinaryScript(FILE* inFile, FILE* outFile){
         free(pdata2);
         pdata2 = NULL;
     }
-    pdata2 = (char*)malloc(DBUF_SIZE);
+    pdata2 = (char*)malloc(PSX_DBUF_SIZE);
     if (pdata2 == NULL){
         printf("Error allocating space for file data buffer 2.\n");
         return -1;
@@ -86,13 +88,13 @@ int decodeBinaryScript(FILE* inFile, FILE* outFile){
     /*********************************************/
     /* Step 1: Read the script from start to end */
     /*********************************************/
-    if (parseCmdSeq(0x0800, &inFile, 0) != 0){
+    if (parseCmdSeq_PSX(0x0800, &inFile, 0) != 0){
         printf("Error Detected while reading from input file.\n");
         return -1;
     }
 
     /* Allocate memory for the array */
-    pIndexPtrs = (unsigned short*)malloc(PTR_ARRAY_SIZE);
+    pIndexPtrs = (unsigned short*)malloc(PSX_PTR_ARRAY_SIZE);
     if (pIndexPtrs == NULL){
         printf("Error allocing memory for Index Ptr Array\n");
         return -1;
@@ -114,7 +116,7 @@ int decodeBinaryScript(FILE* inFile, FILE* outFile){
             printf("Error Reading Pointer Value\n");
             return -1;
         }
-        swap16(&ptrVal);
+        //No word-swap for PSX
 
         //Verify validity
         byteOffset = (unsigned int)ptrVal * 2;
@@ -127,7 +129,7 @@ int decodeBinaryScript(FILE* inFile, FILE* outFile){
             printf("SCRIPT ERROR, POSSIBLE OVERLAP DETECTED.\n");
             currentLocation = ftell(inFile);
             /* Add it anyway - one file should have this issue and this works */
-            if (parseCmdSeq(byteOffset, &inFile, 1) != 0){
+            if (parseCmdSeq_PSX(byteOffset, &inFile, 1) != 0){
                 printf("Error Detected while reading from input file.\n");
                 return -1;
             }
@@ -169,59 +171,6 @@ int decodeBinaryScript(FILE* inFile, FILE* outFile){
         free(sNode);
     }
 
-#if 0
-    /************************************************************************/
-    /* Step 3: For linear runs of the script, assign the same Node ID.      */
-    /*         Used for CSV Script dump.  Provides some indication of flow. */
-    /************************************************************************/
-    pScriptNode = getHeadPtr();
-    while (pScriptNode != NULL){
-        scriptNode* pNext = pScriptNode->pNext;
-
-        /* Update ptrID */
-        ptrID = pScriptNode->pointerID;
-
-        /* Check to see if ptrID should be reset due to end of script sequence reached */
-        switch (pScriptNode->nodeType){
-            case 0x0003:  /* Unconditional JMP */
-            case 0x0004:  /* Unconditional JMP */
-            case 0x0005:  /* Return */
-            case 0x0026:  /* Return & Jump into new scene */
-            case 0x0042:  /* Unconditional JMP */
-                ptrID = INVALID_PTR_ID;
-                break;
-
-            default:
-                break; /* Nothing to be done */
-        }
-
-        /* If the next node has an invalid PTR ID, and the current            */
-        /* Node is not a "Return" node, and the current Node has a valid PTR  */
-        /* associated with it, also associate that pointer with the next item */
-        /* in the script node list. */
-        if (pNext != NULL){
-            if ((pNext->ptrID == INVALID_PTR_ID) &&
-                (ptrID != INVALID_PTR_ID) ){
-                pNext->ptrID = ptrID;
-            }
-        }
-
-        pScriptNode = pScriptNode->pNext;
-    }
-#endif
-#if 0
-case 0x0003: /* 0x0003 - Unconditional Jump, 1 short Arg */
-case 0x0004: /* 0x0004 - Unconditional Jump, 1 short Arg */
-case 0x0007: /* SELECT */
-case 0x0010: /* JUMP (?) */
-case 0x0011: /* JUMP (?) */
-case 0x0016: /* Conditional JUMP (?) */
-case 0x000B: /* Conditional TRUE (AND?) */
-case 0x000C: /* Conditional FALSE (NOT?) */
-case 0x000D: /* (OR?) - JUMP OR JUST "OR"?*/
-case 0x0042: /* Unconditional JUMP (?) */
-#endif
-
     /* Free memory */
     if (pdata != NULL)
         free(pdata);
@@ -242,7 +191,7 @@ case 0x0042: /* Unconditional JUMP (?) */
 /*          Byte offset into file to read from.                              */
 /* Outputs: None.                                                            */
 /*****************************************************************************/
-int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
+int parseCmdSeq_PSX(int offset, FILE** ptr_inFile, int singleRunFlag){
 
     scriptNode* sNode;
     paramType* params;
@@ -295,7 +244,10 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
             printf("Error reading command from input file.\n");
             return -1;
         }
-        swap16(&cmd);
+
+        //Fix for script bug in File #51
+		if (cmd == 0xFF)
+			continue;
 #if 0
         printf("CMD = 0x%X  Offset= 0x%X (0x%X short)\n", (unsigned int)cmd, offset, offset / 2);
 #endif
@@ -328,7 +280,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
             case 0x0054:
             case 0x0058: /* confirmed */
             case 0x005B: /* confirmed */
-    #ifdef UGLY_ENG_IOS_HACKS
+    #ifdef PSX_UGLY_ENG_IOS_HACKS
             case 0x005E: /* hack for iOS Eng */
             case 0xFF00: /* hack for iOS Eng */
             case 0xFF03: /* hack for iOS Eng */
@@ -386,7 +338,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
             case 0x005A: /* Music Select? */
             case 0x0056:
             case 0x0057: /* two byte arguments */
-    #ifdef UGLY_ENG_IOS_HACKS
+    #ifdef PSX_UGLY_ENG_IOS_HACKS
             case 0x005F: /* hack for iOS Eng */
             case 0x0060: /* hack for iOS Eng */
     #endif
@@ -418,7 +370,15 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
                 for (z = 0; z < (int)sNode->num_parameters; z++){
                     params[z].type = SHORT_PARAM;
                     params[z].value = pShort[z];
-                    swap16(&params[z].value);
+
+					if ((cmd == 0x1F) || (cmd == 0x2A) || (cmd == 0x2E) || (cmd == 0x47) || (cmd == 0x45) || 
+						(cmd == 0x52) || (cmd == 0x5A) || (cmd == 0x30) || (cmd == 0x29) || (cmd == 0x28)
+						|| (cmd == 0x23) || (cmd == 0x20) || (cmd == 0x57) || (cmd == 0x48) 
+						|| (cmd == 0x43) || (cmd == 0x44) || (cmd == 0x56) || (cmd == 0x59)
+						|| (cmd == 0x5F) || (cmd == 0x60) || (cmd == 0x49))
+					{
+						swap16(&params[z].value);
+					}
                 }
 
                 sNode->subParams = params;
@@ -478,7 +438,10 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
                 for (z = 0; z < (int)sNode->num_parameters; z++){
                     params[z].type = SHORT_PARAM;
                     params[z].value = pShort[z];
-                    swap16(&params[z].value);
+					if ((z == 0) && ((cmd == 0x24) || (cmd == 0x2D) || (cmd == 0x46) || (cmd == 0x50) || (cmd == 0x22)))
+						swap16(&params[z].value);
+					else if (z != 0)
+	                    swap16(&params[z].value);  //Word-swap for PSX
                 }
 
                 sNode->subParams = params;
@@ -531,7 +494,8 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
                 for (z = 0; z < (int)sNode->num_parameters; z++){
                     params[z].type = SHORT_PARAM;
                     params[z].value = pShort[z];
-                    swap16(&params[z].value);
+					if (z != 0)
+                        swap16(&params[z].value);  
                 }
 
                 sNode->subParams = params;
@@ -581,7 +545,9 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
                 for (z = 0; z < (int)sNode->num_parameters; z++){
                     params[z].type = SHORT_PARAM;
                     params[z].value = pShort[z];
-                    swap16(&params[z].value);
+
+					if ((cmd == 0x5C) && ( (z == 2) || (z >= 4) ) )
+                        swap16(&params[z].value); //Word-swap for PSX
                 }
 
                 sNode->subParams = params;
@@ -647,11 +613,11 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 
                 if (bytesToRead == 6){
                     params[1].value = *((unsigned int *)(&pShort[1]));
-                    swap32(&params[1].value);
+                    //swap32(&params[1].value);  //No word-swap for PSX ??  Maybe?
                 }
                 else{  // 4 bytes
                     params[1].value = *((unsigned int *)(&pShort[0]));
-                    swap32(&params[1].value);
+                    //swap32(&params[1].value);  //No word-swap for PSX ??  Maybe?
                 }
 
                 sNode->subParams = params;
@@ -710,18 +676,18 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
                 /* Fill in EXE Parameters */
                 params[0].type = SHORT_PARAM;
                 params[0].value = pShort[0];
-                swap16(&params[0].value);
+                //swap16(&params[0].value); //No swap for PSX
                 params[1].type = ALIGN_4_PARAM;
                 params[1].value = 0x00;
                 params[2].type = LONG_PARAM;
 
                 if (bytesToRead == 6){
                     params[2].value = *((unsigned int *)(&pShort[1]));
-                    swap32(&params[2].value);
+                    //swap32(&params[2].value);  //No word-swap for PSX ??  Maybe?
                 }
                 else{  // == 8
                     params[2].value = *((unsigned int *)(&pShort[2]));
-                    swap32(&params[2].value);
+                    //swap32(&params[2].value);  //No word-swap for PSX ??  Maybe?
                 }
 
                 sNode->subParams = params;
@@ -759,7 +725,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
                 /* Determine # of Arguments to read */
                 fread(&pdata[numArg * 2], 2, 1, inFile);
                 memcpy(&val, &pdata[numArg * 2], sizeof(short));
-                swap16(&val);
+                swap16(&val);  //No swap required for PSX
                 if ((val & (short)0xFF00) == (short)0x0000)
                     totalNumArg = 6;
                 else
@@ -797,11 +763,11 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
                 for (z = 0; z < (int)sNode->num_parameters; z++){
                     params[z].type = SHORT_PARAM;
                     params[z].value = pShort[z];
-                    swap16(&params[z].value);
+                    swap16(&params[z].value);     
                 }
 
                 sNode->subParams = params;
-                 sNode->fileOffset = offset;
+                sNode->fileOffset = offset;
 
                 /* Add the node */
                 if (addNode(sNode, METHOD_NORMAL, 0) != 0){
@@ -855,10 +821,11 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
                 }
 
                 /* Fill in EXE Parameters */
+	//			swap16(&pdata[0]);  //swap back
                 for (z = 0; z < (int)sNode->num_parameters; z++){
                     params[z].type = SHORT_PARAM;
                     params[z].value = pShort[z];
-                    swap16(&params[z].value);
+                    swap16(&params[z].value);  //PSX does not need swap
                 }
 
                 sNode->subParams = params;
@@ -900,6 +867,9 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
             /**********************************************************************/
             case 0x0038:  /* Byte Terminator of 0xF9 (maintains short wd boundary) */
             {
+
+//PSX Implements as bytes
+
                 int numArg = 0;
                 unsigned char argval;
 
@@ -964,8 +934,8 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
                 /* Fill in EXE Parameters */
                 for (z = 0; z < (int)sNode->num_parameters; z++){
                     params[z].type = SHORT_PARAM;
-                    params[z].value = pShort[z];
-                    swap16(&params[z].value);
+                    params[z].value = pShort[z]; 
+                    swap16(&params[z].value);   
                 }
 
                 sNode->subParams = params;
@@ -1032,7 +1002,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
                 for (z = 0; z < (int)sNode->num_parameters; z++){
                     params[z].type = SHORT_PARAM;
                     params[z].value = pShort[z];
-                    swap16(&params[z].value);
+                    //swap16(&params[z].value);  //PSX does not need
                 }
 
                 sNode->subParams = params;
@@ -1097,7 +1067,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
                 for (z = 0; z < (int)sNode->num_parameters; z++){
                     params[z].type = SHORT_PARAM;
                     params[z].value = pShort[z];
-                    swap16(&params[z].value);
+                    //swap16(&params[z].value); //Skip for PSX
                 }
 
                 sNode->subParams = params;
@@ -1178,7 +1148,9 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
                 for (z = 0; z < (int)sNode->num_parameters; z++){
                     params[z].type = SHORT_PARAM;
                     params[z].value = pShort[z];
-                    swap16(&params[z].value);
+					//if (cmd != 0x1A){
+						swap16(&params[z].value);
+					//}
                 }
 
                 sNode->subParams = params;
@@ -1205,67 +1177,34 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
             /************************************/
             case 0x0002:
             {
-                /* Read until 0xFFFF is reached */
+                static char buf[2100];
+				int lout, location, bytesRead;
+				char* pOut;
+                int nbytes;
                 runParamType* rpHead;
-                char prev, cur;
                 int index = 0;
                 int textMode = getTextDecodeMethod();
-                prev = cur = 0;
 
-                while (1){
-                    rval = fread(&pdata[index++], 1, 1, inFile);
-                    if (rval != 1){
-                        printf("Error encountered while reading TEXT portion of script, no termination.\n");
-                        break;
-                    }
-                    cur = pdata[index - 1];
-
-                    //Handle UTF8 Text
-                    if ((textMode == TEXT_DECODE_UTF8) && ((unsigned char)cur < 0xF0)){
-                        int x;
-                        int nbytes = numBytesInUtf8Char(cur);
-                        if (nbytes > 1){
-                            for (x = 0; x < nbytes - 1; x++){
-                                rval = fread(&pdata[index++], 1, 1, inFile);
-                                if (rval != 1){
-                                    printf("Error encountered while reading TEXT portion of script, no termination.\n");
-                                    break;
-                                }
-                            }
-                            //This cant be the termination.  0xFF is 1 byte
-                            prev = cur = 0;
-                            continue;
-                        }
-                        else if ((nbytes == 1) && (G_IOS_ENG == 1) && (pdata[index-1] == 0x0A)){
-                            //Hack in space for iOS Eng
-                            pdata[index - 1] = 0xFF;
-                            pdata[index++] = 0x02;
-                            nbytes++;
-                            //This cant be the termination. Reset.
-                            prev = cur = 0;
-                        }
-                    }
-                    else if (textMode == TEXT_DECODE_UTF8){  // >= 0xF0
-                        //Read again
-                        prev = cur;
-                        fread(&pdata[index], 1, 1, inFile);
-                        cur = pdata[index];
-                        index++;
-                    }
-
-                    /* Lunar Text Terminates with short word aligned 0xFFFF */
-                    /* Extraction from 1-byte text hack does not require this */
-                    if /*(*/ (textMode == TEXT_DECODE_ONE_BYTE_PER_CHAR)/* ||
-                                                                        (textMode == TEXT_DECODE_UTF8) )*/{
-                        if ((cur == (char)0xFF) && (prev == (char)0xFF))
-                            break;
-                    }
-                    else{
-                        if (((ftell(inFile) % 2) == 0) && (cur == (char)0xFF) && (prev == (char)0xFF))
-                            break;
-                    }
-                    prev = cur;
+                location = ftell(inFile);
+                memset(buf,0,2100);
+                rval = fread(buf, 1, 2048, inFile);
+                if (rval <= 0){
+                    printf("Error encountered while reading TEXT portion of script, no termination.\n");
+                    break;
                 }
+                nbytes = rval;
+
+
+//				printf("Parsing Text at 0x%X\n",location);
+                if ((bytesRead = convertPSXText(buf, &pOut, nbytes, &lout)) < 0){
+                    printf("Conversion Error\n");
+                    break;
+                }
+//				printf("\n%s\n", pOut);
+
+
+				location += bytesRead;
+				fseek(inFile,location, SEEK_SET);
 
                 /* Advance File Pointer to a 16-bit boundary */
                 /* Should already be on one unless running a 1-byte text hack */
@@ -1285,7 +1224,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
                 }
 
                 rpHead = NULL;
-                rpHead = getRunParam(textMode, pdata);
+                rpHead = getRunParam(textMode, pOut);
 
                 /* Fill in Remaining Parameters */
                 sNode->id = G_ID++;
@@ -1325,22 +1264,23 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
             /*          Argument #3:  Text String Ending in FFFF  (Top Option)            */
             /*          Argument #4:  Text String Ending in FFFF  (Bottom Option)         */
             /******************************************************************************/
+
+//FIX
             case 0x0007:
             {
+                static char buf[2100];
+                int lout,location,bytesRead;
+				char* pOut, *pOut2;
+                int nbytes;
                 runParamType* rpHead1, *rpHead2;
                 unsigned short opt2Offset, parameter2;
-                char prev, cur;
                 int index = 0;
-                int index2 = 0;
-//              int textSize1 = 0;
-//              int textSize2 = 0;
                 int textMode = getTextDecodeMethod();
-				int storedTextMode = textMode;
+                int storedTextMode = textMode;
 
                 /* Offset to Opt2 Jump Point */
                 fread(&opt2Offset, 2, 1, inFile);
-                swap16(&opt2Offset);
-//              offsetAddress2 = 2 * opt2Offset;
+                //swap16(&opt2Offset);
 
                 /* NULL - well, not really NULL in all cases */
                 fread(&parameter2, 2, 1, inFile);
@@ -1351,60 +1291,21 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
                 /* Option 1 (Top Option) Text */
                 /******************************/
 
-                /* Read until 0xFFFF is reached */
-                prev = cur = 0;
-
-                while (1){
-                    fread(&pdata[index], 1, 1, inFile);
-                    cur = pdata[index];
-                    index++;
-
-                    //Handle UTF8 Text
-                    if ((textMode == TEXT_DECODE_UTF8) && ((unsigned char)cur < 0xF0)){
-                        int x;
-                        int nbytes = numBytesInUtf8Char(cur);
-                        if (nbytes > 1){
-                            for (x = 0; x < nbytes - 1; x++){
-                                rval = fread(&pdata[index++], 1, 1, inFile);
-                                if (rval != 1){
-                                    printf("Error encountered while reading OPT portion of script, no termination.\n");
-                                    break;
-                                }
-                            }
-                            //This cant be the termination.  0xFF is 1 byte
-                            prev = cur = 0;
-                            continue;
-                        }
-                        else if ((nbytes == 1) && (G_IOS_ENG == 1) && (pdata[index - 1] == 0x0A)){
-                            //Hack in space for iOS Eng
-                            pdata[index - 1] = 0xFF;
-                            pdata[index++] = 0x02;
-                            nbytes++;
-                            //This cant be the termination. Reset.
-                            prev = cur = 0;
-                        }
-                    }
-                    else if (textMode == TEXT_DECODE_UTF8){  // >= 0xF0
-                        //Read again
-                        prev = cur;
-                        fread(&pdata[index], 1, 1, inFile);
-                        cur = pdata[index];
-                        index++;
-                    }
-
-                    /* Lunar Text Terminates with short word aligned 0xFFFF */
-                    /* Extraction from 1-byte text hack does not require this */
-                    if (textMode == TEXT_DECODE_ONE_BYTE_PER_CHAR){
-                        if ((cur == (char)0xFF) && (prev == (char)0xFF))
-                            break;
-                    }
-                    else{
-                        if (((ftell(inFile) % 2) == 0) && (cur == (char)0xFF) && (prev == (char)0xFF))
-                            break;
-                    }
-
-                    prev = cur;
+                location = ftell(inFile);
+                memset(buf,0,2100);
+                rval = fread(buf, 1, 2048, inFile);
+                if (rval <= 0){
+                    printf("Error encountered while reading TEXT portion of script, no termination.\n");
+                    break;
                 }
+                nbytes = rval;
+
+				if ((bytesRead = convertPSXText(buf, &pOut, nbytes, &lout)) < 0){
+					printf("Conversion Error\n");
+					break;
+				}
+                location += bytesRead;
+				fseek(inFile,location, SEEK_SET);
 
                 /* Advance File Pointer to a 16-bit boundary */
                 /* Should already be on one unless running a 1-byte text hack */
@@ -1412,69 +1313,35 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
                     fread(&pdata[index], 1, 1, inFile);
                     //No need to increment index based on my storage format
                 }
-//              textSize1 = index;
-
 
                 /*********************************/
                 /* Option 2 (Bottom Option) Text */
                 /*********************************/
 
-                /* Read until 0xFFFF is reached */
-                prev = cur = 0;
-
-                while (1){
-                    fread(&pdata2[index2], 1, 1, inFile);
-                    cur = pdata2[index2];
-                    index2++;
-
-                    //Handle UTF8 Text
-                    if ((textMode == TEXT_DECODE_UTF8) && ((unsigned char)cur < 0xF0)){
-                        int x;
-                        int nbytes = numBytesInUtf8Char(cur);
-                        if (nbytes > 1){
-                            for (x = 0; x < nbytes - 1; x++){
-                                rval = fread(&pdata2[index2++], 1, 1, inFile);
-                                if (rval != 1){
-                                    printf("Error encountered while reading OPT portion of script, no termination.\n");
-                                    break;
-                                }
-                            }
-                            //This cant be the termination.  0xFF is 1 byte
-                            prev = cur = 0;
-                            continue;
-                        }
-                    }
-                    else if (textMode == TEXT_DECODE_UTF8){  // >= 0xF0
-                        //Read again
-                        prev = cur;
-                        fread(&pdata2[index2], 1, 1, inFile);
-                        cur = pdata2[index2];
-                        index2++;
-                    }
-
-                    /* Lunar Text Terminates with short word aligned 0xFFFF */
-                    /* Extraction from 1-byte text hack does not require this */
-                    if (textMode == TEXT_DECODE_ONE_BYTE_PER_CHAR){
-                        if ((cur == (char)0xFF) && (prev == (char)0xFF))
-                            break;
-                    }
-                    else{
-                        if (((ftell(inFile) % 2) == 0) && (cur == (char)0xFF) && (prev == (char)0xFF))
-                            break;
-                    }
-
-                    prev = cur;
+                location = ftell(inFile);
+                memset(buf,0,2100);
+                rval = fread(buf, 1, 2048, inFile);
+                if (rval <= 0){
+                    printf("Error encountered while reading TEXT portion of script, no termination.\n");
+                    break;
                 }
+                nbytes = rval;
 
-                /* Advance File Pointer to a 16-bit boundary */
-                /* Should already be on one unless running a 1-byte text hack */
-                if ((ftell(inFile) % 2) != 0){
-                    fread(&pdata2[index2], 1, 1, inFile);
-                    //No need to increment index2 based on my storage format
-                }
+
+				if ((bytesRead = convertPSXText(buf, &pOut2, nbytes, &lout)) < 0){
+					printf("Conversion Error\n");
+					break;
+				}
+                location += bytesRead;
+				fseek(inFile,location, SEEK_SET);
+
+				/* Advance File Pointer to a 16-bit boundary */
+				if ((ftell(inFile) % 2) != 0){
+					fread(&pdata[index], 1, 1, inFile);
+					//No need to increment index based on my storage format
+				}
+
                 offsetAddress = ftell(inFile);
-//              textSize2 = index2;
-
 
                 /***************************************/
                 /* Create a New Two Option Script Node */
@@ -1501,14 +1368,10 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
                 params[1].value = parameter2;
                 sNode->subParams = params;
 
-				//Hack because i got lazy and didnt want to compress
-				if (textMode == TEXT_DECODE_ONE_BYTE_PER_CHAR)
-					storedTextMode = TEXT_DECODE_TWO_BYTES_PER_CHAR;
-
                 /* Convert Text to Run Parameters */
                 rpHead1 = rpHead2 = NULL;
-				rpHead1 = getRunParam(storedTextMode, pdata);
-				rpHead2 = getRunParam(storedTextMode, pdata2);
+                rpHead1 = getRunParam(storedTextMode, pOut);
+                rpHead2 = getRunParam(storedTextMode, pOut2);
 
                 /* Fill in Remaining Parameters */
                 sNode->id = G_ID++;
@@ -1551,9 +1414,10 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
                 //Read short jump parameter
                 fread(&pdata[numArg], 2, 1, inFile);
                 memcpy(&wdOffset, &pdata[numArg], 2);
-                swap16(&wdOffset);
+                //swap16(&wdOffset);  //Skip swap for PSX
                 numArg += 2;
 
+//Byte ARGs.  Check to see if they need to be swapped
                 /* Determine # of Arguments to read */
                 while (!feof(inFile)){
                     fread(&pdata[numArg], 1, 1, inFile);
@@ -1594,7 +1458,8 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
                 for (z = 0; z < (int)sNode->num_parameters; z++){
                     params[z].type = SHORT_PARAM;
                     params[z].value = pShort[z];
-                    swap16(&params[z].value);
+					if (z > 0)
+                        swap16(&params[z].value);   //PSX swapping
                 }
 
                 sNode->subParams = params;
@@ -1626,7 +1491,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 
                 fread(&pdata[numArg], 2, 1, inFile);
                 memcpy(&wdOffset, &pdata[numArg], 2);
-                swap16(&wdOffset);
+                //swap16(&wdOffset);  
                 numArg += 2;
 
 
@@ -1670,7 +1535,8 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
                 for (z = 0; z < (int)sNode->num_parameters; z++){
                     params[z].type = SHORT_PARAM;
                     params[z].value = pShort[z];
-                    swap16(&params[z].value);
+					if (z > 0)
+                        swap16(&params[z].value);  //PSX swap
                 }
 
                 sNode->subParams = params;
@@ -1705,17 +1571,17 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 
                 fread(&pShort[numArg], 2, 1, inFile);
                 memcpy(&wdOffset, &pShort[numArg++], 2);
-                swap16(&wdOffset);
+                //swap16(&wdOffset);   //NOT FOR PSX
                 fread(&pShort[numArg], 2, 1, inFile);
                 memcpy(&bitOffset, &pShort[numArg++], 2);
-                swap16(&bitOffset);
+                //swap16(&bitOffset);  //NOT FOR PSX
                 zeroOffset = bitOffset;
 
                 //Look for 0x0000 Terminator
                 while (zeroOffset != 0x0000){
                     fread(&pShort[numArg], 2, 1, inFile);
                     memcpy(&zeroOffset, &pShort[numArg++], 2);
-                    swap16(&zeroOffset);
+                    //swap16(&zeroOffset);    //NOT FOR PSX
                 }
 
                 /* Create a new script node */
@@ -1742,7 +1608,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
                 for (z = 0; z < (int)sNode->num_parameters; z++){
                     params[z].type = SHORT_PARAM;
                     params[z].value = pShort[z];
-                    swap16(&params[z].value);
+                    //swap16(&params[z].value);     //NOT FOR PSX
                 }
 
                 sNode->subParams = params;
@@ -1784,7 +1650,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
                 fread(&pdata[0], 2, 3, inFile);
 
                 memcpy(&jmploc, &pdata[0], 2);
-                swap16(&jmploc);
+				swap16(&pdata[0]);
 
                 /* See if an additional 5 should be read */
                 if (pdata[2] == (char)0x00){
@@ -1821,7 +1687,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
                 for (z = 0; z < (int)sNode->num_parameters; z++){
                     params[z].type = SHORT_PARAM;
                     params[z].value = pShort[z];
-                    swap16(&params[z].value);
+                    swap16(&params[z].value);   
                 }
 
                 sNode->subParams = params;
@@ -1889,514 +1755,4 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
     }
 
     return 0;
-}
-
-
-
-
-
-runParamType* getRunParam(int textMode, char* pdata){
-
-    runParamType* rpHead, *rpNode, *rpCurrent;
-    int x;
-    unsigned char* tmpText = NULL;
-    unsigned int numTextShorts = 0;
-    rpHead = rpNode = rpCurrent = NULL;
-
-    /************************************************************************/
-    /* Iterate through the data looking to separate text from control codes */
-    /************************************************************************/
-    switch (textMode)
-    {
-
-    case TEXT_DECODE_TWO_BYTES_PER_CHAR:
-    {
-        unsigned short* ptrS = (unsigned short*)pdata;
-        unsigned short* ptrTextStart = NULL;
-
-        while (1){
-
-            swap16(ptrS);
-
-            /* Control Code vs. Text Detection */
-            if (*ptrS == 0xF90A){
-                /* Part of a Text String (Space) */
-                if (numTextShorts == 0)
-                    ptrTextStart = ptrS;
-                numTextShorts++;
-            }
-            else if (*ptrS >= 0xF000){  /* Control Codes are >= 0xF000 */
-
-                /* Create a text string run parameter element if one was previously started */
-                if (numTextShorts > 0){
-                    char tmp[5];
-
-                    /* Create utf8 Text String*/
-                    tmpText = (unsigned char*)malloc(5 * (numTextShorts + 1));
-                    memset(tmpText, 0, 5 * (numTextShorts + 1));
-                    for (x = 0; x < (int)numTextShorts; x++){
-                        memset(tmp, 0, 5);
-                        if (ptrTextStart[x] == 0xF90A)
-                            strcpy(tmp, " ");
-                        else
-                            getUTF8character(ptrTextStart[x], tmp);
-                        strcat((char *)tmpText, tmp);
-                    }
-
-                    /* Create a runcmds parameter element */
-                    rpNode = (runParamType*)malloc(sizeof(runParamType));
-                    if (rpNode == NULL){
-                        printf("Error allocing space for run parameter struct.\n");
-                        return NULL;
-                    }
-                    memset(rpNode, 0, sizeof(runParamType));
-                    rpNode->pNext = NULL;
-                    rpNode->type = PRINT_LINE;
-                    rpNode->str = tmpText;
-
-                    /* Add the node to the list */
-                    if (rpHead == NULL){
-                        rpHead = rpCurrent = rpNode;
-                    }
-                    else{
-                        rpCurrent->pNext = rpNode;
-                        rpCurrent = rpNode;
-                    }
-
-                    numTextShorts = 0;
-                }
-
-                /*********************************/
-                /* Create a Control Code element */
-                /* OR SHOW_PORTRAIT              */
-                /*********************************/
-
-                /* Create a runcmds parameter element */
-                rpNode = (runParamType*)malloc(sizeof(runParamType));
-                if (rpNode == NULL){
-                    printf("Error allocing space for run parameter struct.\n");
-                    return NULL;
-                }
-                memset(rpNode, 0, sizeof(runParamType));
-                rpNode->pNext = NULL;
-                rpNode->str = NULL;
-
-                if ((*ptrS & 0xFF00) == 0xFA00){
-                    rpNode->type = SHOW_PORTRAIT_LEFT;
-                    rpNode->value = (*ptrS & 0x00FF);
-                }
-                else if ((*ptrS & 0xFF00) == 0xFB00){
-                    rpNode->type = SHOW_PORTRAIT_RIGHT;
-                    rpNode->value = (*ptrS & 0x00FF);
-                }
-                else if ((*ptrS & 0xFF00) == 0xF800){
-                    rpNode->type = TIME_DELAY;
-                    rpNode->value = (*ptrS & 0x00FF);
-                }
-                else{
-                    rpNode->type = CTRL_CODE;
-                    rpNode->value = *ptrS;
-                }
-
-                /* Add the node to the list */
-                if (rpHead == NULL){
-                    rpHead = rpCurrent = rpNode;
-                }
-                else{
-                    rpCurrent->pNext = rpNode;
-                    rpCurrent = rpNode;
-                }
-
-                /*****************************/
-                /* END OF TEXT BLOCK LOCATED */
-                /*****************************/
-                if (*ptrS == 0xFFFF){
-
-					/**************************/
-					/* Force 2-Byte Alignment */
-					/**************************/
-
-					/* Create a runcmds parameter element */
-					rpNode = (runParamType*)malloc(sizeof(runParamType));
-					if (rpNode == NULL){
-						printf("Error allocing space for run parameter struct.\n");
-						return NULL;
-					}
-					memset(rpNode, 0, sizeof(runParamType));
-					rpNode->pNext = NULL;
-					rpNode->str = NULL;
-					rpNode->type = ALIGN_2_PARAM;
-					rpNode->value = 0xFF;
-
-					/* Add the node to the list */
-					if (rpHead == NULL){
-						rpHead = rpCurrent = rpNode;
-					}
-					else{
-						rpCurrent->pNext = rpNode;
-						rpCurrent = rpNode;
-					}
-
-
-                    break;
-                }
-            }
-            else{
-                /* Part of a Text String */
-                if (numTextShorts == 0)
-                    ptrTextStart = ptrS;
-                numTextShorts++;
-            }
-
-            ptrS++;  //Incr Short Ptr
-        }
-        break;
-    }
-
-	case TEXT_DECODE_PSX_ENG:
-    case TEXT_DECODE_ONE_BYTE_PER_CHAR:
-    {
-        int z;
-        unsigned char byte_data, byte_data2;
-        unsigned short short_data;
-        char* ptrText, *ptrStart;
-
-        /* Buffer */
-        ptrText = (char*)malloc(1024 * 1024);
-        if (ptrText == NULL){
-            printf("Error allocing temp memory\n");
-            return NULL;
-        }
-        z = 0;
-        ptrStart = NULL;
-
-        while (1){
-            byte_data = ((unsigned char)*pdata) & 0xFF;
-
-            if (byte_data < 0xF0){
-                /* 1-Byte Text */
-                if(ptrStart == NULL)
-                    ptrStart = pdata;
-                z++;
-                pdata++;
-            }
-            else if (byte_data >= 0xF0){
-                /* 2-byte Code or Space */
-                pdata++;
-                byte_data2 = (((unsigned char)*pdata) & 0xFF);
-                short_data = (byte_data << 8) | byte_data2;
-				pdata++;
-
-                /*************/
-                /* Ctrl Code */
-                /*************/
-
-                /**************************************/
-                /* Write out any prior text           */
-                /* Create a runcmds parameter element */
-                /**************************************/
-                if (z > 0){
-                    unsigned int decmpSize = 0;
-                    rpNode = (runParamType*)malloc(sizeof(runParamType));
-                    if (rpNode == NULL){
-                        printf("Error allocing space for run parameter struct.\n");
-                        free(ptrText);
-                        return NULL;
-                    }
-                    memset(rpNode, 0, sizeof(runParamType));  //-- fix
-                    rpNode->pNext = NULL;
-                    rpNode->type = PRINT_LINE;
-
-
-					if (textMode == TEXT_DECODE_ONE_BYTE_PER_CHAR){
-						memset(ptrText, 0, 1024 * 1024);
-						decompressBPE((unsigned char*)ptrText, (unsigned char*)ptrStart, &decmpSize);
-						rpNode->str = malloc(decmpSize + 1);
-						if (rpNode->str == NULL){
-							printf("Error allocing for string.\n");
-							free(ptrText);
-							return NULL;
-						}
-						memset(rpNode->str, 0, decmpSize + 1);
-						strcpy((char *)rpNode->str, (char *)ptrText);
-					}
-					else {
-						rpNode->str = malloc(z + 1);
-						if (rpNode->str == NULL){
-							printf("Error allocing for string.\n");
-							free(ptrText);
-							return NULL;
-						}
-						memset(rpNode->str, 0, z + 1);
-						strncpy((char *)rpNode->str, (char *)ptrStart, z);
-					}
-
-
-                    /* Add the node to the list */
-                    if (rpHead == NULL){
-                        rpHead = rpCurrent = rpNode;
-                    }
-                    else{
-                        rpCurrent->pNext = rpNode;
-                        rpCurrent = rpNode;
-                    }
-
-                    /* Reset start of text section */
-                    ptrStart = NULL;
-                    z = 0;
-                }
-
-                /*********************************/
-                /* Create a Control Code element */
-                /* OR SHOW_PORTRAIT              */
-                /*********************************/
-
-                /* Create a runcmds parameter element */
-                rpNode = (runParamType*)malloc(sizeof(runParamType));
-                if (rpNode == NULL){
-                    printf("Error allocing space for run parameter struct.\n");
-                    free(ptrText);
-                    return NULL;
-                }
-                memset(rpNode, 0, sizeof(runParamType));
-                rpNode->pNext = NULL;
-                rpNode->str = NULL;
-
-                if ((short_data & 0xFF00) == 0xFA00){
-                    rpNode->type = SHOW_PORTRAIT_LEFT;
-                    rpNode->value = (short_data & 0x00FF);
-                }
-                else if ((short_data & 0xFF00) == 0xFB00){
-                    rpNode->type = SHOW_PORTRAIT_RIGHT;
-                    rpNode->value = (short_data & 0x00FF);
-                }
-                else if ((short_data & 0xFF00) == 0xF800){
-                    rpNode->type = TIME_DELAY;
-                    rpNode->value = (short_data & 0x00FF);
-                }
-                else{
-                    rpNode->type = CTRL_CODE;
-                    rpNode->value = short_data;
-                }
-
-                /* Add the node to the list */
-                if (rpHead == NULL){
-                    rpHead = rpCurrent = rpNode;
-                }
-                else{
-                    rpCurrent->pNext = rpNode;
-                    rpCurrent = rpNode;
-                }
-
-                /*****************************/
-                /* END OF TEXT BLOCK LOCATED */
-                /*****************************/
-                if (short_data == 0xFFFF){
-                    free(ptrText);
-					
-					/**************************/
-					/* Force 2-Byte Alignment */
-					/**************************/
-					
-					/* Create a runcmds parameter element */
-					rpNode = (runParamType*)malloc(sizeof(runParamType));
-					if (rpNode == NULL){
-						printf("Error allocing space for run parameter struct.\n");
-						return NULL;
-					}
-					memset(rpNode, 0, sizeof(runParamType));
-					rpNode->pNext = NULL;
-					rpNode->str = NULL;
-					rpNode->type = ALIGN_2_PARAM;
-					rpNode->value = 0xFF;
-					
-					/* Add the node to the list */
-					if (rpHead == NULL){
-						rpHead = rpCurrent = rpNode;
-					}
-					else{
-						rpCurrent->pNext = rpNode;
-						rpCurrent = rpNode;
-					}
-					
-                    break;
-                }
-            }
-           // pdata++;
-        }
-        break;
-    }
-
-    case TEXT_DECODE_UTF8:
-    {
-        unsigned char* ptrText = NULL;
-        unsigned char utf8data[5];
-        unsigned short short_data;
-        int numBytes, y;
-
-        /* Buffer */
-        ptrText = malloc(1024 * 1024);
-        if (ptrText == NULL){
-            printf("Error allocing temp memory\n");
-        }
-        memset(ptrText, 0, 1024 * 1024);
-
-        while (1){
-            memset(utf8data, 0, 5);
-            short_data = 0;
-
-            /* Grab the first byte of the utf8 character & get # bytes */
-            if ((unsigned char)*pdata >= 0xF0)
-                numBytes = 1;
-            else
-                numBytes = numBytesInUtf8Char((unsigned char)*pdata);
-            utf8data[0] = (unsigned char)(*pdata);
-
-            /* Read the rest of the utf8 character */
-            for (y = 1; y < numBytes; y++){
-                pdata++;
-                utf8data[y] = (unsigned char)*pdata;
-            }
-
-            /* Check for Control Code */
-            if ((numBytes == 1) && (utf8data[0] >= 0xF0)){
-                pdata++;
-                short_data = (utf8data[0] << 8) | (unsigned char)(*pdata);
-            }
-
-            if (short_data == 0xF90A){
-                strcat((char *)ptrText, " ");
-                short_data = 0;
-            }
-            else if (short_data != 0x0000){
-
-                /**************************************/
-                /* Write out any prior text           */
-                /* Create a runcmds parameter element */
-                /**************************************/
-                if (strlen((char *)ptrText) > 0){
-                    rpNode = (runParamType*)malloc(sizeof(runParamType));
-                    if (rpNode == NULL){
-                        printf("Error allocing space for run parameter struct.\n");
-                        free(ptrText);
-                        return NULL;
-                    }
-                    memset(rpNode, 0, sizeof(runParamType));
-                    rpNode->pNext = NULL;
-                    rpNode->type = PRINT_LINE;
-                    rpNode->str = malloc(strlen((char *)ptrText) + 1);
-                    if (rpNode->str == NULL){
-                        printf("Error allocing for string.\n");
-                        free(ptrText);
-                        return NULL;
-                    }
-                    memset(rpNode->str, 0, strlen((char *)ptrText) + 1);
-                    strcpy((char *)rpNode->str, (char *)ptrText);
-
-                    /* Add the node to the list */
-                    if (rpHead == NULL){
-                        rpHead = rpCurrent = rpNode;
-                    }
-                    else{
-                        rpCurrent->pNext = rpNode;
-                        rpCurrent = rpNode;
-                    }
-                }
-
-                /*********************************/
-                /* Create a Control Code element */
-                /* OR SHOW_PORTRAIT              */
-                /*********************************/
-
-                /* Create a runcmds parameter element */
-                rpNode = (runParamType*)malloc(sizeof(runParamType));
-                if (rpNode == NULL){
-                    printf("Error allocing space for run parameter struct.\n");
-                    free(ptrText);
-                    return NULL;
-                }
-                memset(rpNode, 0, sizeof(runParamType));
-                rpNode->pNext = NULL;
-                rpNode->str = NULL;
-
-                if ((short_data & 0xFF00) == 0xFA00){
-                    rpNode->type = SHOW_PORTRAIT_LEFT;
-                    rpNode->value = (short_data & 0x00FF);
-                }
-                else if ((short_data & 0xFF00) == 0xFB00){
-                    rpNode->type = SHOW_PORTRAIT_RIGHT;
-                    rpNode->value = (short_data & 0x00FF);
-                }
-                else if ((short_data & 0xFF00) == 0xF800){
-                    rpNode->type = TIME_DELAY;
-                    rpNode->value = (short_data & 0x00FF);
-                }
-                else{
-                    rpNode->type = CTRL_CODE;
-                    rpNode->value = short_data;
-                }
-
-                /* Add the node to the list */
-                if (rpHead == NULL){
-                    rpHead = rpCurrent = rpNode;
-                }
-                else{
-                    rpCurrent->pNext = rpNode;
-                    rpCurrent = rpNode;
-                }
-
-                /*****************************/
-                /* END OF TEXT BLOCK LOCATED */
-                /*****************************/
-                if (short_data == 0xFFFF){
-                    free(ptrText);
-
-					/**************************/
-					/* Force 2-Byte Alignment */
-					/**************************/
-
-					/* Create a runcmds parameter element */
-					rpNode = (runParamType*)malloc(sizeof(runParamType));
-					if (rpNode == NULL){
-						printf("Error allocing space for run parameter struct.\n");
-						return NULL;
-					}
-					memset(rpNode, 0, sizeof(runParamType));
-					rpNode->pNext = NULL;
-					rpNode->str = NULL;
-					rpNode->type = ALIGN_2_PARAM;
-					rpNode->value = 0xFF;
-
-					/* Add the node to the list */
-					if (rpHead == NULL){
-						rpHead = rpCurrent = rpNode;
-					}
-					else{
-						rpCurrent->pNext = rpNode;
-						rpCurrent = rpNode;
-					}
-
-                    break;
-                }
-                short_data = 0;
-                ptrText[0] = '\0';
-            }
-            else{
-                /* Text */
-                strcat((char *)ptrText, (char *)utf8data);
-            }
-            pdata++;
-        }
-        break;
-    }
-
-    default:
-    {
-        printf("Cant get here.\n");
-        break;
-    }
-
-    }
-
-    return rpHead;
 }

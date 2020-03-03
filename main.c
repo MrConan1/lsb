@@ -25,10 +25,12 @@
 #include "snode_list.h"
 #include "write_script.h"
 #include "bpe_compression.h"
+#include "psx_decode.h"
+#include "parse_binary_psx.h"
 
 
 #define VER_MAJ    1
-#define VER_MIN    04
+#define VER_MIN    05
 
 /******************************************************************************/
 /* printUsage() - Display command line usage of this program.                 */
@@ -41,6 +43,7 @@ void printUsage(){
     printf("    ienc = 1 for BPE decoding of text\n");
     printf("    ienc = 2 for utf8 (iOS) decoding of text\n");
     printf("    ienc = 3 for utf8 (Eng iOS) decoding of text\n");
+	printf("    ienc = 4 for PSX Eng decoding of text\n");
     printf("lsb.exe encode InputFname OutputFname oenc [sss]\n");
     printf("    oenc = 0 for 2-Byte output encoded text\n");
     printf("    oenc = 1 for BPE output encoded text\n");
@@ -113,6 +116,8 @@ int main(int argc, char** argv){
             strcat(csvOutFileName, "_iosJP");
         else if (ienc == 3)
             strcat(csvOutFileName, "_iosENG");
+		else if (ienc == 4)
+			strcat(csvOutFileName, "_psxENG");
         else if ((argc == 6) && (strcmp(argv[5], "sss") == 0))
             strcat(csvOutFileName, "_sss");
         else
@@ -165,6 +170,16 @@ int main(int argc, char** argv){
         }
     }
 
+	/***********************************************/
+	/* Load in PSX Decode String Table if Required */
+	/***********************************************/
+	if (ienc == 4){
+		if (loadPSXStringTable("lsss_txtcmpstr_us.bin") < 0){
+			printf("Error loading Lunar Eng PSX String Decode Table For Decoding.\n");
+			return -1;
+		}
+	}
+
     /*******************************/
     /* Open the input/output files */
     /*******************************/
@@ -196,7 +211,10 @@ int main(int argc, char** argv){
         rval = encodeScript(inFile, outFile);
     }
     else if (strcmp(argv[1], "decode") == 0){
-        rval = decodeBinaryScript(inFile, outFile);
+		if (ienc == 4)
+			rval = decodeBinaryScript_PSX(inFile, outFile);
+		else
+	        rval = decodeBinaryScript(inFile, outFile);
     } else {
         printf("Unknown mode: %s\n", argv[1]);
         fclose(inFile);
@@ -309,6 +327,11 @@ int main(int argc, char** argv){
 
     /* Release Resources */
     destroyNodeList();
+
+	/* Remove PSX String Table (if used) */
+	if (ienc == 4){
+		releasePSXStringTable();
+	}
 
     return 0;
 }
