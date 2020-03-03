@@ -3,7 +3,7 @@ Lunar Script Builder
 
 This program will perform one of three actions:
 
-1.) Decode: Take binary output TEXTxxx.DAT file from Saturn/iOS Lunar SSS or SSSC and convert to a metadata file.
+1.) Decode: Take binary output TEXTxxx.DAT file from Saturn/iOS/PSX Lunar SSS or SSSC and convert to a metadata file.
 
 2.) Encode: Take a uniquely formatted input file containing metadata, parse it, and create a binary output compatible with the TEXTxxx.DAT files used in Sega Saturn Version of Lunar SSS or SSS-MPEG.
 
