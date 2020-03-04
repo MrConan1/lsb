@@ -1334,8 +1334,12 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
                 int index2 = 0;
 //              int textSize1 = 0;
 //              int textSize2 = 0;
+				rpHead1 = rpHead2 = NULL;
                 int textMode = getTextDecodeMethod();
-				int storedTextMode = textMode;
+
+				//Hack because i got lazy and didnt want to compress
+				if (textMode == TEXT_DECODE_ONE_BYTE_PER_CHAR)
+					textMode = TEXT_DECODE_TWO_BYTES_ASCII;
 
                 /* Offset to Opt2 Jump Point */
                 fread(&opt2Offset, 2, 1, inFile);
@@ -1501,14 +1505,10 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
                 params[1].value = parameter2;
                 sNode->subParams = params;
 
-				//Hack because i got lazy and didnt want to compress
-				if (textMode == TEXT_DECODE_ONE_BYTE_PER_CHAR)
-					storedTextMode = TEXT_DECODE_TWO_BYTES_PER_CHAR;
-
                 /* Convert Text to Run Parameters */
                 rpHead1 = rpHead2 = NULL;
-				rpHead1 = getRunParam(storedTextMode, pdata);
-				rpHead2 = getRunParam(storedTextMode, pdata2);
+				rpHead1 = getRunParam(textMode, pdata);
+				rpHead2 = getRunParam(textMode, pdata2);
 
                 /* Fill in Remaining Parameters */
                 sNode->id = G_ID++;
@@ -2052,6 +2052,123 @@ runParamType* getRunParam(int textMode, char* pdata){
         }
         break;
     }
+
+
+	/***************************************************************/
+	/* Assumes no control codes other than space (F905)            */
+	/* This is my 2-byte encoded ascii for the english translation */
+	/* It is ONLY used for Options Dialogs                         */
+	/***************************************************************/
+	case TEXT_DECODE_TWO_BYTES_ASCII:
+	{
+		char* tmpData;
+		char prevChar, currentChar;
+		int index = 0;
+		unsigned short* ptrS = (unsigned short*)pdata;
+		prevChar = currentChar = 0;
+		 
+		/* Condense Text to 1 byte encoding */
+		while (1){
+			swap16(ptrS);
+			if ((*ptrS) == 0xF905){
+				currentChar = ' ';
+			}
+			else if ((*ptrS) == 0xFFFF){
+				break;
+			}
+			else{
+				currentChar = (char)(*ptrS & 0xFF);
+			}
+			pdata[index++] = currentChar;
+
+			//For unaligned
+			if ((currentChar == 0xFF) && (prevChar == 0xFF)){
+				index--;
+				break;
+			}
+			prevChar = currentChar;
+
+			ptrS++;
+		}
+		pdata[index++] = 0x00;
+
+		tmpData = (char*)malloc(index + 1);
+		memset(tmpData, 0, index + 1);
+		memcpy(tmpData, pdata, index);
+
+		/* Create a runcmds parameter element */
+		rpNode = (runParamType*)malloc(sizeof(runParamType));
+		if (rpNode == NULL){
+			printf("Error allocing space for run parameter struct.\n");
+			return NULL;
+		}
+		memset(rpNode, 0, sizeof(runParamType));
+		rpNode->pNext = NULL;
+		rpNode->type = PRINT_LINE;
+		rpNode->str = (unsigned char*)tmpData;
+
+		/* Add the node to the list */
+		if (rpHead == NULL){
+			rpHead = rpCurrent = rpNode;
+		}
+		else{
+			rpCurrent->pNext = rpNode;
+			rpCurrent = rpNode;
+		}
+
+		/*********************/
+		/* FFFF Control Code */
+		/*********************/
+
+		/* Create a runcmds parameter element */
+		rpNode = (runParamType*)malloc(sizeof(runParamType));
+		if (rpNode == NULL){
+			printf("Error allocing space for run parameter struct.\n");
+			return NULL;
+		}
+		memset(rpNode, 0, sizeof(runParamType));
+		rpNode->pNext = NULL;
+		rpNode->str = NULL;
+		rpNode->type = CTRL_CODE;
+		rpNode->value = 0xFFFF;
+
+		/* Add the node to the list */
+		if (rpHead == NULL){
+			rpHead = rpCurrent = rpNode;
+		}
+		else{
+			rpCurrent->pNext = rpNode;
+			rpCurrent = rpNode;
+		}
+
+
+		/**************************/
+		/* Force 2-Byte Alignment */
+		/**************************/
+
+		/* Create a runcmds parameter element */
+		rpNode = (runParamType*)malloc(sizeof(runParamType));
+		if (rpNode == NULL){
+			printf("Error allocing space for run parameter struct.\n");
+			return NULL;
+		}
+		memset(rpNode, 0, sizeof(runParamType));
+		rpNode->pNext = NULL;
+		rpNode->str = NULL;
+		rpNode->type = ALIGN_2_PARAM;
+		rpNode->value = 0xFF;
+
+		/* Add the node to the list */
+		if (rpHead == NULL){
+			rpHead = rpCurrent = rpNode;
+		}
+		else{
+			rpCurrent->pNext = rpNode;
+			rpCurrent = rpNode;
+		}
+		break;
+	}
+
 
 	case TEXT_DECODE_PSX_ENG:
     case TEXT_DECODE_ONE_BYTE_PER_CHAR:

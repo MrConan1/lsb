@@ -7,6 +7,7 @@
 #define TEXT_DECODE_UTF8               2
 #define TEXT_DECODE_UTF8_ENG           3
 #define TEXT_DECODE_PSX_ENG	           4
+#define TEXT_DECODE_TWO_BYTES_ASCII    5
 
 /* Function Prototypes */
 void setSSSEncode();
