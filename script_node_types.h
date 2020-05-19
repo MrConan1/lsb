@@ -41,6 +41,7 @@
 #define CTRL_CODE     7
 #define SHOW_PORTRAIT_RIGHT 8
 #define TIME_DELAY    9
+#define SUBT_STR      10
 
 /* Script Dump Defines */
 #define INVALID_PTR_ID 0xFFFFFFFF

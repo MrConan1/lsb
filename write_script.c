@@ -163,6 +163,7 @@ int writeBinScript(FILE* outFile){
 
     int x;
     scriptNode* pNode = NULL;
+	int subtitle_hack = 0;
     max_boutput_size_bytes = 0;
 
     /* Get Max Filesize for Binary Output */
@@ -337,6 +338,9 @@ int writeBinScript(FILE* outFile){
                         case ALIGN_4_PARAM:
                             numBytes+=3; /* overestimate for simplicity */
                             break;
+						case SUBT_STR:
+							numBytes += 1024; /* overestimate for simplicity */
+							break;
                         default:
                             printf("Error, bad subroutine parameter detected.\n");
                             return -1;
@@ -374,13 +378,16 @@ int writeBinScript(FILE* outFile){
                                 writeBYTE(pNode->alignfillVal);
                             }
                             break;
+						case SUBT_STR:
+							subtitle_hack = 1;
+							break;
                         default:
                             printf("Error, writing subroutine parameters, can't get here.\n");
                             return -1;
                     }
                 }
             }
-            break;
+			break;
 
 
             /****************/
@@ -457,7 +464,10 @@ int writeBinScript(FILE* outFile){
                 pNode->fileOffset = offset;  //Book keeping
 
                 /* This is all part of subroutine code 0x0002 */
-                writeSW(0x0002);
+				if (!subtitle_hack)
+					writeSW(0x0002);
+				else
+					subtitle_hack = 0;
 
                 rpNode = pNode->runParams;
                 while (rpNode != NULL) {
@@ -967,6 +977,7 @@ int writeScript(FILE* outFile){
     /* has been output to memory.  Then write to disk.                */
     /******************************************************************/
     while (pNode != NULL){
+		int subtitle_hack = 0;
 
         switch (pNode->nodeType){
 
@@ -1041,6 +1052,9 @@ int writeScript(FILE* outFile){
                             case ALIGN_4_PARAM:
                                 fprintf(outFile, "align-4 ");
                                 break;
+							case SUBT_STR:
+								fprintf(outFile, "subtitle ");
+								break;
                             default:
                                 printf("Error, bad subroutine parameter detected.\n");
                                 return -1;
@@ -1052,13 +1066,18 @@ int writeScript(FILE* outFile){
                     for (x = 0; x < (int)pNode->num_parameters; x++){
                         if ((pNode->subParams[x].type == ALIGN_2_PARAM) || (pNode->subParams[x].type == ALIGN_4_PARAM))
                             continue;
-                        fprintf(outFile, "%s ", formatVal(pNode->subParams[x].value));
+						/* Subtitle Hack */
+						if (pNode->subParams[x].type == SUBT_STR)
+							subtitle_hack = 1;
+						else
+							fprintf(outFile, "%s ", formatVal(pNode->subParams[x].value));
                     }
                     fprintf(outFile, ")\r\n");
                 }
                 fprintf(outFile, ")\r\n");
             }
-            break;
+			if (!subtitle_hack)
+				break;
 
 
             /****************/
@@ -1068,7 +1087,10 @@ int writeScript(FILE* outFile){
             {
                 runParamType* rpNode = pNode->runParams;
 
-                fprintf(outFile, "(run-commands id=%s\r\n", formatVal(pNode->id));
+				if (subtitle_hack)
+	                fprintf(outFile, "(run-commands id=%s\r\n", formatVal(pNode->id + 9000));
+				else
+					fprintf(outFile, "(run-commands id=%s\r\n", formatVal(pNode->id));
 
                 while (rpNode != NULL) {
 

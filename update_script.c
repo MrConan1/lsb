@@ -449,6 +449,8 @@ int copy_exesub(int id, scriptNode* node){
                 params[x].type = ALIGN_2_PARAM;
             else if (strcmp((const char *)pInput, "align-4") == 0)
                 params[x].type = ALIGN_4_PARAM;
+			else if (strcmp((const char *)pInput, "subtitle") == 0)
+				params[x].type = SUBT_STR;
             else{
                 printf("Error invalid parameter type read\n");
                 return -1;
@@ -462,7 +464,8 @@ int copy_exesub(int id, scriptNode* node){
             return -1;
         }
         for (x = 0; x < (int)numparam; x++){
-            if ((params[x].type == ALIGN_2_PARAM) || (params[x].type == ALIGN_4_PARAM))
+            if ((params[x].type == ALIGN_2_PARAM) || (params[x].type == ALIGN_4_PARAM)
+				|| (params[x].type == SUBT_STR))
                 continue;
 
             pInput = (unsigned char*)strtok(NULL, "()\t = \r\n");

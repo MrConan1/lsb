@@ -324,8 +324,6 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
             case 0x004C:
             case 0x004D: /* confirmed */
             case 0x0051: /* confirmed, sometimes crashes during my tests? */
-            case 0x0053:
-            case 0x0054:
             case 0x0058: /* confirmed */
             case 0x005B: /* confirmed */
     #ifdef UGLY_ENG_IOS_HACKS
@@ -357,6 +355,152 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
 
                 break;
             }
+
+
+			/***************************************************************/
+			/* Normally no arguments with 1 child.                         */
+			/* Could have subtitles if part of the new audio subtitle hack */
+			/***************************************************************/
+			case 0x0053:
+			case 0x0054:
+			{
+				unsigned short subTest = 0;
+
+				/* Create a new script node */
+				if (createScriptNode(&sNode) < 0){
+					printf("Error creating a script node.\n");
+					return -1;
+				}
+				
+				/* Look ahead for "ST" 0x5354 */
+				fread(&subTest, 2, 1, inFile);
+				swap16(&subTest);
+
+
+				if (subTest == 0x5354)
+				{
+					/********************************/
+					/* Parse as audio subtitle node */
+					/********************************/
+					runParamType* rpHead;
+					char prev, cur;
+					int y, z, index;
+					unsigned short tval;
+					y = z = index = 0;
+
+					/*******************************************************************/
+					/* Format                                                          */
+					/* ======                                                          */
+					/* Short Wd 0: "ST"                                                */
+					/* Short Wd 1: Number of delays                                    */
+					/* Short Wd 2 to N: Delay times (Delay is # of times sound loop is */
+					/*                  called before displaying next text section     */
+					/*                  First delay is waited prior to displaying any  */
+					/*                  text on the screen.  Next delay is invoked     */
+					/*                  after encountering 0xFFFF () or 0xFFFF ()        */
+					/* BPE Compressed Text                                             */
+					/* Short Wd 0xFFFF, End of Text                                    */
+					/* If not aligned an additional byte, 0xFF is appended             */
+					/*******************************************************************/
+
+					/* Read in Number of Delays */
+					fread(&subTest, 2, 1, inFile);
+					swap16(&subTest);
+
+					/* Allocate memory for EXE parameters */
+					sNode->num_parameters = subTest + 3; /* "ST" + #delays + delays + Subtitle_Text (Aligns end) */
+					params = (paramType*)malloc(sNode->num_parameters * sizeof(paramType));
+					if (params == NULL){
+						printf("Error allocing memory for parameters\n");
+						return -1;
+					}
+
+					/* Fill in Node Parameters */
+					sNode->id = G_ID++;
+					sNode->nodeType = NODE_EXE_SUB;
+					sNode->subroutine_code = cmd;
+					sNode->alignfillVal = 0xFF;
+					sNode->subParams = params;
+					sNode->fileOffset = offset;
+					
+					/* First Parameter is "ST" */
+					z = 0;
+					params[z].type = SHORT_PARAM;
+					params[z++].value = 0x5354; /* "ST" */
+
+					/* Second Parameter is #delays */
+					params[z].type = SHORT_PARAM;
+					params[z++].value = subTest;
+
+					/* Fill in EXE Parameters */
+					for (y=0; y < (int)subTest; y++,z++){
+						params[z].type = SHORT_PARAM;
+						fread(&tval, 2, 1, inFile);
+						swap16(&tval);
+						params[z].value = tval;
+					}
+					
+					/* Read BPE Compressed Text until 0xFFFF is reached */
+					prev = cur = 0;
+					while (1){
+						rval = fread(&pdata[index++], 1, 1, inFile);
+						if (rval != 1){
+							printf("Error encountered while reading TEXT portion of subtitles, no termination.\n");
+							break;
+						}
+						cur = pdata[index - 1];
+
+						/* Lunar Text Terminates with 0xFFFF */
+						if ((cur == (char)0xFF) && (prev == (char)0xFF)){
+							break;
+						}
+						prev = cur;
+					}
+
+					/* Advance File Pointer to a 16-bit boundary if required */
+					if ((ftell(inFile) % 2) != 0){
+						fread(&pdata[index], 1, 1, inFile);
+					}
+
+					/* Store string as a run command */
+					rpHead = NULL;
+					rpHead = getRunParam(TEXT_DECODE_ONE_BYTE_PER_CHAR, pdata);
+					sNode->runParams = rpHead;
+
+					/* Create a Subtitle Script Node */
+					/* Pass in data (pdata) and size of data (index) */
+					/* For a Text Node, the data count is in bytes, not shorts */
+					params[z].type = SUBT_STR;
+					params[z++].value = 0;
+
+					/* Alignment guaranteed by following Run Command subtitle entry */
+				}
+				else
+				{
+					/**********************/
+					/* Regular Audio Node */
+					/**********************/
+
+					/* Rewind File Pointer */
+					fseek(inFile, -2, SEEK_CUR);
+
+					/* Fill in Parameters */
+					sNode->id = G_ID++;
+					sNode->nodeType = NODE_EXE_SUB;
+					sNode->subroutine_code = cmd;
+					sNode->num_parameters = 0;
+					sNode->fileOffset = offset;
+				}
+
+				/* Add the node */
+				if (addNode(sNode, METHOD_NORMAL, 0) != 0){
+					printf("Error occurred adding the script node.\n");
+					return -1;
+				}
+				free(sNode);
+
+				break;
+			}
 
 
             /************************************/
@@ -1308,7 +1452,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
             }
 #if 0
                 FAXX 	Character portrait
-                F90A 	Space; the second byte is the size of the space in pixels
+                F905 	Space; the second byte is the size of the space in pixels
                 FF00    Button must be pressed to continue text
                 FF01 	Text box advances automatically.Any text following this control code will be in the next box
                 FF02 	Newline
