@@ -30,7 +30,7 @@
 
 
 #define VER_MAJ    1
-#define VER_MIN    06
+#define VER_MIN    07
 
 /******************************************************************************/
 /* printUsage() - Display command line usage of this program.                 */
