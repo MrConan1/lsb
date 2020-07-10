@@ -39,5 +39,6 @@ int readBYTE(unsigned char* pInput, unsigned char* datab);
 /* Decode Related Functions */
 int getTextDecodeMethod();
 void setTextDecodeMethod(int method);
+int checkSSSItemHack();
 
 #endif

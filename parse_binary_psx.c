@@ -349,32 +349,34 @@ int parseCmdSeq_PSX(int offset, FILE** ptr_inFile, int singleRunFlag){
 				/* Item Fix for SSS Importing from SSSC */
 #define CONV_ITEMS_TO_SSS
 #ifdef CONV_ITEMS_TO_SSS
-				if( (cmd==0x1F) )
-				{
-					unsigned char* pItem = (unsigned char*)pdata;
-//					printf("pItem is 0x%X 0x%X\n",pItem[0],pItem[1]);
-					if(pItem[0] == 0x90)
-						pItem[0] = 0x91;
-					else if(pItem[0] == 0x91)
-						pItem[0] = 0x92;
-					else if(pItem[0] == 0x96)
-						pItem[0] = 0x95;
-					else if(pItem[0] == 0x97)
-						pItem[0] = 0x96;
-					else if(pItem[0] == 0x98)
-						pItem[0] = 0x97;
-					else if(pItem[0] == 0x99)
-						pItem[0] = 0x98;
-					else if(pItem[0] == 0x9a)
-						pItem[0] = 0x98;
-					else if(pItem[0] == 0x9b)
-						pItem[0] = 0x99;
-					else if(pItem[0] == 0xa5)
-						pItem[0] = 0x9a;
-					else if(pItem[0] == 0xa7)
-						pItem[0] = 0x9b;
-					else if(pItem[0] == 0xb5)
-						pItem[0] = 0xa0;
+				if(checkSSSItemHack()){
+					if( (cmd==0x1F) || (cmd==0x20))
+					{
+						unsigned char* pItem = (unsigned char*)pdata;
+	//					printf("pItem is 0x%X 0x%X\n",pItem[0],pItem[1]);
+						if(pItem[0] == 0x90)
+							pItem[0] = 0x91;
+						else if(pItem[0] == 0x91)
+							pItem[0] = 0x92;
+						else if(pItem[0] == 0x96)
+							pItem[0] = 0x95;
+						else if(pItem[0] == 0x97)
+							pItem[0] = 0x96;
+						else if(pItem[0] == 0x98)
+							pItem[0] = 0x97;
+						else if(pItem[0] == 0x99)
+							pItem[0] = 0x98;
+						else if(pItem[0] == 0x9a)
+							pItem[0] = 0x98;
+						else if(pItem[0] == 0x9b)
+							pItem[0] = 0x99;
+						else if(pItem[0] == 0xa5)
+							pItem[0] = 0x9a;
+						else if(pItem[0] == 0xa7)
+							pItem[0] = 0x9b;
+						else if(pItem[0] == 0xb5)
+							pItem[0] = 0xa0;
+					}
 				}
 #endif
                 /* Create a new script node */

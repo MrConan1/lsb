@@ -30,7 +30,7 @@
 
 
 #define VER_MAJ    1
-#define VER_MIN    07
+#define VER_MIN    9
 
 /******************************************************************************/
 /* printUsage() - Display command line usage of this program.                 */
@@ -44,6 +44,7 @@ void printUsage(){
     printf("    ienc = 2 for utf8 (iOS) decoding of text\n");
     printf("    ienc = 3 for utf8 (Eng iOS) decoding of text\n");
 	printf("    ienc = 4 for PSX Eng decoding of text\n");
+	printf("    ienc = 5 for PSX Eng decoding of text with SSS item hacks\n");
     printf("lsb.exe encode InputFname OutputFname oenc [sss]\n");
     printf("    oenc = 0 for 2-Byte output encoded text\n");
     printf("    oenc = 1 for BPE output encoded text\n");
@@ -103,6 +104,8 @@ int main(int argc, char** argv){
         /* Check decode parameters */
         ienc = atoi(argv[4]);
         setTextDecodeMethod(ienc);
+		if(ienc == 5)
+			ienc = 4;
         if((argc == 6) && (strcmp(argv[5], "sss") == 0))
             setSSSEncode();
         if (argc > 6){

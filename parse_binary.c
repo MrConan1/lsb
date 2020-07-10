@@ -562,7 +562,7 @@ int parseCmdSeq(int offset, FILE** ptr_inFile, int singleRunFlag){
                 for (z = 0; z < (int)sNode->num_parameters; z++){
                     params[z].type = SHORT_PARAM;
                     params[z].value = pShort[z];
-                    swap16(&params[z].value);
+					swap16(&params[z].value);
                 }
 
                 sNode->subParams = params;

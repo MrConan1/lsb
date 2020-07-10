@@ -53,6 +53,7 @@ int readBYTE(unsigned char* pInput, unsigned char* datab);
 /* Decode Related Functions */
 int getTextDecodeMethod();
 void setTextDecodeMethod(int method);
+int checkSSSItemHack();
 
 /* Global Array of UTF8 Data */
 static char utf8Array[MAX_STORED_CHARACTERS][5];
@@ -66,6 +67,7 @@ static int inputMode = RADIX_HEX;    //Script Text File Value Representation
 static int tableMode = TWO_BYTE_ENC; //Table File Encoding Method
 static unsigned int maxBinFsize = 0; //MAX allowed size of a binary script file
 int G_IOS_ENG = 0; //Flag to signify IOS ENG Input
+static int G_SSS_ITEM_HACK_ENABLED = 0;
 
 /***********************************************************************/
 /* setSSSEncode                                                        */
@@ -78,7 +80,6 @@ void setSSSEncode(){
 int getSSSEncode(){
 	return enable_SSS_mode;
 }
-
 
 
 /****************************/
@@ -473,12 +474,26 @@ int getTextDecodeMethod(){
 /* Either 1-byte encoding, or 2-byte        */
 /********************************************/
 void setTextDecodeMethod(int method){
+	G_SSS_ITEM_HACK_ENABLED = 0;
     if (method == 3){
         method = 2;
         G_IOS_ENG = 1;
     }
-
-
+	if (method == 5){
+		G_SSS_ITEM_HACK_ENABLED = 1;
+		method = 4;
+	}
+	
     textDecodeMode = method;
     return;
+}
+
+
+/**************************************************************/
+/* Returns a global setting indicating whether or             */
+/* not the PSX decoder should auto-correct for item numbering */
+/* changes between PSX SSSC and SSS                           */
+/**************************************************************/
+int checkSSSItemHack(){
+	return G_SSS_ITEM_HACK_ENABLED;
 }
