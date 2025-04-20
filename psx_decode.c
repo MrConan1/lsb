@@ -166,7 +166,7 @@ int convertPSXText(char* strIn, char** strOut, int len, int* lenOut){
 			continue;
 		}
 		else if (input == 0xFF){
-			printf("End of input text stream detected.\n");
+//			printf("End of input text stream detected.\n");
 			ptarget[out_offset++] = 0xFF;
 			ptarget[out_offset++] = 0xFF;
 			offset++;
@@ -206,7 +206,7 @@ int convertPSXText(char* strIn, char** strOut, int len, int* lenOut){
 			}
 
 			if (input == 0xFF){
-				printf("End of input text stream detected.\n");
+//				printf("End of input text stream detected.\n");
 				ptarget[out_offset++] = 0xFF;
 				ptarget[out_offset++] = 0xFF;
 				offset++;

@@ -483,6 +483,9 @@ void setTextDecodeMethod(int method){
 		G_SSS_ITEM_HACK_ENABLED = 1;
 		method = 4;
 	}
+	if (method == 6){
+		method = 4;
+	}
 	
     textDecodeMode = method;
     return;

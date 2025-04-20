@@ -27,6 +27,7 @@
 #include "bpe_compression.h"
 #include "psx_decode.h"
 #include "parse_binary_psx.h"
+#include "parse_binary_reEng.h"
 
 
 #define VER_MAJ    1
@@ -45,6 +46,7 @@ void printUsage(){
     printf("    ienc = 3 for utf8 (Eng iOS) decoding of text\n");
 	printf("    ienc = 4 for PSX Eng decoding of text\n");
 	printf("    ienc = 5 for PSX Eng decoding of text with SSS item hacks\n");
+	printf("    ienc = 6 for Lunar Remastered (Eng vers)\n");
     printf("lsb.exe encode InputFname OutputFname oenc [sss]\n");
     printf("    oenc = 0 for 2-Byte output encoded text\n");
     printf("    oenc = 1 for BPE output encoded text\n");
@@ -74,6 +76,7 @@ int main(int argc, char** argv){
     static char csvOutFileName[300];
     static char txtOutFileName[300];
     int rval, ienc, oenc;
+	int remaster = 0;
     rval = ienc = oenc = -1;
 
     printf("Lunar Script Builder v%d.%02d\n", VER_MAJ, VER_MIN);
@@ -104,6 +107,10 @@ int main(int argc, char** argv){
         /* Check decode parameters */
         ienc = atoi(argv[4]);
         setTextDecodeMethod(ienc);
+		if(ienc == 6){
+			ienc = 4;
+			remaster = 1;
+		}
 		if(ienc == 5)
 			ienc = 4;
         if((argc == 6) && (strcmp(argv[5], "sss") == 0))
@@ -119,6 +126,8 @@ int main(int argc, char** argv){
             strcat(csvOutFileName, "_iosJP");
         else if (ienc == 3)
             strcat(csvOutFileName, "_iosENG");
+		else if (remaster == 1)
+			strcat(csvOutFileName, "_reENG");
 		else if (ienc == 4)
 			strcat(csvOutFileName, "_psxENG");
         else if ((argc == 6) && (strcmp(argv[5], "sss") == 0))
@@ -214,7 +223,9 @@ int main(int argc, char** argv){
         rval = encodeScript(inFile, outFile);
     }
     else if (strcmp(argv[1], "decode") == 0){
-		if (ienc == 4)
+		if(remaster == 1)
+			rval = decodeBinaryScript_RE_Eng(inFile, outFile);
+		else if (ienc == 4)
 			rval = decodeBinaryScript_PSX(inFile, outFile);
 		else
 	        rval = decodeBinaryScript(inFile, outFile);
